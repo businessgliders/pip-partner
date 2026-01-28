@@ -156,7 +156,7 @@ export default function InfluencerProgram() {
                       placeholder="Your name"
                       value={formData.full_name}
                       onChange={(e) => handleInputChange("full_name", e.target.value)}
-                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl h-12 bg-white/50"
+                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50"
                     />
                   </div>
 
@@ -168,7 +168,7 @@ export default function InfluencerProgram() {
                       placeholder="your.email@example.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
-                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl h-12 bg-white/50"
+                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50"
                     />
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export default function InfluencerProgram() {
                       placeholder="@yourusername"
                       value={formData.instagram_handle}
                       onChange={(e) => handleInputChange("instagram_handle", e.target.value)}
-                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl h-12 bg-white/50"
+                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50"
                     />
                   </div>
 
@@ -191,7 +191,7 @@ export default function InfluencerProgram() {
                       value={formData.follower_count}
                       onValueChange={(value) => handleInputChange("follower_count", value)}
                     >
-                      <SelectTrigger className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl h-12 bg-white/50">
+                      <SelectTrigger className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50">
                         <SelectValue placeholder="Select range" />
                       </SelectTrigger>
                       <SelectContent>
@@ -213,7 +213,7 @@ export default function InfluencerProgram() {
                       placeholder="City, State"
                       value={formData.location}
                       onChange={(e) => handleInputChange("location", e.target.value)}
-                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl h-12 bg-white/50"
+                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50"
                     />
                   </div>
 
@@ -223,7 +223,7 @@ export default function InfluencerProgram() {
                       value={formData.content_style}
                       onValueChange={(value) => handleInputChange("content_style", value)}
                     >
-                      <SelectTrigger className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl h-12 bg-white/50">
+                      <SelectTrigger className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50">
                         <SelectValue placeholder="Select your niche" />
                       </SelectTrigger>
                       <SelectContent>
@@ -243,7 +243,7 @@ export default function InfluencerProgram() {
                     placeholder="Tell us about yourself and why you'd be a great fit..."
                     value={formData.why_partner}
                     onChange={(e) => handleInputChange("why_partner", e.target.value)}
-                    className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f889b]/20 rounded-xl min-h-[120px] bg-white/50 resize-none"
+                    className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl min-h-[120px] bg-white/50 resize-none"
                   />
                 </div>
 
