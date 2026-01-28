@@ -47,8 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import InfluencerProgram from './pages/InfluencerProgram';
 
-export const pagesConfig = {
-	Pages: {}
+
+export const PAGES = {
+    "InfluencerProgram": InfluencerProgram,
 }
 
+export const pagesConfig = {
+    mainPage: "InfluencerProgram",
+    Pages: PAGES,
+};
