@@ -210,7 +210,7 @@ export default function InfluencerProgram() {
                   <div className="space-y-2">
                     <Label className="text-[#b67651] font-medium text-sm">Location</Label>
                     <Input
-                      placeholder="City, State"
+                      placeholder="City, Province"
                       value={formData.location}
                       onChange={(e) => handleInputChange("location", e.target.value)}
                       className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50"
