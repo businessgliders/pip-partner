@@ -89,7 +89,7 @@ export default function InfluencerProgram() {
             
             {/* Brand Name */}
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/46a5e2bb8_1.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697a18eb75a9e57a35bc853a/29d852d1f_.png"
               alt="Pilates in Pink"
               className="h-8 mx-auto mb-8"
             />
