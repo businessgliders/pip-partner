@@ -19,6 +19,7 @@ export default function InfluencerProgram() {
     full_name: "",
     email: "",
     instagram_handle: "",
+    tiktok_handle: "",
     follower_count: "",
     location: "",
     why_partner: "",
@@ -36,6 +37,7 @@ export default function InfluencerProgram() {
     setIsSubmitting(true);
     
     await base44.entities.InfluencerApplication.create(formData);
+    await base44.functions.invoke('sendInfluencerApplicationEmail', { applicationData: formData });
     
     setIsSubmitting(false);
     setIsSubmitted(true);
@@ -186,6 +188,18 @@ export default function InfluencerProgram() {
                   </div>
 
                   <div className="space-y-2">
+                    <Label className="text-[#b67651] font-medium text-sm">TikTok Handle</Label>
+                    <Input
+                      placeholder="@yourusername"
+                      value={formData.tiktok_handle}
+                      onChange={(e) => handleInputChange("tiktok_handle", e.target.value)}
+                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl h-12 bg-white/50"
+                    />
+                  </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
                     <Label className="text-[#b67651] font-medium text-sm">Number of Followers</Label>
                     <Select
                       value={formData.follower_count}
@@ -204,11 +218,9 @@ export default function InfluencerProgram() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-[#b67651] font-medium text-sm">Location</Label>
+                <div className="space-y-2">
+                  <Label className="text-[#b67651] font-medium text-sm">Location</Label>
                     <Input
                       placeholder="City, Province"
                       value={formData.location}
