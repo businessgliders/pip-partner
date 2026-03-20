@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Pilates in Pink <onboarding@resend.dev>',
+          from: 'Pilates in Pink <noreply@pilatesinpinkstudio.com>',
           to,
           subject: `New Instructor Application: ${applicationData.first_name} ${applicationData.last_name}`,
           html: emailBody,
