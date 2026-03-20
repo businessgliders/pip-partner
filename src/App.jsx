@@ -61,6 +61,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/Instructor" element={<Hire />} />
+      <Route path="/FrontAdmin" element={<FrontAdmin />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
