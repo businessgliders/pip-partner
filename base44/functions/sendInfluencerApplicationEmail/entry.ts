@@ -36,9 +36,7 @@ Deno.serve(async (req) => {
     `;
 
     const recipients = [
-      'rashmeen@pilatesinpinkstudio.com',
-      'gurpreen@pilatesinpinkstudio.com',
-      'sahil@pilatesinpinkstudio.com'
+      'info@pilatesinpinkstudio.com'
     ];
 
     await Promise.all(recipients.map(to =>
