@@ -304,14 +304,14 @@ export default function Hire() {
                   <Label className="text-[#b67651] font-medium text-sm">Qualifications (select all that apply)</Label>
                   <div className="grid md:grid-cols-2 gap-3">
                     {QUALIFICATIONS.map((qual) => (
-                      <div key={qual} className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-[#f7b1bd]/30 hover:bg-white/70 transition-colors cursor-pointer" onClick={() => handleQualificationToggle(qual)}>
+                      <label key={qual} className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-[#f7b1bd]/30 hover:bg-white/70 transition-colors cursor-pointer">
                         <Checkbox
                           checked={formData.qualifications.includes(qual)}
                           onCheckedChange={() => handleQualificationToggle(qual)}
                           className="border-[#f7b1bd] data-[state=checked]:bg-[#b67651] data-[state=checked]:border-[#b67651]"
                         />
                         <span className="text-sm text-[#b67651]/80">{qual}</span>
-                      </div>
+                      </label>
                     ))}
                   </div>
                 </div>
