@@ -44,12 +44,19 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    await base44.integrations.Core.SendEmail({
-      to: 'info@pilatesinpinkstudio.com',
-      subject: `New Influencer Application: ${applicationData.full_name}`,
-      body: emailBody,
-      from_name: 'Pilates in Pink'
-    });
+    const recipients = [
+      'rashmeen@pilatesinpinkstudio.com',
+      'gurpreen@pilatesinpinkstudio.com',
+      'sahil@pilatesinpinkstudio.com'
+    ];
+    await Promise.all(recipients.map(to =>
+      base44.integrations.Core.SendEmail({
+        to,
+        subject: `New Influencer Application: ${applicationData.full_name}`,
+        body: emailBody,
+        from_name: 'Pilates in Pink'
+      })
+    ));
 
     return Response.json({ success: true });
   } catch (error) {
