@@ -60,6 +60,12 @@ Deno.serve(async (req) => {
           to,
           subject: `New Instructor Application: ${applicationData.first_name} ${applicationData.last_name}`,
           html: emailBody,
+          ...(applicationData.resume_url ? {
+            attachments: [{
+              filename: 'resume.pdf',
+              path: applicationData.resume_url,
+            }]
+          } : {}),
         }),
       })
     ));
