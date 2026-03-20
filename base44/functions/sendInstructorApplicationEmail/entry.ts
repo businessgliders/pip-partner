@@ -1,8 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
-
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const { applicationData } = await req.json();
 
     const qualList = (applicationData.qualifications || []).map(q => `<li style="color:#666; margin:4px 0;">${q}</li>`).join('');
@@ -50,12 +47,20 @@ Deno.serve(async (req) => {
       'gurpreen@pilatesinpinkstudio.com',
       'sahil@pilatesinpinkstudio.com'
     ];
+
     await Promise.all(recipients.map(to =>
-      base44.integrations.Core.SendEmail({
-        to,
-        subject: `New Instructor Application: ${applicationData.first_name} ${applicationData.last_name}`,
-        body: emailBody,
-        from_name: 'Pilates in Pink'
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Pilates in Pink <onboarding@resend.dev>',
+          to,
+          subject: `New Instructor Application: ${applicationData.first_name} ${applicationData.last_name}`,
+          html: emailBody,
+        }),
       })
     ));
 
