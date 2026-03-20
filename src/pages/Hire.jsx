@@ -295,9 +295,7 @@ export default function Hire() {
                       <SelectValue placeholder="Choose province" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PROVINCES.map((p) => (
-                        <SelectItem key={p} value={p}>{p}</SelectItem>
-                      ))}
+                      <SelectItem value="Ontario">Ontario</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
