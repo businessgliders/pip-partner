@@ -85,14 +85,14 @@ export default function InfluencerProgram() {
             {/* Logo */}
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png"
-              alt="Pilates in Pink"
+              alt="Pilates in Pink™"
               className="w-20 h-20 mx-auto mb-6"
             />
             
             {/* Brand Name */}
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697a18eb75a9e57a35bc853a/29d852d1f_.png"
-              alt="Pilates in Pink"
+              alt="Pilates in Pink™"
               className="h-8 mx-auto mb-8"
             />
 
@@ -250,7 +250,7 @@ export default function InfluencerProgram() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[#b67651] font-medium text-sm">Why do you want to partner with Pilates in Pink?</Label>
+                  <Label className="text-[#b67651] font-medium text-sm">Why do you want to partner with Pilates in Pink™?</Label>
                   <Textarea
                     placeholder="Tell us about yourself and why you'd be a great fit..."
                     value={formData.why_partner}
@@ -301,7 +301,7 @@ export default function InfluencerProgram() {
               </motion.div>
               <h2 className="text-2xl font-light text-[#b67651] mb-3">Application Received!</h2>
               <p className="text-[#b67651]/70 max-w-md mx-auto leading-relaxed">
-                Thank you for your interest in partnering with Pilates in Pink. We'll review your application and get back to you within 48 hours.
+                Thank you for your interest in partnering with Pilates in Pink™. We'll review your application and get back to you within 48 hours.
               </p>
             </motion.div>
           )}
@@ -330,7 +330,7 @@ export default function InfluencerProgram() {
         {/* Footer */}
         <div className="text-center mt-12 pb-8">
           <p className="text-[#b67651]/50 text-sm">
-            © {new Date().getFullYear()} Pilates in Pink™ • All rights reserved
+            © {new Date().getFullYear()} Pilates in Pink™™ • All rights reserved
           </p>
         </div>
       </div>

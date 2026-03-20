@@ -124,7 +124,7 @@ export default function Hire() {
     },
     {
       question: "What does the training look like?",
-      answer: "You'll go through an intensive training program including community classes and assessments. You'll master the Pilates in Pink method, learn proper cueing, how to create an exceptional client experience, and our brand philosophy."
+      answer: "You'll go through an intensive training program including community classes and assessments. You'll master the Pilates in Pink™ method, learn proper cueing, how to create an exceptional client experience, and our brand philosophy."
     },
     {
       question: "Is this a part-time or full-time role?",
@@ -144,19 +144,19 @@ export default function Hire() {
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png"
-              alt="Pilates in Pink"
+              alt="Pilates in Pink™"
               className="w-20 h-20 mx-auto mb-6"
             />
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697a18eb75a9e57a35bc853a/29d852d1f_.png"
-              alt="Pilates in Pink"
+              alt="Pilates in Pink™"
               className="h-8 mx-auto mb-8"
             />
             <h1 className="text-4xl md:text-5xl font-light text-white mb-4 tracking-wide">
               Become an Instructor
             </h1>
             <p className="text-lg text-white/90 max-w-xl mx-auto font-light leading-relaxed">
-              Join the Pilates in Pink team and inspire others through movement, mindset, and community.
+              Join the Pilates in Pink™ team and inspire others through movement, mindset, and community.
             </p>
           </motion.div>
         </div>
@@ -196,7 +196,7 @@ export default function Hire() {
         >
           <h2 className="text-2xl font-light text-[#b67651] mb-4">Let's Build Something Beautiful</h2>
           <p className="text-[#b67651]/80 leading-relaxed max-w-2xl mx-auto">
-            At Pilates in Pink, we believe great instructors are the heart of what we do. Our comprehensive training program will equip you with everything you need — from proper cueing and class flow to our signature brand experience. If you're passionate about Pilates and empowering others, we want to meet you.
+            At Pilates in Pink™, we believe great instructors are the heart of what we do. Our comprehensive training program will equip you with everything you need — from proper cueing and class flow to our signature brand experience. If you're passionate about Pilates and empowering others, we want to meet you.
           </p>
         </motion.div>
 
@@ -226,7 +226,7 @@ export default function Hire() {
             >
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-light text-[#b67651] mb-2">Apply Now</h2>
-                <p className="text-[#b67651]/70 text-sm">Take the first step toward joining the Pilates in Pink family</p>
+                <p className="text-[#b67651]/70 text-sm">Take the first step toward joining the Pilates in Pink™ family</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -393,7 +393,7 @@ export default function Hire() {
               </motion.div>
               <h2 className="text-2xl font-light text-[#b67651] mb-3">Application Received!</h2>
               <p className="text-[#b67651]/70 max-w-md mx-auto leading-relaxed">
-                Thank you for your interest in joining the Pilates in Pink team. We'll review your application and be in touch within a few business days.
+                Thank you for your interest in joining the Pilates in Pink™ team. We'll review your application and be in touch within a few business days.
               </p>
             </motion.div>
           )}
@@ -421,7 +421,7 @@ export default function Hire() {
 
         <div className="text-center mt-12 pb-8">
           <p className="text-[#b67651]/50 text-sm">
-            © {new Date().getFullYear()} Pilates in Pink™ • All rights reserved
+            © {new Date().getFullYear()} Pilates in Pink™™ • All rights reserved
           </p>
         </div>
       </div>
