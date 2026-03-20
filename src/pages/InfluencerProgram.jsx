@@ -307,6 +307,26 @@ export default function InfluencerProgram() {
           )}
         </AnimatePresence>
 
+        {/* Cross-promo banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+        >
+          <div>
+            <h3 className="text-lg font-medium text-[#b67651] mb-1">Passionate about Pilates?</h3>
+            <p className="text-sm text-[#b67651]/70">If you'd love to teach rather than promote, we're also hiring instructors.</p>
+          </div>
+          <a
+            href="/Instructor"
+            className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+            style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+          >
+            Apply as Instructor →
+          </a>
+        </motion.div>
+
         {/* Footer */}
         <div className="text-center mt-12 pb-8">
           <p className="text-[#b67651]/50 text-sm">
