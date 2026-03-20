@@ -133,7 +133,7 @@ export default function Hire() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 30%, #fbe0e2 60%, #f6eee7 100%)" }}>
+    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #c4896b 0%, #d4a088 30%, #f6eee7 60%, #fbe0e2 100%)" }}>
       {/* Hero */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
