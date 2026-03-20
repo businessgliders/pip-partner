@@ -399,24 +399,39 @@ export default function Hire() {
           )}
         </AnimatePresence>
 
-        {/* Cross-promo banner */}
+        {/* Cross-promo banners */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+          className="mt-10 flex flex-col gap-4"
         >
-          <div>
-            <h3 className="text-lg font-medium text-[#b67651] mb-1">Love Pilates but prefer to promote?</h3>
-            <p className="text-sm text-[#b67651]/70">Check out our Influencer Program and partner with us on social media.</p>
+          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-lg font-medium text-[#b67651] mb-1">Love Pilates but prefer to promote?</h3>
+              <p className="text-sm text-[#b67651]/70">Check out our Influencer Program and partner with us on social media.</p>
+            </div>
+            <a
+              href="/InfluencerProgram"
+              className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+              style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+            >
+              Join as Influencer →
+            </a>
           </div>
-          <a
-            href="/InfluencerProgram"
-            className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-            style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
-          >
-            Join as Influencer →
-          </a>
+          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-lg font-medium text-[#b67651] mb-1">Interested in the front of house?</h3>
+              <p className="text-sm text-[#b67651]/70">We're also looking for friendly Front Desk team members to keep the studio running.</p>
+            </div>
+            <a
+              href="/FrontAdmin"
+              className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+              style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+            >
+              Apply as Front Desk →
+            </a>
+          </div>
         </motion.div>
 
         <div className="text-center mt-12 pb-8">
