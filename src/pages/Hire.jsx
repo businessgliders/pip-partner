@@ -399,6 +399,26 @@ export default function Hire() {
           )}
         </AnimatePresence>
 
+        {/* Cross-promo banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+        >
+          <div>
+            <h3 className="text-lg font-medium text-[#b67651] mb-1">Love Pilates but prefer to promote?</h3>
+            <p className="text-sm text-[#b67651]/70">Check out our Influencer Program and partner with us on social media.</p>
+          </div>
+          <a
+            href="/InfluencerProgram"
+            className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+            style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+          >
+            Join as Influencer →
+          </a>
+        </motion.div>
+
         <div className="text-center mt-12 pb-8">
           <p className="text-[#b67651]/50 text-sm">
             © {new Date().getFullYear()} Pilates in Pink™ • All rights reserved
