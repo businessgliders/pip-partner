@@ -59,6 +59,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Hire" element={<Hire />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
