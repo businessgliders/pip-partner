@@ -116,19 +116,19 @@ export default function Hire() {
   const faqs = [
     {
       question: "Will I be tested?",
-      answer: "Yes! You'll complete a series of online modules and quizzes as part of your pre-training online learning content. At the end of your onboarding period, you'll be asked to teach a class as part of your practical assessment, along with a final online exam that must be completed and passed."
+      answer: "Yes. As part of our hiring process, you'll be invited to an in-person audition where you will lead a 30-minute class, showcasing your flow, presence, and teaching style. You will also be asked a series of questions to assess your knowledge and understanding. This allows us to ensure alignment with our standards of excellence and client experience."
     },
     {
       question: "What qualifications do I need?",
-      answer: "To be considered, you need at least one of: a Personal Training or Group Fitness Certification, a Kinesiology Degree or similar, Pilates, Dance or Performance training, 6+ months of coaching experience, or CPR/AED/First Aid Training."
+      answer: "Applicants must have completed Reformer Pilates Level 1 and Level 2 certification. A valid government-issued photo ID is required, and CPR certification is considered an asset.\n\nAt Pilates in Pink, we place a strong emphasis on delivering a signature, elevated client experience. We are seeking instructors who are not only skilled, but also adaptable and committed to refining their craft. All instructors are expected to train closely with our senior team to embody our studio's teaching style, standards, and client expectations, ensuring a consistent and premium experience across every class."
     },
     {
       question: "What does the training look like?",
-      answer: "You'll go through an intensive training program including community classes and assessments. You'll master the Pilates in Pink™ method, learn proper cueing, how to create an exceptional client experience, and our brand philosophy."
+      answer: "Our onboarding experience is designed to support you at every stage of your journey. It includes guided training, orientation sessions, and shadowing opportunities with our senior instructors to ensure alignment with our methodology and class standards.\n\nYou'll receive hands-on mentorship and ongoing development opportunities, allowing you to continuously refine your teaching, grow within the studio, and confidently deliver an exceptional client experience."
     },
     {
       question: "Is this a part-time or full-time role?",
-      answer: "We offer both part-time and full-time opportunities depending on your availability and the needs of our studio. We can discuss this further during the interview process."
+      answer: "This opportunity can be part-time or full-time, depending on studio requirements and your availability. Scheduling is dynamic and based on class demand, allowing for flexibility as you grow within the studio.\n\nInstructors also enjoy exclusive studio benefits, including complimentary classes, liability insurance coverage provided by the studio, and access to ongoing training and growth opportunities."
     },
   ];
 
