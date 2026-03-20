@@ -268,12 +268,14 @@ export default function Hire() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-[#b67651] font-medium text-sm">Preferred Studio</Label>
-                    <Input
-                      placeholder="Studio name or location"
-                      value={formData.preferred_studio}
-                      onChange={(e) => handleInputChange("preferred_studio", e.target.value)}
-                      className="border-[#f7b1bd]/50 focus:border-[#f1889b] rounded-xl h-12 bg-white/50"
-                    />
+                    <Select value={formData.preferred_studio} onValueChange={(v) => handleInputChange("preferred_studio", v)}>
+                      <SelectTrigger className="border-[#f7b1bd]/50 focus:border-[#f1889b] rounded-xl h-12 bg-white/50">
+                        <SelectValue placeholder="Choose studio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Brampton">Brampton</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[#b67651] font-medium text-sm">Postal Code</Label>
