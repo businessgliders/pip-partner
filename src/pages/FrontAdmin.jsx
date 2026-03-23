@@ -354,5 +354,6 @@ export default function FrontAdmin() {
         </div>
       </div>
     </div>
+    </PasswordGate>
   );
 }
