@@ -68,6 +68,7 @@ export default function FrontAdmin() {
   ];
 
   return (
+    <PasswordGate>
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #5f8fa8 0%, #89b4cc 30%, #d6eaf4 60%, #eef6fa 100%)" }}>
       {/* Hero */}
       <div className="relative overflow-hidden">
