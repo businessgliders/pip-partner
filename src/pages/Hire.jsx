@@ -443,5 +443,6 @@ export default function Hire() {
         </div>
       </div>
     </div>
+    </PasswordGate>
   );
 }
