@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
       'info@pilatesinpinkstudio.com'
     ];
 
-    await Promise.all(recipients.map(to =>
-      fetch('https://api.resend.com/emails', {
+    const results = await Promise.all(recipients.map(async to => {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
@@ -52,10 +52,13 @@ Deno.serve(async (req) => {
           subject: `New Influencer Application: ${applicationData.full_name}`,
           html: emailBody,
         }),
-      })
-    ));
+      });
+      const data = await res.json();
+      console.log('Resend response for', to, ':', JSON.stringify(data));
+      return data;
+    }));
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, results });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
