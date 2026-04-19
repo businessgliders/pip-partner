@@ -134,8 +134,22 @@ export default function OwnAStudio() {
         </div>
       </section>
 
+      {/* Curved top divider for footer */}
+      <div className="relative -mb-px pointer-events-none">
+        <svg
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          className="w-full h-16 md:h-24 block"
+        >
+          <path
+            d="M0,0 L0,60 Q720,140 1440,60 L1440,0 Z"
+            fill="#2a1a1f"
+          />
+        </svg>
+      </div>
+
       {/* Footer */}
-      <footer className="bg-[#2a1a1f] text-white/80 py-14 px-6 mt-6">
+      <footer className="bg-[#2a1a1f] text-white/80 py-14 px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 items-center text-center md:text-left">
           <div>
             <p className="text-xs tracking-[0.2em] text-[#f7b1bd] font-medium mb-3">EXPLORE</p>
