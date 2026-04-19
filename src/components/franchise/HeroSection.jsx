@@ -42,11 +42,11 @@ export default function HeroSection({ onCTAClick }) {
             <span className="italic font-light">strength</span> meets beauty
           </h1>
           <p className="text-sm sm:text-lg md:text-xl text-[#b67651]/80 max-w-2xl mx-auto font-light leading-relaxed mb-6 md:mb-10">
-            Luxury Reformer Pilates.
+            Luxury Reformer Pilates
             <br />
-            Pretty. Powerful. Profitable.
+            Pretty. Powerful. <span className="underline underline-offset-4">Profitable</span>.
             <br />
-            Join Canada's fastest-growing wellness brand.
+            <span className="block mt-4">Join Canada's fastest-growing wellness brand.</span>
           </p>
 
           <Button
@@ -56,6 +56,9 @@ export default function HeroSection({ onCTAClick }) {
           >
             Apply Now →
           </Button>
+          <p className="mt-3 text-xs tracking-[0.15em] text-[#b67651]/70 font-medium uppercase">
+            Discovery call
+          </p>
         </motion.div>
       </div>
 
