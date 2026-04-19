@@ -36,12 +36,12 @@ export default function HeroSection({ onCTAClick }) {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-light text-[#b67651] mb-6 tracking-tight leading-[1.05]">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-light text-[#b67651] mb-4 md:mb-6 tracking-tight leading-[1.05]">
             Own a studio where
             <br />
             <span className="italic font-light">strength</span> meets beauty
           </h1>
-          <p className="text-lg md:text-xl text-[#b67651]/80 max-w-2xl mx-auto font-light leading-relaxed mb-10">
+          <p className="text-sm sm:text-lg md:text-xl text-[#b67651]/80 max-w-2xl mx-auto font-light leading-relaxed mb-6 md:mb-10">
             Luxury Reformer Pilates. Pretty. Powerful. Profitable.
             <br />
             Join Canada's fastest-growing wellness brand.
