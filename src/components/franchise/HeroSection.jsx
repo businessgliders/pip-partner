@@ -1,16 +1,19 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import HlsVideoBackground from "./HlsVideoBackground";
 
 export default function HeroSection({ onCTAClick }) {
   return (
     <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
-      <div className="absolute inset-0 opacity-30">
+      <HlsVideoBackground src="https://video.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/5e57b3a9-5624-4a07-b555-c3847af04b51/playlist.m3u8" />
+
+      <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ zIndex: 1 }}>
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-white/40 blur-3xl" />
         <div className="absolute bottom-0 right-0 w-[30rem] h-[30rem] rounded-full bg-[#f1889b]/30 blur-3xl" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-6 text-center">
+      <div className="relative max-w-6xl mx-auto px-6 text-center" style={{ zIndex: 2 }}>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
