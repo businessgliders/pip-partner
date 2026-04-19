@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 import HlsVideoBackground from "./HlsVideoBackground";
 
 export default function HeroSection({ onCTAClick }) {
@@ -19,6 +20,15 @@ export default function HeroSection({ onCTAClick }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
+          <a
+            href="https://www.pilatesinpinkstudio.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Go to Pilates in Pink home"
+            className="inline-flex items-center justify-center w-8 h-8 mx-auto mb-3 rounded-full bg-white/70 hover:bg-white text-[#b67651] transition-colors"
+          >
+            <Home className="w-4 h-4" />
+          </a>
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png"
             alt="Pilates in Pink™"
