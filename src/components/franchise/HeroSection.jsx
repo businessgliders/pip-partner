@@ -5,7 +5,7 @@ import HlsVideoBackground from "./HlsVideoBackground";
 
 export default function HeroSection({ onCTAClick }) {
   return (
-    <section className="relative overflow-hidden pt-16 pb-16 md:pt-20 md:pb-20">
+    <section className="relative overflow-hidden pt-16 pb-28 md:pt-20 md:pb-36">
       <HlsVideoBackground src="https://video.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/5e57b3a9-5624-4a07-b555-c3847af04b51/playlist.m3u8" />
 
       <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ zIndex: 1 }}>
@@ -55,6 +55,20 @@ export default function HeroSection({ onCTAClick }) {
             Apply Now →
           </Button>
         </motion.div>
+      </div>
+
+      {/* Curved bottom divider */}
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ zIndex: 3 }}>
+        <svg
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          className="w-full h-16 md:h-24 block"
+        >
+          <path
+            d="M0,120 L0,60 Q720,-20 1440,60 L1440,120 Z"
+            fill="#f1889b"
+          />
+        </svg>
       </div>
     </section>
   );
