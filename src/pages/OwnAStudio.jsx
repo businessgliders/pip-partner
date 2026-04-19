@@ -135,14 +135,14 @@ export default function OwnAStudio() {
       </section>
 
       {/* Curved top divider for footer */}
-      <div className="relative -mb-px pointer-events-none">
+      <div className="relative -mb-px pointer-events-none block leading-[0]">
         <svg
           viewBox="0 0 1440 120"
           preserveAspectRatio="none"
           className="w-full h-16 md:h-24 block"
         >
           <path
-            d="M0,0 L0,60 Q720,140 1440,60 L1440,0 Z"
+            d="M0,120 L0,60 Q720,-20 1440,60 L1440,120 Z"
             fill="#2a1a1f"
           />
         </svg>
