@@ -66,7 +66,7 @@ export default function HeroSection({ onCTAClick }) {
         >
           <path
             d="M0,120 L0,60 Q720,-20 1440,60 L1440,120 Z"
-            fill="#f7b1bd"
+            fill="#F5A9B5"
           />
         </svg>
       </div>
