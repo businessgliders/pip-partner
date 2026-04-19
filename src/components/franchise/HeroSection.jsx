@@ -52,7 +52,7 @@ export default function HeroSection({ onCTAClick }) {
             className="h-14 px-10 rounded-xl text-white font-medium text-base transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:scale-105"
             style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
           >
-            Request Franchise Info →
+            Apply Now →
           </Button>
         </motion.div>
       </div>

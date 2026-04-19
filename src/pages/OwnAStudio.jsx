@@ -16,12 +16,17 @@ export default function OwnAStudio() {
   const [inquiryId, setInquiryId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
-    city: "",
-    investment_readiness: "",
-    timeline: "",
+    available_capital: "",
+    province: "",
+    preferred_location: "",
+    operation_style: "",
+    ready_to_sign_nda: "",
+    why_pilates_in_pink: "",
+    business_experience: "",
   });
   const formSectionRef = useRef(null);
 

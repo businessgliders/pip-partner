@@ -2,14 +2,26 @@
   "name": "FranchiseInquiry",
   "type": "object",
   "properties": {
+    "first_name": {
+      "type": "string",
+      "description": "First name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Last name"
+    },
     "full_name": {
       "type": "string",
-      "description": "Applicant's full name"
+      "description": "Applicant's full name (legacy)"
     },
     "email": {
       "type": "string",
       "format": "email",
       "description": "Contact email address"
+    },
+    "phone_country": {
+      "type": "string",
+      "description": "Phone country"
     },
     "phone": {
       "type": "string",
@@ -17,28 +29,84 @@
     },
     "city": {
       "type": "string",
-      "description": "City / Preferred territory"
+      "description": "City / Preferred territory (legacy)"
+    },
+    "province": {
+      "type": "string",
+      "enum": [
+        "Alberta",
+        "British Columbia",
+        "Manitoba",
+        "New Brunswick",
+        "Newfoundland and Labrador",
+        "Nova Scotia",
+        "Northwest Territories",
+        "Nunavut",
+        "Ontario",
+        "Prince Edward Island",
+        "Quebec",
+        "Saskatchewan",
+        "Yukon"
+      ],
+      "description": "Province where they'd love to have a Pilates in Pink studio"
+    },
+    "preferred_location": {
+      "type": "string",
+      "description": "Province and Town/City preferred location"
+    },
+    "available_capital": {
+      "type": "string",
+      "enum": [
+        "Under $250K",
+        "$250K - $500K",
+        "$500K - $750K",
+        "$750K - $1M",
+        "$1M - $1.5M",
+        "$1.5M+"
+      ],
+      "description": "Available capital in CAD"
     },
     "investment_readiness": {
       "type": "string",
+      "description": "Legacy capital range"
+    },
+    "operation_style": {
+      "type": "string",
       "enum": [
-        "Under $100K",
-        "$100K - $250K",
-        "$250K - $500K",
-        "$500K - $1M",
-        "$1M+"
+        "Owner-Operator (hands-on daily)",
+        "Semi-Absentee (with a manager)",
+        "Investor (fully managed)",
+        "Multi-Unit Developer"
       ],
-      "description": "Available liquid capital range"
+      "description": "How they'd like to operate their studio"
+    },
+    "ready_to_sign_nda": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No",
+        "Need more info first"
+      ],
+      "description": "Whether they're ready to sign the NDA"
+    },
+    "why_pilates_in_pink": {
+      "type": "string",
+      "enum": [
+        "Passion for wellness & movement",
+        "Love the brand & aesthetic",
+        "Business opportunity",
+        "Community impact",
+        "Other"
+      ],
+      "description": "Why Pilates in Pink"
+    },
+    "business_experience": {
+      "type": "string",
+      "description": "Business or related experience"
     },
     "timeline": {
       "type": "string",
-      "enum": [
-        "Ready now (0-3 months)",
-        "Soon (3-6 months)",
-        "Exploring (6-12 months)",
-        "Just researching"
-      ],
-      "description": "When they're ready to move forward"
+      "description": "Timeline for moving forward (legacy)"
     },
     "scheduled_call_time": {
       "type": "string",
@@ -57,7 +125,8 @@
     }
   },
   "required": [
-    "full_name",
+    "first_name",
+    "last_name",
     "email"
   ]
 }
