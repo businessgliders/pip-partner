@@ -42,7 +42,9 @@ export default function HeroSection({ onCTAClick }) {
             <span className="italic font-light">strength</span> meets beauty
           </h1>
           <p className="text-sm sm:text-lg md:text-xl text-[#b67651]/80 max-w-2xl mx-auto font-light leading-relaxed mb-6 md:mb-10">
-            Luxury Reformer Pilates. Pretty. Powerful. Profitable.
+            Luxury Reformer Pilates.
+            <br />
+            Pretty. Powerful. Profitable.
             <br />
             Join Canada's fastest-growing wellness brand.
           </p>
