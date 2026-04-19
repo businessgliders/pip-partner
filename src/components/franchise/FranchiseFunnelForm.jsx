@@ -289,9 +289,10 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
           <Button
             variant="outline"
             onClick={back}
-            className="h-12 rounded-xl border-[#f7b1bd] text-[#b67651] hover:bg-[#fbe0e2]/50"
+            className="h-12 rounded-xl border-[#f7b1bd] text-[#b67651] hover:bg-[#fbe0e2]/50 px-3 sm:px-4"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            <ArrowLeft className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Back</span>
           </Button>
         )}
         <Button
@@ -308,7 +309,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
             />
           ) : (
             <>
-              {step === totalSteps ? "Submit & Book Discovery Call" : "Continue"}
+              {step === totalSteps ? "Book a Call" : "Continue"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </>
           )}
