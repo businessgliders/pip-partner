@@ -61,7 +61,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
     if (step === 1) return formData.first_name && formData.last_name && formData.email && isValidPhone(formData.phone);
     if (step === 2) return formData.available_capital && formData.province && formData.preferred_location;
     if (step === 3) return formData.operation_style && formData.ready_to_sign_nda;
-    if (step === 4) return formData.why_pilates_in_pink && formData.business_experience;
+    if (step === 4) return formData.why_pilates_in_pink && (formData.business_experience || "").trim().length >= 100;
     return false;
   };
 
@@ -272,6 +272,12 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
                   onChange={(e) => onChange("business_experience", e.target.value)}
                   className="rounded-xl bg-white/70 border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 min-h-[140px] resize-none"
                 />
+                <div className="flex justify-between items-center">
+                  <p className={hintClass}>Minimum 100 characters</p>
+                  <p className={`text-xs ${(formData.business_experience || "").trim().length >= 100 ? "text-[#b67651]/60" : "text-red-500"}`}>
+                    {(formData.business_experience || "").trim().length} / 100
+                  </p>
+                </div>
               </div>
             </>
           )}
