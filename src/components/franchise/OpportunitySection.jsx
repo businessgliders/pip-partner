@@ -1,6 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import ImageSlider from "./ImageSlider";
+
+const SLIDER_IMAGES = [
+  "https://images.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/e8c634f7-4057-4c9e-b872-819b086d6aed/DSC00686.JPG",
+  "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/9934f1ffa_DSC00890.png",
+  "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/4838486f0_DSC00905.png",
+];
 
 const features = [
   { title: "Turnkey Studio Design", description: "Signature pink interiors & reformer layout" },
@@ -62,21 +69,17 @@ export default function OpportunitySection() {
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
-          <div
-            className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-xl"
-            style={{
-              backgroundImage: "url('https://images.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/e8c634f7-4057-4c9e-b872-819b086d6aed/DSC00686.JPG')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
+          <ImageSlider
+            images={SLIDER_IMAGES}
+            className="rounded-3xl aspect-[4/5] shadow-xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-[#b67651]/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#b67651]/60 via-transparent to-transparent pointer-events-none" />
             <div className="absolute bottom-8 left-8 right-8">
               <p className="text-white text-2xl md:text-3xl font-light italic tracking-wide">
                 Reformer Pilates
               </p>
             </div>
-          </div>
+          </ImageSlider>
 
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-sm">
             <p className="text-4xl text-[#b67651]/40 font-serif leading-none mb-2">"</p>
