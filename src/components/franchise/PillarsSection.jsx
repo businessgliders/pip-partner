@@ -10,7 +10,7 @@ const pillars = [
 
 export default function PillarsSection() {
   return (
-    <section className="py-16 md:py-20 px-6">
+    <section className="py-8 md:py-10 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 md:p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">

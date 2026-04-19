@@ -70,7 +70,7 @@ export default function OwnAStudio() {
       <IdealPartnerSection />
 
       {/* Funnel Section */}
-      <section ref={formSectionRef} className="py-16 md:py-24 px-6">
+      <section ref={formSectionRef} className="py-10 md:py-14 px-6">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
             <p className="text-xs tracking-[0.2em] text-[#b67651]/70 font-medium mb-3">
@@ -130,17 +130,37 @@ export default function OwnAStudio() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#2a1a1f] text-white/80 py-14 px-6 mt-10">
+      <footer className="bg-[#2a1a1f] text-white/80 py-14 px-6 mt-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 items-center text-center md:text-left">
           <div>
-            <p className="text-xs tracking-[0.2em] text-[#f7b1bd] font-medium mb-2">CONTACT US</p>
-            <a
-              href="mailto:franchise@pilatesinpinkstudio.com"
-              className="text-base hover:text-white transition-colors"
-            >
-              franchise@pilatesinpinkstudio.com
-            </a>
-            <p className="text-sm text-white/60 mt-1">pilatesinpinkstudio.com</p>
+            <p className="text-xs tracking-[0.2em] text-[#f7b1bd] font-medium mb-3">EXPLORE</p>
+            <ul className="space-y-1.5">
+              <li>
+                <a href="https://www.pilatesinpinkstudio.com/" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="https://www.pilatesinpinkstudio.com/about" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="https://www.pilatesinpinkstudio.com/classes" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
+                  Classes
+                </a>
+              </li>
+              <li>
+                <a href="https://www.pilatesinpinkstudio.com/memberships" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
+                  Memberships
+                </a>
+              </li>
+              <li>
+                <a href="https://www.pilatesinpinkstudio.com/contact" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
+                  Contact
+                </a>
+              </li>
+            </ul>
           </div>
           <div className="text-center">
             <img
@@ -151,6 +171,7 @@ export default function OwnAStudio() {
             <p className="text-xs tracking-[0.2em] text-white/60">PRETTY • POWERFUL • PILATES</p>
           </div>
           <div className="text-sm text-white/70 md:text-right">
+            <p className="text-xs tracking-[0.2em] text-[#f7b1bd] font-medium mb-3">HQ</p>
             <p>6161 Mayfield Road, Unit #105</p>
             <p>Brampton, Ontario, Canada</p>
             <p className="text-white/50 text-xs mt-2">Canadian Owned & Operated</p>

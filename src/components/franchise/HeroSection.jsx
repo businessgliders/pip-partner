@@ -5,7 +5,7 @@ import HlsVideoBackground from "./HlsVideoBackground";
 
 export default function HeroSection({ onCTAClick }) {
   return (
-    <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
+    <section className="relative overflow-hidden pt-16 pb-16 md:pt-20 md:pb-20">
       <HlsVideoBackground src="https://video.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/5e57b3a9-5624-4a07-b555-c3847af04b51/playlist.m3u8" />
 
       <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ zIndex: 1 }}>

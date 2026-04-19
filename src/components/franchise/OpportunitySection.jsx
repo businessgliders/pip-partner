@@ -13,26 +13,27 @@ const features = [
 
 export default function OpportunitySection() {
   return (
-    <section className="py-16 md:py-24 px-6">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+    <section className="py-10 md:py-14 px-6">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className="bg-white/85 backdrop-blur-sm rounded-3xl p-8 md:p-10 shadow-sm"
         >
-          <p className="text-xs tracking-[0.2em] text-[#b67651]/70 font-medium mb-4">
+          <p className="text-xs tracking-[0.2em] text-[#b67651] font-semibold mb-4">
             FRANCHISE OPPORTUNITY
           </p>
-          <h2 className="text-4xl md:text-5xl font-light text-[#b67651] mb-6 leading-tight">
+          <h2 className="text-4xl md:text-5xl font-light text-[#7a4a30] mb-5 leading-tight">
             Be the <span className="italic">pink</span>
             <br /> in your city
           </h2>
-          <p className="text-[#b67651]/80 leading-relaxed mb-8 text-base md:text-lg">
+          <p className="text-[#5a3a28] leading-relaxed mb-7 text-base md:text-lg">
             Pilates in Pink™ is expanding across Canada. We're looking for passionate, driven partners ready to bring a premium wellness experience to their community — backed by a brand already capturing hearts.
           </p>
 
-          <ul className="space-y-4">
+          <ul className="space-y-3.5">
             {features.map((feature, i) => (
               <motion.li
                 key={feature.title}
@@ -42,12 +43,12 @@ export default function OpportunitySection() {
                 transition={{ duration: 0.4, delay: i * 0.05 }}
                 className="flex gap-3"
               >
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#f7b1bd]/40 flex items-center justify-center mt-0.5">
-                  <Check className="w-3 h-3 text-[#b67651]" strokeWidth={3} />
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#f1889b] flex items-center justify-center mt-0.5">
+                  <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                 </div>
                 <div>
-                  <h4 className="font-medium text-[#b67651] text-sm">{feature.title}</h4>
-                  <p className="text-sm text-[#b67651]/70">{feature.description}</p>
+                  <h4 className="font-semibold text-[#7a4a30] text-base">{feature.title}</h4>
+                  <p className="text-sm text-[#5a3a28]/80">{feature.description}</p>
                 </div>
               </motion.li>
             ))}
