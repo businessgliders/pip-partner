@@ -141,11 +141,6 @@ export default function OwnAStudio() {
                 </a>
               </li>
               <li>
-                <a href="https://www.pilatesinpinkstudio.com/about" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
-                  About
-                </a>
-              </li>
-              <li>
                 <a href="https://www.pilatesinpinkstudio.com/classes" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
                   Classes
                 </a>
@@ -153,11 +148,6 @@ export default function OwnAStudio() {
               <li>
                 <a href="https://www.pilatesinpinkstudio.com/memberships" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
                   Memberships
-                </a>
-              </li>
-              <li>
-                <a href="https://www.pilatesinpinkstudio.com/contact" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-white transition-colors">
-                  Contact
                 </a>
               </li>
             </ul>
