@@ -6,22 +6,26 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import CityInput from "./CityInput";
 
-const PROVINCES = [
-  "Alberta",
-  "British Columbia",
-  "Manitoba",
-  "New Brunswick",
-  "Newfoundland and Labrador",
-  "Nova Scotia",
-  "Northwest Territories",
-  "Nunavut",
-  "Ontario",
-  "Prince Edward Island",
-  "Quebec",
-  "Saskatchewan",
-  "Yukon",
-];
+const PROVINCES = ["Ontario", "British Columbia", "Alberta"];
+
+// Validates a North American phone number (10 digits after stripping formatting).
+// Rejects obvious fakes like 1234567890, 0000000000, all-same digits, or sequential patterns.
+const isValidPhone = (raw) => {
+  if (!raw) return false;
+  const digits = raw.replace(/\D/g, "");
+  // Allow optional leading country code '1' → strip it
+  const local = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  if (local.length !== 10) return false;
+  // Area code and exchange code must start with 2-9 (NANP rule)
+  if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(local)) return false;
+  // Reject all-same digits (e.g. 1111111111)
+  if (/^(\d)\1+$/.test(local)) return false;
+  // Reject ascending/descending sequences
+  if (local === "1234567890" || local === "0123456789" || local === "9876543210") return false;
+  return true;
+};
 
 const CAPITAL_RANGES = [
   "Under $250K",
@@ -54,7 +58,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
   const totalSteps = 4;
 
   const canProceed = () => {
-    if (step === 1) return formData.first_name && formData.last_name && formData.email && formData.phone;
+    if (step === 1) return formData.first_name && formData.last_name && formData.email && isValidPhone(formData.phone);
     if (step === 2) return formData.available_capital && formData.province && formData.preferred_location;
     if (step === 3) return formData.operation_style && formData.ready_to_sign_nda;
     if (step === 4) return formData.why_pilates_in_pink && formData.business_experience;
@@ -141,11 +145,14 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
                 <Label className={labelClass}>Phone *</Label>
                 <Input
                   type="tel"
-                  placeholder="(123) 456-7890"
+                  placeholder="(416) 555-0142"
                   value={formData.phone || ""}
                   onChange={(e) => onChange("phone", e.target.value)}
                   className={inputClass}
                 />
+                {formData.phone && !isValidPhone(formData.phone) && (
+                  <p className="text-xs text-red-500">Please enter a valid North American phone number.</p>
+                )}
               </div>
             </>
           )}
@@ -188,12 +195,12 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
               </div>
 
               <div className="space-y-2">
-                <Label className={labelClass}>Area you'd love to have a Pilates in Pink? *</Label>
-                <p className={hintClass}>Please enter the Province and Town/City</p>
-                <Input
-                  placeholder="e.g. Ontario, Toronto"
-                  value={formData.preferred_location || ""}
-                  onChange={(e) => onChange("preferred_location", e.target.value)}
+                <Label className={labelClass}>City in your Province *</Label>
+                <p className={hintClass}>Please enter the Town/City</p>
+                <CityInput
+                  value={formData.preferred_location}
+                  onChange={(v) => onChange("preferred_location", v)}
+                  province={formData.province}
                   className={inputClass}
                 />
               </div>
