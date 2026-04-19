@@ -1,0 +1,63 @@
+{
+  "name": "FranchiseInquiry",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Applicant's full name"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Contact email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "city": {
+      "type": "string",
+      "description": "City / Preferred territory"
+    },
+    "investment_readiness": {
+      "type": "string",
+      "enum": [
+        "Under $100K",
+        "$100K - $250K",
+        "$250K - $500K",
+        "$500K - $1M",
+        "$1M+"
+      ],
+      "description": "Available liquid capital range"
+    },
+    "timeline": {
+      "type": "string",
+      "enum": [
+        "Ready now (0-3 months)",
+        "Soon (3-6 months)",
+        "Exploring (6-12 months)",
+        "Just researching"
+      ],
+      "description": "When they're ready to move forward"
+    },
+    "scheduled_call_time": {
+      "type": "string",
+      "description": "Selected discovery call slot"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "scheduled",
+        "contacted",
+        "qualified",
+        "closed"
+      ],
+      "default": "new"
+    }
+  },
+  "required": [
+    "full_name",
+    "email"
+  ]
+}
