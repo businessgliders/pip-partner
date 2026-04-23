@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
+import HomePasswordGate from "../components/HomePasswordGate";
 import HeroSection from "../components/franchise/HeroSection";
 import PillarsSection from "../components/franchise/PillarsSection";
 import OpportunitySection from "../components/franchise/OpportunitySection";
@@ -62,6 +63,7 @@ export default function OwnAStudio() {
   };
 
   return (
+    <HomePasswordGate>
     <div
       className="min-h-screen"
       style={{
@@ -191,5 +193,6 @@ export default function OwnAStudio() {
         </div>
       </footer>
     </div>
+    </HomePasswordGate>
   );
 }
