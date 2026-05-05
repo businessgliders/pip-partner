@@ -131,9 +131,16 @@ export default function Home() {
                       <img
                         src={tile.image}
                         alt={tile.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${tile.locked ? "blur-md scale-110" : ""}`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#b67651]/70 via-[#b67651]/10 to-transparent" />
+                      {tile.locked && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-[10px] tracking-[0.25em] font-semibold text-[#b67651] shadow-sm">
+                            COMING SOON
+                          </span>
+                        </div>
+                      )}
                       <div className="absolute top-5 left-5 w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
                         <Icon className="w-5 h-5 text-[#b67651]" />
                       </div>
