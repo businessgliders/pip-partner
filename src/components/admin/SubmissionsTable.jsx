@@ -35,26 +35,27 @@ function Field({ label, value }) {
   );
 }
 
-export default function SubmissionsTable({ rows, columns, detailFields }) {
+export default function SubmissionsTable({ rows, columns, detailFields, accentColor = "#0f172a", accentBg = "#f8fafc" }) {
   const [expanded, setExpanded] = useState(null);
 
   if (!rows || rows.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400 text-sm">
+      <div className="bg-white rounded-xl border p-12 text-center text-slate-400 text-sm" style={{ borderColor: `${accentColor}40` }}>
         No submissions yet.
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: `${accentColor}40`, boxShadow: `0 1px 3px ${accentColor}15` }}>
+      <div className="h-1" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, ${accentColor}60 100%)` }} />
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead style={{ background: accentBg, borderBottom: `1px solid ${accentColor}30` }}>
             <tr>
               <th className="w-8"></th>
               {columns.map((col) => (
-                <th key={col.key} className="text-left px-4 py-3 text-[11px] font-semibold tracking-wider uppercase text-slate-500">
+                <th key={col.key} className="text-left px-4 py-3 text-[11px] font-semibold tracking-wider uppercase" style={{ color: accentColor }}>
                   {col.label}
                 </th>
               ))}

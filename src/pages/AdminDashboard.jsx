@@ -7,10 +7,10 @@ import SubmissionsTable, { StatusBadge, formatDate, fullName, locationLabel } fr
 import BackToHome from "../components/BackToHome";
 
 const TABS = [
-  { key: "franchise",  label: "Franchise",  icon: Building2,     entity: "FranchiseInquiry",      color: "#b67651" },
-  { key: "influencer", label: "Influencer", icon: Sparkles,      entity: "InfluencerApplication", color: "#f1889b" },
-  { key: "instructor", label: "Instructor", icon: Briefcase,     entity: "InstructorApplication", color: "#b67651" },
-  { key: "frontadmin", label: "Front Desk", icon: ClipboardList, entity: "FrontAdminApplication", color: "#b67651" },
+  { key: "franchise",  label: "Franchise",  icon: Building2,     entity: "FranchiseInquiry",      color: "#b67651", bg: "#fbe0e2", soft: "#f6eee7" },
+  { key: "influencer", label: "Influencer", icon: Sparkles,      entity: "InfluencerApplication", color: "#f1889b", bg: "#fce8ee", soft: "#fbe0e2" },
+  { key: "instructor", label: "Instructor", icon: Briefcase,     entity: "InstructorApplication", color: "#c4896b", bg: "#f6eee7", soft: "#faf3ec" },
+  { key: "frontadmin", label: "Front Desk", icon: ClipboardList, entity: "FrontAdminApplication", color: "#d4a088", bg: "#faf3ec", soft: "#f6eee7" },
 ];
 
 const COLUMN_CONFIG = {
@@ -162,22 +162,24 @@ export default function AdminDashboard() {
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`text-left p-4 rounded-xl border transition-all ${
-                  isActive
-                    ? "bg-white border-slate-300 shadow-sm"
-                    : "bg-white/60 border-slate-200 hover:bg-white"
-                }`}
+                className="text-left p-4 rounded-xl border transition-all"
+                style={{
+                  background: isActive ? `linear-gradient(135deg, #ffffff 0%, ${t.bg} 100%)` : "rgba(255,255,255,0.6)",
+                  borderColor: isActive ? t.color : "#e2e8f0",
+                  borderWidth: isActive ? 2 : 1,
+                  boxShadow: isActive ? `0 4px 12px ${t.color}25` : "none",
+                }}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center"
-                    style={{ background: `${t.color}20` }}
+                    style={{ background: `${t.color}25` }}
                   >
                     <Icon className="w-3.5 h-3.5" style={{ color: t.color }} />
                   </div>
-                  <span className="text-xs font-medium text-slate-600">{t.label}</span>
+                  <span className="text-xs font-medium" style={{ color: isActive ? t.color : "#475569" }}>{t.label}</span>
                 </div>
-                <div className="text-2xl font-light text-slate-900">{counts[t.key]}</div>
+                <div className="text-2xl font-light" style={{ color: isActive ? t.color : "#0f172a" }}>{counts[t.key]}</div>
               </button>
             );
           })}
@@ -204,7 +206,8 @@ export default function AdminDashboard() {
           <button
             onClick={() => downloadCsv(filteredRows, activeTab)}
             disabled={!filteredRows.length}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-white text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: activeMeta?.color || "#0f172a" }}
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
@@ -220,6 +223,8 @@ export default function AdminDashboard() {
             rows={filteredRows}
             columns={config.columns}
             detailFields={config.detail}
+            accentColor={activeMeta?.color}
+            accentBg={activeMeta?.bg}
           />
         )}
       </div>
