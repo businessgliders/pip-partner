@@ -51,13 +51,39 @@ export default function OwnAStudio() {
   };
 
   const handleScheduleConfirm = async (slot) => {
+    // slot = { start: ISO, friendly: "Mon, Apr 22 at 10:00 AM", timeZone }
     setIsSubmitting(true);
+
+    // 1) Book on Cal.com
+    const bookingRes = await base44.functions.invoke("bookCalEvent", {
+      start: slot.start,
+      timeZone: slot.timeZone,
+      name: `${formData.first_name} ${formData.last_name}`.trim(),
+      email: formData.email,
+      phone: formData.phone,
+      notes: `Franchise inquiry — ${formData.preferred_location || ""} (${formData.available_capital || ""})`,
+    });
+
+    if (bookingRes?.data?.error) {
+      setIsSubmitting(false);
+      alert("We couldn't book that slot — it may have just been taken. Please pick another time.");
+      return;
+    }
+
+    // 2) Update inquiry record
     if (inquiryId) {
       await base44.entities.FranchiseInquiry.update(inquiryId, {
-        scheduled_call_time: slot,
+        scheduled_call_time: slot.friendly,
         status: "scheduled",
       });
     }
+
+    // 3) Send branded confirmation emails
+    await base44.functions.invoke("sendFranchiseInquiryEmail", {
+      inquiryData: formData,
+      scheduledTime: slot.friendly,
+    });
+
     setIsSubmitting(false);
     setStage("done");
   };
