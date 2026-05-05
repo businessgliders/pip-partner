@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, Gift, Users, Camera, Heart, CheckCircle2 } from "lucide-react";
+import { Sparkles, Gift, Users, Camera, Heart, CheckCircle2, Briefcase, ClipboardList, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import BackToHome from "../components/BackToHome";
 
 export default function InfluencerProgram() {
@@ -309,7 +310,47 @@ export default function InfluencerProgram() {
           )}
         </AnimatePresence>
 
-        {/* Cross-promo banners - hidden for now */}
+        {/* Cross-promo banners */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-16"
+        >
+          <div className="text-center mb-6">
+            <p className="text-xs tracking-[0.2em] text-[#b67651]/70 font-medium mb-2">EXPLORE MORE</p>
+            <h3 className="text-2xl font-light text-[#b67651]">Other ways to join us</h3>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link
+              to="/Instructor"
+              className="group bg-white/70 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 hover:shadow-lg flex items-center gap-4"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center shrink-0">
+                <Briefcase className="w-5 h-5 text-[#b67651]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] tracking-[0.2em] text-[#b67651]/60 font-semibold mb-0.5">TEACH WITH US</p>
+                <h4 className="text-base font-medium text-[#b67651]">Become an Instructor</h4>
+              </div>
+              <ArrowUpRight className="w-5 h-5 text-[#b67651] group-hover:rotate-45 transition-transform" />
+            </Link>
+            <Link
+              to="/FrontAdmin"
+              className="group bg-white/70 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 hover:shadow-lg flex items-center gap-4"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center shrink-0">
+                <ClipboardList className="w-5 h-5 text-[#b67651]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] tracking-[0.2em] text-[#b67651]/60 font-semibold mb-0.5">JOIN OUR TEAM</p>
+                <h4 className="text-base font-medium text-[#b67651]">Front Desk Careers</h4>
+              </div>
+              <ArrowUpRight className="w-5 h-5 text-[#b67651] group-hover:rotate-45 transition-transform" />
+            </Link>
+          </div>
+        </motion.div>
 
         {/* Footer */}
         <div className="text-center mt-12 pb-8">
