@@ -13,6 +13,14 @@ const TILES = [
     image: "https://images.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/e8c634f7-4057-4c9e-b872-819b086d6aed/DSC00686.JPG",
   },
   {
+    title: "Influencer Program",
+    subtitle: "PARTNER WITH US",
+    description: "Collaborate with Pilates in Pink™ as a brand ambassador and content creator.",
+    href: "/InfluencerProgram",
+    icon: Users,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/e135d00cf_generated_image.png",
+  },
+  {
     title: "Become an Instructor",
     subtitle: "TEACH WITH US",
     description: "Join our team of certified instructors and inspire a movement-driven community.",
@@ -27,14 +35,6 @@ const TILES = [
     href: "/FrontAdmin",
     icon: ClipboardList,
     image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/4838486f0_DSC00905.png",
-  },
-  {
-    title: "Influencer Program",
-    subtitle: "PARTNER WITH US",
-    description: "Collaborate with Pilates in Pink™ as a brand ambassador and content creator.",
-    href: "/InfluencerProgram",
-    icon: Users,
-    image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697a18eb75a9e57a35bc853a/29d852d1f_.png",
   },
 ];
 
