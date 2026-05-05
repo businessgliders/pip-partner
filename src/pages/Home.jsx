@@ -30,7 +30,7 @@ const TILES = [
     description: "Join our team of certified instructors and inspire a movement-driven community.",
     href: "/Instructor",
     icon: Briefcase,
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/44d3a884d_generated_image.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/2ee0f78cf_generated_image.png",
   },
   {
     title: "Front Desk Careers",
