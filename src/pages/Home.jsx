@@ -77,10 +77,10 @@ export default function Home() {
             </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-[#b67651] mb-4 tracking-tight leading-[1.05]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-white mb-4 tracking-tight leading-[1.05] drop-shadow-sm">
             Find your <span className="italic">place</span> with us
           </h1>
-          <p className="text-base md:text-lg text-[#b67651]/80 max-w-xl mx-auto font-light leading-relaxed">
+          <p className="text-base md:text-lg text-white/90 max-w-xl mx-auto font-light leading-relaxed">
             Choose your path — whether you're investing, teaching, working, or partnering with the brand.
           </p>
         </motion.div>
