@@ -49,14 +49,16 @@
  */
 import InfluencerProgram from './pages/InfluencerProgram';
 import OwnAStudio from './pages/OwnAStudio';
+import Home from './pages/Home';
 
 
 export const PAGES = {
+    "Home": Home,
     "InfluencerProgram": InfluencerProgram,
     "OwnAStudio": OwnAStudio,
 }
 
 export const pagesConfig = {
-    mainPage: "OwnAStudio",
+    mainPage: "Home",
     Pages: PAGES,
 };
