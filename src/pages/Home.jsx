@@ -38,7 +38,7 @@ const TILES = [
     description: "Be the first smile our members see. Apply to work at the front of our studios.",
     href: "/FrontAdmin",
     icon: ClipboardList,
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/de8a989dc_generated_image.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/ba04b9f82_generated_image.png",
   },
 ];
 
