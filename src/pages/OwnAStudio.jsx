@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
 import HeroSection from "../components/franchise/HeroSection";
+import BackToHome from "../components/BackToHome";
 import PillarsSection from "../components/franchise/PillarsSection";
 import OpportunitySection from "../components/franchise/OpportunitySection";
 import IdealPartnerSection from "../components/franchise/IdealPartnerSection";
@@ -69,6 +70,7 @@ export default function OwnAStudio() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
+      <BackToHome />
       <HeroSection onCTAClick={scrollToForm} />
       <PillarsSection />
       <OpportunitySection />

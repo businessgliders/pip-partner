@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sparkles, CheckCircle2, Star, Award, Heart, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
+import BackToHome from "@/components/BackToHome";
 
 const QUALIFICATIONS = [
   "Personal Training / Group Fitness Cert",
@@ -134,6 +135,7 @@ export default function Hire() {
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #c4896b 0%, #d4a088 30%, #f6eee7 60%, #fbe0e2 100%)" }}>
+      <BackToHome />
       {/* Hero */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
