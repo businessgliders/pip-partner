@@ -154,13 +154,13 @@ export default function Home() {
                     </div>
 
                     <div className="p-7 md:p-8">
-                      <p className="text-[10px] md:text-xs tracking-[0.2em] text-[#b67651]/70 font-semibold mb-2">
+                      <p className={`text-[10px] md:text-xs tracking-[0.2em] text-[#b67651]/70 font-semibold mb-2 ${tile.locked ? "blur-sm select-none" : ""}`}>
                         {tile.subtitle}
                       </p>
-                      <h3 className="text-2xl md:text-3xl font-light text-[#7a4a30] mb-3 leading-tight">
+                      <h3 className={`text-2xl md:text-3xl font-light text-[#7a4a30] mb-3 leading-tight ${tile.locked ? "blur-sm select-none" : ""}`}>
                         {tile.title}
                       </h3>
-                      <p className="text-[#5a3a28]/80 text-sm md:text-base leading-relaxed mb-5">
+                      <p className={`text-[#5a3a28]/80 text-sm md:text-base leading-relaxed mb-5 ${tile.locked ? "blur-sm select-none" : ""}`}>
                         {tile.description}
                       </p>
                       <span className="inline-flex items-center gap-2 text-sm font-medium text-[#b67651] group-hover:gap-3 transition-all">
