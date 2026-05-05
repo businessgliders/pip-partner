@@ -10,7 +10,7 @@ const TILES = [
     description: "Become a Pilates in Pink™ franchise partner and bring luxury reformer pilates to your city.",
     href: "/OwnAStudio",
     icon: Sparkles,
-    image: "https://images.squarespace-cdn.com/content/v1/6876866bd3fbe434b6566570/e8c634f7-4057-4c9e-b872-819b086d6aed/DSC00686.JPG",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/8525e2e00_generated_image.png",
   },
   {
     title: "Influencer Program",
@@ -26,7 +26,7 @@ const TILES = [
     description: "Join our team of certified instructors and inspire a movement-driven community.",
     href: "/Instructor",
     icon: Briefcase,
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/9934f1ffa_DSC00890.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/44d3a884d_generated_image.png",
   },
   {
     title: "Front Desk Careers",
@@ -34,7 +34,7 @@ const TILES = [
     description: "Be the first smile our members see. Apply to work at the front of our studios.",
     href: "/FrontAdmin",
     icon: ClipboardList,
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/4838486f0_DSC00905.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/de8a989dc_generated_image.png",
   },
 ];
 
