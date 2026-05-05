@@ -94,7 +94,7 @@ async function sendViaResend({ to, subject, html }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Pilates in Pink <franchise@pilatesinpinkstudio.com>',
+      from: 'Pilates in Pink™ <noreply@pilatesinpink.ca>',
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
