@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, Sparkles, Briefcase, Users, ClipboardList } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowUpRight, Sparkles, Briefcase, Users, ClipboardList, Lock } from "lucide-react";
+import PasswordModal from "../components/PasswordModal";
+
+const STORAGE_KEY = "pip_home_unlocked";
 
 const TILES = [
   {
@@ -11,6 +14,7 @@ const TILES = [
     href: "/OwnAStudio",
     icon: Sparkles,
     image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/8525e2e00_generated_image.png",
+    locked: true,
   },
   {
     title: "Influencer Program",
@@ -39,6 +43,24 @@ const TILES = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState(null);
+
+  const handleTileClick = (e, tile) => {
+    if (!tile.locked) return;
+    const unlocked = typeof window !== "undefined" && sessionStorage.getItem(STORAGE_KEY) === "1";
+    if (unlocked) return;
+    e.preventDefault();
+    setPendingHref(tile.href);
+    setModalOpen(true);
+  };
+
+  const handleSuccess = () => {
+    setModalOpen(false);
+    if (pendingHref) navigate(pendingHref);
+  };
+
   return (
     <div
       className="min-h-screen"
@@ -99,7 +121,11 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
               >
-                <Link to={tile.href} className="group block">
+                <Link
+                  to={tile.href}
+                  onClick={(e) => handleTileClick(e, tile)}
+                  className="group block"
+                >
                   <div className="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
@@ -112,7 +138,11 @@ export default function Home() {
                         <Icon className="w-5 h-5 text-[#b67651]" />
                       </div>
                       <div className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:rotate-45">
-                        <ArrowUpRight className="w-5 h-5 text-[#b67651]" />
+                        {tile.locked ? (
+                          <Lock className="w-5 h-5 text-[#b67651]" />
+                        ) : (
+                          <ArrowUpRight className="w-5 h-5 text-[#b67651]" />
+                        )}
                       </div>
                     </div>
 
@@ -127,8 +157,17 @@ export default function Home() {
                         {tile.description}
                       </p>
                       <span className="inline-flex items-center gap-2 text-sm font-medium text-[#b67651] group-hover:gap-3 transition-all">
-                        Explore
-                        <ArrowUpRight className="w-4 h-4" />
+                        {tile.locked ? (
+                          <>
+                            <Lock className="w-4 h-4" />
+                            Enter Password
+                          </>
+                        ) : (
+                          <>
+                            Explore
+                            <ArrowUpRight className="w-4 h-4" />
+                          </>
+                        )}
                       </span>
                     </div>
                   </div>
@@ -144,6 +183,12 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <PasswordModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 }
