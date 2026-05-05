@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, CheckCircle2, Star, Award, Heart, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, CheckCircle2, Star, Award, Heart, Dumbbell, ChevronDown, ChevronUp, Users, ClipboardList, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import BackToHome from "@/components/BackToHome";
 
 const QUALIFICATIONS = [
@@ -404,35 +405,42 @@ export default function Hire() {
         {/* Cross-promo banners */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 flex flex-col gap-4"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-16"
         >
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-lg font-medium text-[#b67651] mb-1">Love Pilates but prefer to promote?</h3>
-              <p className="text-sm text-[#b67651]/70">Check out our Influencer Program and partner with us on social media.</p>
-            </div>
-            <a
-              href="/InfluencerProgram"
-              className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
-            >
-              Join as Influencer →
-            </a>
+          <div className="text-center mb-6">
+            <p className="text-xs tracking-[0.2em] text-[#b67651]/70 font-medium mb-2">EXPLORE MORE</p>
+            <h3 className="text-2xl font-light text-[#b67651]">Other ways to join us</h3>
           </div>
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-lg font-medium text-[#b67651] mb-1">Interested in the front of house?</h3>
-              <p className="text-sm text-[#b67651]/70">We're also looking for friendly Front Desk team members to keep the studio running.</p>
-            </div>
-            <a
-              href="/FrontAdmin"
-              className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link
+              to="/InfluencerProgram"
+              className="group bg-white/70 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 hover:shadow-lg flex items-center gap-4"
             >
-              Apply as Front Desk →
-            </a>
+              <div className="w-12 h-12 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-[#b67651]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] tracking-[0.2em] text-[#b67651]/60 font-semibold mb-0.5">PARTNER WITH US</p>
+                <h4 className="text-base font-medium text-[#b67651]">Influencer Program</h4>
+              </div>
+              <ArrowUpRight className="w-5 h-5 text-[#b67651] group-hover:rotate-45 transition-transform" />
+            </Link>
+            <Link
+              to="/FrontAdmin"
+              className="group bg-white/70 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 hover:shadow-lg flex items-center gap-4"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center shrink-0">
+                <ClipboardList className="w-5 h-5 text-[#b67651]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] tracking-[0.2em] text-[#b67651]/60 font-semibold mb-0.5">JOIN OUR TEAM</p>
+                <h4 className="text-base font-medium text-[#b67651]">Front Desk Careers</h4>
+              </div>
+              <ArrowUpRight className="w-5 h-5 text-[#b67651] group-hover:rotate-45 transition-transform" />
+            </Link>
           </div>
         </motion.div>
 

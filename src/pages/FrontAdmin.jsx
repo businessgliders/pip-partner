@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, CheckCircle2, Smile, CalendarDays, Camera, Home } from "lucide-react";
+import { Sparkles, CheckCircle2, Smile, CalendarDays, Camera, Home, Briefcase, Users, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import BackToHome from "@/components/BackToHome";
 
 const PROVINCES = [
@@ -315,35 +316,42 @@ export default function FrontAdmin() {
         {/* Cross-promo banners */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 flex flex-col gap-4"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-16"
         >
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-lg font-medium mb-1" style={{ color: "#3d7a9e" }}>Passionate about Pilates?</h3>
-              <p className="text-sm" style={{ color: "rgba(61,122,158,0.7)" }}>If you'd love to teach on the floor, check out our Instructor Program.</p>
-            </div>
-            <a
-              href="/Instructor"
-              className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ background: "linear-gradient(135deg, #3d7a9e 0%, #5f8fa8 100%)" }}
-            >
-              Apply as Instructor →
-            </a>
+          <div className="text-center mb-6">
+            <p className="text-xs tracking-[0.2em] font-medium mb-2" style={{ color: "rgba(61,122,158,0.7)" }}>EXPLORE MORE</p>
+            <h3 className="text-2xl font-light" style={{ color: "#3d7a9e" }}>Other ways to join us</h3>
           </div>
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-lg font-medium mb-1" style={{ color: "#3d7a9e" }}>Love Pilates but prefer to promote?</h3>
-              <p className="text-sm" style={{ color: "rgba(61,122,158,0.7)" }}>Check out our Influencer Program and partner with us on social media.</p>
-            </div>
-            <a
-              href="/InfluencerProgram"
-              className="shrink-0 px-6 py-3 rounded-xl text-white text-sm font-medium transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ background: "linear-gradient(135deg, #3d7a9e 0%, #5f8fa8 100%)" }}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link
+              to="/Instructor"
+              className="group bg-white/70 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 hover:shadow-lg flex items-center gap-4"
             >
-              Join as Influencer →
-            </a>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(95,143,168,0.15)" }}>
+                <Briefcase className="w-5 h-5" style={{ color: "#3d7a9e" }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] tracking-[0.2em] font-semibold mb-0.5" style={{ color: "rgba(61,122,158,0.6)" }}>TEACH WITH US</p>
+                <h4 className="text-base font-medium" style={{ color: "#3d7a9e" }}>Become an Instructor</h4>
+              </div>
+              <ArrowUpRight className="w-5 h-5 group-hover:rotate-45 transition-transform" style={{ color: "#3d7a9e" }} />
+            </Link>
+            <Link
+              to="/InfluencerProgram"
+              className="group bg-white/70 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 hover:shadow-lg flex items-center gap-4"
+            >
+              <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(95,143,168,0.15)" }}>
+                <Users className="w-5 h-5" style={{ color: "#3d7a9e" }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] tracking-[0.2em] font-semibold mb-0.5" style={{ color: "rgba(61,122,158,0.6)" }}>PARTNER WITH US</p>
+                <h4 className="text-base font-medium" style={{ color: "#3d7a9e" }}>Influencer Program</h4>
+              </div>
+              <ArrowUpRight className="w-5 h-5 group-hover:rotate-45 transition-transform" style={{ color: "#3d7a9e" }} />
+            </Link>
           </div>
         </motion.div>
 
