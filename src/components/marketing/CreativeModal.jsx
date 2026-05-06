@@ -189,12 +189,22 @@ export default function CreativeModal({ open, onClose, format, campaign, history
                 <p className="text-[11px] tracking-[0.2em] text-[#b67651]/70 font-semibold mb-4">PREVIEW</p>
                 <div className="bg-[#fbe0e2]/40 rounded-2xl p-6 flex items-center justify-center min-h-[300px] mb-4">
                   {selected ? (
-                    <img
-                      src={selected.image_url}
-                      alt={format.label}
-                      className="max-w-full max-h-[420px] object-contain rounded-lg shadow-md"
-                      style={{ aspectRatio: `${format.w} / ${format.h}` }}
-                    />
+                    <div
+                      className="rounded-lg shadow-md overflow-hidden bg-white"
+                      style={{
+                        aspectRatio: `${format.w} / ${format.h}`,
+                        width: format.w >= format.h ? "100%" : "auto",
+                        height: format.w < format.h ? "min(420px, 60vh)" : "auto",
+                        maxWidth: "100%",
+                        maxHeight: "min(420px, 60vh)",
+                      }}
+                    >
+                      <img
+                        src={selected.image_url}
+                        alt={format.label}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="text-center text-[#b67651]/60">
                       <Sparkles className="w-8 h-8 mx-auto mb-2" />
@@ -237,9 +247,20 @@ export default function CreativeModal({ open, onClose, format, campaign, history
                         <button
                           key={h.id}
                           onClick={() => setSelectedId(h.id)}
-                          className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedId === h.id ? "border-[#b67651]" : "border-transparent hover:border-[#b67651]/40"}`}
+                          className={`relative aspect-square rounded-lg overflow-hidden border-2 bg-[#fbe0e2]/40 flex items-center justify-center transition-all ${selectedId === h.id ? "border-[#b67651]" : "border-transparent hover:border-[#b67651]/40"}`}
                         >
-                          <img src={h.image_url} alt="" className="w-full h-full object-cover" />
+                          <img
+                            src={h.image_url}
+                            alt=""
+                            className="object-cover"
+                            style={{
+                              aspectRatio: `${format.w} / ${format.h}`,
+                              width: format.w >= format.h ? "92%" : "auto",
+                              height: format.w < format.h ? "92%" : "auto",
+                              maxWidth: "92%",
+                              maxHeight: "92%",
+                            }}
+                          />
                           {h.favorite && (
                             <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-white/95 flex items-center justify-center">
                               <Star className="w-2.5 h-2.5 text-[#f1889b] fill-[#f1889b]" />
