@@ -10,6 +10,8 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Hire from './pages/Hire';
 import FrontAdmin from './pages/FrontAdmin';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminHome from './pages/AdminHome';
+import AdminMarketing from './pages/AdminMarketing';
 import AdminGate from './components/AdminGate';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -70,7 +72,9 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
-      <Route path="/AdminDashboard" element={<AdminGate><AdminDashboard /></AdminGate>} />
+      <Route path="/AdminDashboard" element={<AdminGate><AdminHome /></AdminGate>} />
+      <Route path="/AdminDashboard/Submissions" element={<AdminGate><AdminDashboard /></AdminGate>} />
+      <Route path="/AdminDashboard/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
