@@ -44,8 +44,10 @@ Include the following text rendered cleanly and legibly on the image:
 - Headline: "${headline}"
 - Subheadline: "${subheadline}"
 - Call-to-action button: "${cta}"
-Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft natural lighting, professional ad-quality composition. Brand: Pilates in Pink. Include subtle "Pilates in Pink" wordmark or icon. No watermarks, no stock-photo borders.`;
-    const { url } = await base44.integrations.Core.GenerateImage({ prompt });
+Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft natural lighting, professional ad-quality composition.
+IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink double-half-circle "P" mark from the reference image) prominently on the design as the official brand logo. Reproduce it accurately — keep its exact shape, proportions, and pink color. Position it tastefully (e.g. top-left, top-right, or centered above headline) at a size that's clearly visible but not overpowering. Do NOT redesign or stylize the logo — use it as-is. No other watermarks, no stock-photo borders.`;
+    const refs = campaign.logo_url ? [campaign.logo_url] : undefined;
+    const { url } = await base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: refs });
     await base44.entities.CampaignCreative.create({
       campaign: campaign.slug,
       format_key: format.key,
@@ -62,7 +64,23 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
     });
   };
 
-  const handleGenerateAll = async () => {
+  const handleGenerateAll = async ({ regenerate = false } = {}) => {
+    if (regenerate) {
+      const ok = window.confirm(
+        "Regenerate all creatives? This will delete every existing design for this campaign and create new ones from scratch."
+      );
+      if (!ok) return;
+      // Wipe all existing creatives for this campaign first
+      const existing = await base44.entities.CampaignCreative.filter(
+        { campaign: campaign.slug },
+        "-created_date",
+        500
+      );
+      for (const c of existing) {
+        try { await base44.entities.CampaignCreative.delete(c.id); } catch (_) {}
+      }
+      await load();
+    }
     // Re-fetch fresh state to be sure we never re-generate a format that already has creatives
     const fresh = await base44.entities.CampaignCreative.filter(
       { campaign: campaign.slug },
@@ -150,16 +168,28 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
               </button>
             </div>
           )}
-          <button
-            onClick={handleGenerateAll}
-            disabled={bulkRunning || remainingCount === 0}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-white shadow-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-            style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
-            title={remainingCount === 0 ? "All formats already have a creative" : `Generate ${remainingCount} missing creatives`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            {bulkRunning ? "Generating…" : remainingCount === 0 ? "All Generated" : `Generate All (${remainingCount})`}
-          </button>
+          {remainingCount === 0 && !bulkRunning ? (
+            <button
+              onClick={() => handleGenerateAll({ regenerate: true })}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-white shadow-md hover:opacity-90 transition-all"
+              style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+              title="Delete all existing creatives and regenerate them from scratch"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Regenerate All
+            </button>
+          ) : (
+            <button
+              onClick={() => handleGenerateAll()}
+              disabled={bulkRunning}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-white shadow-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+              title={`Generate ${remainingCount} missing creatives`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {bulkRunning ? "Generating…" : `Generate All (${remainingCount})`}
+            </button>
+          )}
           <button
             onClick={() => setFavoritesOnly((v) => !v)}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${favoritesOnly ? "bg-[#f1889b] text-white shadow-md" : "bg-white/80 text-[#7a4a30] hover:bg-white"}`}
