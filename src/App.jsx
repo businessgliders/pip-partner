@@ -13,7 +13,13 @@ import AdminDashboard from './pages/AdminDashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+const HomePage = mainPageKey ? Pages[mainPageKey] : <></>;
+
+// Domain-based root routing: franchise subdomain shows OwnAStudio, all others show Home
+const FRANCHISE_HOSTNAME = "franchise.pilatesinpinkstudio.com";
+const isFranchiseDomain = typeof window !== "undefined" && window.location.hostname === FRANCHISE_HOSTNAME;
+const MainPage = isFranchiseDomain ? Pages["OwnAStudio"] : HomePage;
+const rootPageKey = isFranchiseDomain ? "OwnAStudio" : mainPageKey;
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
@@ -46,7 +52,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
+        <LayoutWrapper currentPageName={rootPageKey}>
           <MainPage />
         </LayoutWrapper>
       } />
