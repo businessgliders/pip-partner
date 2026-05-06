@@ -36,6 +36,11 @@ export default function AdminHome() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-10 text-center"
         >
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png"
+            alt="Pilates in Pink™"
+            className="w-16 h-16 mx-auto mb-4"
+          />
           <p className="text-[11px] tracking-[0.25em] text-white/90 font-semibold mb-2">ADMIN</p>
           <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Dashboard</h1>
         </motion.div>
