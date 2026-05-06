@@ -1,7 +1,12 @@
 import React from "react";
 import { Star, Sparkles, Loader2 } from "lucide-react";
 
-export default function CreativeCard({ format, latest, onClick, isGenerating = false }) {
+export default function CreativeCard({ format, latest, onClick, onToggleFavorite, isGenerating = false }) {
+  const handleFavClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (latest && onToggleFavorite) onToggleFavorite(latest);
+  };
   const previewAspect = `${format.w} / ${format.h}`;
   return (
     <button
@@ -38,10 +43,17 @@ export default function CreativeCard({ format, latest, onClick, isGenerating = f
             <Loader2 className="w-6 h-6 animate-spin text-[#b67651]" />
           </div>
         )}
-        {latest?.favorite && (
-          <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 flex items-center justify-center shadow-sm">
-            <Star className="w-3.5 h-3.5 text-[#f1889b] fill-[#f1889b]" />
-          </div>
+        {latest?.image_url && (
+          <button
+            type="button"
+            onClick={handleFavClick}
+            title={latest.favorite ? "Unfavorite" : "Mark as favorite"}
+            className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 flex items-center justify-center shadow-sm transition-opacity hover:scale-110 ${
+              latest.favorite ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            }`}
+          >
+            <Star className={`w-3.5 h-3.5 ${latest.favorite ? "text-[#f1889b] fill-[#f1889b]" : "text-[#b67651]"}`} />
+          </button>
         )}
       </div>
       <div className="p-3.5">

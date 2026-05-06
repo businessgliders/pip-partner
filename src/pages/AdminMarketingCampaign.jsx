@@ -291,6 +291,10 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
                           latest={latest}
                           isGenerating={generatingKeys.has(f.key)}
                           onClick={() => setActiveFormatKey(f.key)}
+                          onToggleFavorite={async (item) => {
+                            await base44.entities.CampaignCreative.update(item.id, { favorite: !item.favorite });
+                            load();
+                          }}
                         />
                       );
                     })}
