@@ -12,6 +12,7 @@ import FrontAdmin from './pages/FrontAdmin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminHome from './pages/AdminHome';
 import AdminMarketing from './pages/AdminMarketing';
+import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
 import AdminGate from './components/AdminGate';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
       <Route path="/AdminDashboard" element={<AdminGate><AdminHome /></AdminGate>} />
       <Route path="/AdminDashboard/Submissions" element={<AdminGate><AdminDashboard /></AdminGate>} />
       <Route path="/AdminDashboard/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
+      <Route path="/AdminDashboard/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

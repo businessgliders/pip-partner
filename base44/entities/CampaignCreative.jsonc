@@ -1,0 +1,61 @@
+{
+  "name": "CampaignCreative",
+  "type": "object",
+  "properties": {
+    "campaign": {
+      "type": "string",
+      "description": "Campaign slug, e.g. 'own-a-studio'"
+    },
+    "format_key": {
+      "type": "string",
+      "description": "Unique format identifier, e.g. 'instagram_post_1080'"
+    },
+    "format_label": {
+      "type": "string",
+      "description": "Human readable format label"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "social",
+        "display",
+        "print"
+      ],
+      "description": "Creative category"
+    },
+    "width": {
+      "type": "number",
+      "description": "Target width in pixels"
+    },
+    "height": {
+      "type": "number",
+      "description": "Target height in pixels"
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "description": "Closest supported aspect ratio used for generation"
+    },
+    "headline": {
+      "type": "string"
+    },
+    "subheadline": {
+      "type": "string"
+    },
+    "cta": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL of the AI-generated image"
+    },
+    "favorite": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "campaign",
+    "format_key",
+    "image_url"
+  ]
+}
