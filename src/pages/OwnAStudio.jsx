@@ -11,8 +11,14 @@ import IdealPartnerSection from "../components/franchise/IdealPartnerSection";
 import FranchiseFunnelForm from "../components/franchise/FranchiseFunnelForm";
 import SchedulePlaceholder from "../components/franchise/SchedulePlaceholder";
 import LoadingTransition from "../components/franchise/LoadingTransition";
+import PasswordModal from "../components/PasswordModal";
+
+const UNLOCK_KEY = "pip_home_unlocked";
 
 export default function OwnAStudio() {
+  const [unlocked, setUnlocked] = useState(
+    () => typeof window !== "undefined" && sessionStorage.getItem(UNLOCK_KEY) === "1"
+  );
   const [stage, setStage] = useState("form"); // form | loading | schedule | done
   const [inquiryId, setInquiryId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +93,20 @@ export default function OwnAStudio() {
     setIsSubmitting(false);
     setStage("done");
   };
+
+  if (!unlocked) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-6"
+        style={{
+          background:
+            "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
+        }}
+      >
+        <PasswordModal open={true} onClose={() => {}} onSuccess={() => setUnlocked(true)} />
+      </div>
+    );
+  }
 
   return (
     <div
