@@ -93,8 +93,6 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
     setBulkRunning(false);
   };
 
-  const remainingCount = AD_FORMATS.filter((f) => !(byFormat[f.key] && byFormat[f.key].length)).length;
-
   const handleCancelBulk = () => { cancelBulkRef.current = true; };
 
   const byFormat = useMemo(() => {
@@ -119,6 +117,7 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
 
   const activeFormat = AD_FORMATS.find((f) => f.key === activeFormatKey);
   const activeHistory = activeFormat ? (byFormat[activeFormat.key] || []) : [];
+  const remainingCount = AD_FORMATS.filter((f) => !(byFormat[f.key] && byFormat[f.key].length)).length;
 
   return (
     <div
