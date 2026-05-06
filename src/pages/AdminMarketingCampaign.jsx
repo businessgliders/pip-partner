@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Star, Sparkles, Loader2, X } from "lucide-react";
+import { Star, Sparkles, Loader2, X, Download } from "lucide-react";
+import JSZip from "jszip";
 import BackToHome from "../components/BackToHome";
 import CreativeCard from "../components/marketing/CreativeCard";
 import CreativeModal from "../components/marketing/CreativeModal";
@@ -113,6 +114,55 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
 
   const handleCancelBulk = () => { cancelBulkRef.current = true; };
 
+  const [zipping, setZipping] = useState(false);
+
+  const slugify = (s) => String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  const handleDownloadAll = async () => {
+    if (!creatives.length || zipping) return;
+    setZipping(true);
+    try {
+      const zip = new JSZip();
+      // Pick one image per format: favorite if any, else most recent
+      const groups = {};
+      for (const c of creatives) {
+        (groups[c.format_key] = groups[c.format_key] || []).push(c);
+      }
+      const picks = AD_FORMATS
+        .map((f) => {
+          const list = groups[f.key] || [];
+          if (!list.length) return null;
+          const fav = list.find((c) => c.favorite);
+          return { format: f, creative: fav || list[0] };
+        })
+        .filter(Boolean);
+
+      for (const { format, creative } of picks) {
+        const folder = CATEGORY_LABELS[format.category] || format.category;
+        const res = await fetch(creative.image_url);
+        const blob = await res.blob();
+        const ext = (creative.image_url.split("?")[0].split(".").pop() || "png").toLowerCase();
+        const filename = `${slugify(format.label)}_${format.w}x${format.h}.${ext}`;
+        zip.folder(folder).file(filename, blob);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${campaign.slug}-creatives-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setZipping(false);
+    }
+  };
+
   const byFormat = useMemo(() => {
     const map = {};
     for (const c of creatives) {
@@ -196,6 +246,15 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
           >
             <Star className={`w-3.5 h-3.5 ${favoritesOnly ? "fill-white" : ""}`} />
             {favoritesOnly ? "Showing favorites" : "Favorites only"}
+          </button>
+          <button
+            onClick={handleDownloadAll}
+            disabled={zipping || !creatives.length}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-white/80 text-[#7a4a30] hover:bg-white disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+            title="Download all creatives as a ZIP, organized by category"
+          >
+            {zipping ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            {zipping ? "Zipping…" : "Download All"}
           </button>
         </div>
 
