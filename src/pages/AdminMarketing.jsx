@@ -12,7 +12,7 @@ export default function AdminMarketing() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
-      <BackToHome />
+      <BackToHome to="/AdminDashboard" label="Admin" />
 
       <div className="max-w-3xl mx-auto px-6 py-20 text-center">
         <motion.div
