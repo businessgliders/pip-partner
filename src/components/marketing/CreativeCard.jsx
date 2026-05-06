@@ -1,7 +1,7 @@
 import React from "react";
-import { Star, Sparkles } from "lucide-react";
+import { Star, Sparkles, Loader2 } from "lucide-react";
 
-export default function CreativeCard({ format, latest, onClick }) {
+export default function CreativeCard({ format, latest, onClick, isGenerating = false }) {
   const previewAspect = `${format.w} / ${format.h}`;
   return (
     <button
@@ -21,6 +21,11 @@ export default function CreativeCard({ format, latest, onClick }) {
         >
           {latest?.image_url ? (
             <img src={latest.image_url} alt={format.label} className="w-full h-full object-cover" />
+          ) : isGenerating ? (
+            <div className="flex flex-col items-center gap-1 text-[#b67651]">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="text-[10px] tracking-wider">GENERATING…</span>
+            </div>
           ) : (
             <div className="flex flex-col items-center gap-1 text-[#b67651]/60">
               <Sparkles className="w-5 h-5" />
@@ -28,6 +33,11 @@ export default function CreativeCard({ format, latest, onClick }) {
             </div>
           )}
         </div>
+        {isGenerating && latest?.image_url && (
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-[#b67651]" />
+          </div>
+        )}
         {latest?.favorite && (
           <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 flex items-center justify-center shadow-sm">
             <Star className="w-3.5 h-3.5 text-[#f1889b] fill-[#f1889b]" />

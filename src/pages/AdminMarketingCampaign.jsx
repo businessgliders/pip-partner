@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Star } from "lucide-react";
+import { Star, Sparkles, Loader2, X } from "lucide-react";
 import BackToHome from "../components/BackToHome";
 import CreativeCard from "../components/marketing/CreativeCard";
 import CreativeModal from "../components/marketing/CreativeModal";
@@ -16,6 +16,10 @@ export default function AdminMarketingCampaign() {
   const [loading, setLoading] = useState(true);
   const [activeFormatKey, setActiveFormatKey] = useState(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [generatingKeys, setGeneratingKeys] = useState(new Set());
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0 });
+  const cancelBulkRef = useRef(false);
 
   const load = async () => {
     if (!campaign) return;
@@ -30,6 +34,60 @@ export default function AdminMarketingCampaign() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [slug]);
+
+  const generateOne = async (format) => {
+    const { headline, subheadline, cta } = campaign.defaults;
+    const prompt = `Design a high-end advertising creative for "${campaign.title}" campaign.
+Format: ${format.label} (${format.w}×${format.h}px, aspect ratio ${format.aspect}).
+Style: ${campaign.promptStyle}
+Include the following text rendered cleanly and legibly on the image:
+- Headline: "${headline}"
+- Subheadline: "${subheadline}"
+- Call-to-action button: "${cta}"
+Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft natural lighting, professional ad-quality composition. Brand: Pilates in Pink. Include subtle "Pilates in Pink" wordmark or icon. No watermarks, no stock-photo borders.`;
+    const { url } = await base44.integrations.Core.GenerateImage({ prompt });
+    await base44.entities.CampaignCreative.create({
+      campaign: campaign.slug,
+      format_key: format.key,
+      format_label: format.label,
+      category: format.category,
+      width: format.w,
+      height: format.h,
+      aspect_ratio: format.aspect,
+      headline,
+      subheadline,
+      cta,
+      image_url: url,
+      favorite: false,
+    });
+  };
+
+  const handleGenerateAll = async () => {
+    // only formats that don't already have any creatives
+    const targets = AD_FORMATS.filter((f) => !(byFormat[f.key] && byFormat[f.key].length));
+    if (!targets.length) return;
+    cancelBulkRef.current = false;
+    setBulkRunning(true);
+    setBulkProgress({ done: 0, total: targets.length });
+    for (let i = 0; i < targets.length; i++) {
+      if (cancelBulkRef.current) break;
+      const f = targets[i];
+      setGeneratingKeys((prev) => new Set(prev).add(f.key));
+      try {
+        await generateOne(f);
+      } catch (_) {}
+      setGeneratingKeys((prev) => {
+        const next = new Set(prev);
+        next.delete(f.key);
+        return next;
+      });
+      setBulkProgress({ done: i + 1, total: targets.length });
+      await load();
+    }
+    setBulkRunning(false);
+  };
+
+  const handleCancelBulk = () => { cancelBulkRef.current = true; };
 
   const byFormat = useMemo(() => {
     const map = {};
@@ -75,7 +133,25 @@ export default function AdminMarketingCampaign() {
           <p className="text-white/90 text-sm mt-2 max-w-xl mx-auto">{campaign.description}</p>
         </motion.div>
 
-        <div className="flex justify-end mb-4">
+        <div className="flex flex-wrap justify-end items-center gap-3 mb-4">
+          {bulkRunning && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 text-[#7a4a30] text-xs">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Generating {bulkProgress.done}/{bulkProgress.total}</span>
+              <button onClick={handleCancelBulk} className="ml-1 p-0.5 rounded-full hover:bg-[#fbe0e2]" title="Cancel">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+          <button
+            onClick={handleGenerateAll}
+            disabled={bulkRunning}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-white shadow-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+            style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            {bulkRunning ? "Generating…" : "Generate All"}
+          </button>
           <button
             onClick={() => setFavoritesOnly((v) => !v)}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${favoritesOnly ? "bg-[#f1889b] text-white shadow-md" : "bg-white/80 text-[#7a4a30] hover:bg-white"}`}
@@ -108,6 +184,7 @@ export default function AdminMarketingCampaign() {
                           key={f.key}
                           format={f}
                           latest={latest}
+                          isGenerating={generatingKeys.has(f.key)}
                           onClick={() => setActiveFormatKey(f.key)}
                         />
                       );
