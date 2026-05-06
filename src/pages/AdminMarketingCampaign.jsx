@@ -74,16 +74,17 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
   const handleGenerateAll = async ({ regenerate = false } = {}) => {
     if (regenerate) {
       const ok = window.confirm(
-        "Regenerate all creatives? This will delete every existing design for this campaign and create new ones from scratch."
+        "Regenerate all creatives? This will delete every existing non-favorited design and create new ones from scratch. Favorites will be kept."
       );
       if (!ok) return;
-      // Wipe all existing creatives for this campaign first
+      // Wipe non-favorited creatives only — favorites are preserved
       const existing = await base44.entities.CampaignCreative.filter(
         { campaign: campaign.slug },
         "-created_date",
         500
       );
       for (const c of existing) {
+        if (c.favorite) continue;
         try { await base44.entities.CampaignCreative.delete(c.id); } catch (_) {}
       }
       await load();
