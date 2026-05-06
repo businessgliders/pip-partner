@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Hire from './pages/Hire';
 import FrontAdmin from './pages/FrontAdmin';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminGate from './components/AdminGate';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -69,7 +70,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
-      <Route path="/AdminDashboard" element={<AdminDashboard />} />
+      <Route path="/AdminDashboard" element={<AdminGate><AdminDashboard /></AdminGate>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
