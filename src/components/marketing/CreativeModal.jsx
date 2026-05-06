@@ -4,7 +4,8 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { X, Sparkles, Download, Star, Loader2, Trash2 } from "lucide-react";
+import { X, Sparkles, Download, Star, Loader2, Trash2, RefreshCw } from "lucide-react";
+import { generateHeadline } from "./headlineGenerator";
 
 function buildPrompt({ format, headline, subheadline, cta, campaign }) {
   return `Design a high-end advertising creative for "${campaign.title}" campaign.
@@ -36,7 +37,20 @@ export default function CreativeModal({ open, onClose, format, campaign, history
   const [subheadline, setSubheadline] = useState(campaign.defaults.subheadline);
   const [cta, setCta] = useState(campaign.defaults.cta);
   const [generating, setGenerating] = useState(false);
+  const [refreshingHeadline, setRefreshingHeadline] = useState(false);
   const [selectedId, setSelectedId] = useState(history[0]?.id || null);
+
+  const handleRefreshHeadline = async () => {
+    setRefreshingHeadline(true);
+    try {
+      const avoid = history.map((h) => h.headline).filter(Boolean);
+      avoid.push(headline);
+      const next = await generateHeadline({ campaign, format, avoid });
+      if (next) setHeadline(next);
+    } finally {
+      setRefreshingHeadline(false);
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -125,7 +139,23 @@ export default function CreativeModal({ open, onClose, format, campaign, history
                 <p className="text-[11px] tracking-[0.2em] text-[#b67651]/70 font-semibold mb-4">EDIT COPY</p>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs text-[#7a4a30] mb-1 block">Headline</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs text-[#7a4a30]">Headline</label>
+                      <button
+                        type="button"
+                        onClick={handleRefreshHeadline}
+                        disabled={refreshingHeadline}
+                        className="inline-flex items-center gap-1 text-[10px] tracking-[0.15em] font-semibold text-[#b67651] hover:text-[#7a4a30] disabled:opacity-50"
+                        title="Generate a new unique headline"
+                      >
+                        {refreshingHeadline ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-3 h-3" />
+                        )}
+                        NEW LINE
+                      </button>
+                    </div>
                     <Input value={headline} onChange={(e) => setHeadline(e.target.value)} className="bg-white/80" />
                   </div>
                   <div>

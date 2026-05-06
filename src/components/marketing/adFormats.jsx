@@ -37,7 +37,7 @@ export const CAMPAIGNS = [
     image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/8525e2e00_generated_image.png",
     logo_url: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/35f492e1c_Pilatesinpinklogojusticon1.png",
     defaults: {
-      headline: "Own a Pilates in Pink Studio",
+      headline: "Own a Pilates in Pink™ Studio",
       subheadline: "Become a franchise partner",
       cta: "Apply Now",
     },

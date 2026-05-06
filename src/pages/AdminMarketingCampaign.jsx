@@ -8,6 +8,7 @@ import BackToHome from "../components/BackToHome";
 import CreativeCard from "../components/marketing/CreativeCard";
 import CreativeModal from "../components/marketing/CreativeModal";
 import { AD_FORMATS, CATEGORY_LABELS, CAMPAIGNS } from "../components/marketing/adFormats";
+import { generateHeadline } from "../components/marketing/headlineGenerator";
 
 export default function AdminMarketingCampaign() {
   const { slug } = useParams();
@@ -36,8 +37,12 @@ export default function AdminMarketingCampaign() {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [slug]);
 
-  const generateOne = async (format) => {
-    const { headline, subheadline, cta } = campaign.defaults;
+  const generateOne = async (format, usedHeadlines = []) => {
+    const { subheadline, cta } = campaign.defaults;
+    let headline = campaign.defaults.headline;
+    try {
+      headline = await generateHeadline({ campaign, format, avoid: usedHeadlines });
+    } catch (_) {}
     const prompt = `Design a high-end advertising creative for "${campaign.title}" campaign.
 Format: ${format.label} (${format.w}×${format.h}px, aspect ratio ${format.aspect}).
 Style: ${campaign.promptStyle}
@@ -63,6 +68,7 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
       image_url: url,
       favorite: false,
     });
+    return headline;
   };
 
   const handleGenerateAll = async ({ regenerate = false } = {}) => {
@@ -94,12 +100,14 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
     cancelBulkRef.current = false;
     setBulkRunning(true);
     setBulkProgress({ done: 0, total: targets.length });
+    const used = fresh.map((c) => c.headline).filter(Boolean);
     for (let i = 0; i < targets.length; i++) {
       if (cancelBulkRef.current) break;
       const f = targets[i];
       setGeneratingKeys((prev) => new Set(prev).add(f.key));
       try {
-        await generateOne(f);
+        const newHeadline = await generateOne(f, used);
+        if (newHeadline) used.push(newHeadline);
       } catch (_) {}
       setGeneratingKeys((prev) => {
         const next = new Set(prev);
