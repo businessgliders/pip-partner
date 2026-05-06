@@ -63,8 +63,14 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
   };
 
   const handleGenerateAll = async () => {
-    // only formats that don't already have any creatives
-    const targets = AD_FORMATS.filter((f) => !(byFormat[f.key] && byFormat[f.key].length));
+    // Re-fetch fresh state to be sure we never re-generate a format that already has creatives
+    const fresh = await base44.entities.CampaignCreative.filter(
+      { campaign: campaign.slug },
+      "-created_date",
+      500
+    );
+    const existingKeys = new Set(fresh.map((c) => c.format_key));
+    const targets = AD_FORMATS.filter((f) => !existingKeys.has(f.key));
     if (!targets.length) return;
     cancelBulkRef.current = false;
     setBulkRunning(true);
@@ -86,6 +92,8 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
     }
     setBulkRunning(false);
   };
+
+  const remainingCount = AD_FORMATS.filter((f) => !(byFormat[f.key] && byFormat[f.key].length)).length;
 
   const handleCancelBulk = () => { cancelBulkRef.current = true; };
 
@@ -145,12 +153,13 @@ Use elegant serif and modern sans-serif typography. Plenty of whitespace, soft n
           )}
           <button
             onClick={handleGenerateAll}
-            disabled={bulkRunning}
+            disabled={bulkRunning || remainingCount === 0}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-white shadow-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
+            title={remainingCount === 0 ? "All formats already have a creative" : `Generate ${remainingCount} missing creatives`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            {bulkRunning ? "Generating…" : "Generate All"}
+            {bulkRunning ? "Generating…" : remainingCount === 0 ? "All Generated" : `Generate All (${remainingCount})`}
           </button>
           <button
             onClick={() => setFavoritesOnly((v) => !v)}
