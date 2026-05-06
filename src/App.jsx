@@ -15,9 +15,9 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const HomePage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-// Domain-based root routing: franchise subdomain shows OwnAStudio, all others show Home
-const FRANCHISE_HOSTNAME = "franchise.pilatesinpinkstudio.com";
-const isFranchiseDomain = typeof window !== "undefined" && window.location.hostname === FRANCHISE_HOSTNAME;
+// Domain-based root routing: franchise subdomains show OwnAStudio, all others show Home
+const FRANCHISE_HOSTNAMES = ["franchise.pilatesinpinkstudio.com", "franchise.pilatesinpink.ca"];
+const isFranchiseDomain = typeof window !== "undefined" && FRANCHISE_HOSTNAMES.includes(window.location.hostname);
 const MainPage = isFranchiseDomain ? Pages["OwnAStudio"] : HomePage;
 const rootPageKey = isFranchiseDomain ? "OwnAStudio" : mainPageKey;
 
