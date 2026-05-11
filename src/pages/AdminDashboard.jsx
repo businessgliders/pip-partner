@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Building2, Sparkles, Briefcase, ClipboardList, Search, Download, RefreshCw } from "lucide-react";
 import SubmissionsTable, { StatusBadge, formatDate, fullName, locationLabel } from "../components/admin/SubmissionsTable";
+import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import BackToHome from "../components/BackToHome";
 
 const TABS = [
@@ -102,6 +103,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState({ franchise: [], influencer: [], instructor: [], frontadmin: [] });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedRow, setSelectedRow] = useState(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -225,9 +227,19 @@ export default function AdminDashboard() {
             detailFields={config.detail}
             accentColor={activeMeta?.color}
             accentBg={activeMeta?.bg}
+            onRowClick={(row) => setSelectedRow(row)}
           />
         )}
       </div>
+
+      <SubmissionDetailModal
+        open={!!selectedRow}
+        onOpenChange={(v) => { if (!v) setSelectedRow(null); }}
+        row={selectedRow}
+        tabKey={activeTab}
+        detailFields={config.detail}
+        accentColor={activeMeta?.color}
+      />
     </div>
   );
 }

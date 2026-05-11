@@ -1,0 +1,128 @@
+import React from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { X, Mail, Phone, ExternalLink, MapPin } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import EmailThreadPanel from "../email/EmailThreadPanel";
+import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
+
+const ENTITY_KEY_TO_NAME = {
+  franchise: "FranchiseInquiry",
+  influencer: "InfluencerApplication",
+  instructor: "InstructorApplication",
+  frontadmin: "FrontAdminApplication",
+};
+
+function Field({ label, value }) {
+  if (!value && value !== 0) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold">{label}</span>
+      <span className="text-sm text-slate-700 break-words">{String(value)}</span>
+    </div>
+  );
+}
+
+export default function SubmissionDetailModal({
+  open,
+  onOpenChange,
+  row,
+  tabKey,
+  detailFields = [],
+  accentColor = "#0f172a",
+}) {
+  const { user } = useAuth();
+  if (!row) return null;
+
+  const ticketType = ENTITY_KEY_TO_NAME[tabKey];
+  const displayName = row.full_name || fullName(row);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-6xl max-h-[92vh] overflow-hidden p-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] max-h-[92vh]">
+          {/* Left: details */}
+          <div
+            className="overflow-y-auto p-6 border-r"
+            style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf3ec 100%)" }}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-[10px] tracking-[0.2em] uppercase font-semibold mb-1" style={{ color: accentColor }}>
+                  Submission
+                </p>
+                <h2 className="text-xl font-semibold text-slate-900">{displayName}</h2>
+                <div className="mt-2 flex items-center gap-2">
+                  <StatusBadge status={row.status} />
+                  <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
+                </div>
+              </div>
+              <button onClick={() => onOpenChange(false)} className="text-slate-400 hover:text-slate-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-4 pb-4 border-b">
+              {row.email && (
+                <a
+                  href={`mailto:${row.email}`}
+                  className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+                >
+                  <Mail className="w-3.5 h-3.5 text-slate-400" />
+                  {row.email}
+                </a>
+              )}
+              {row.phone && (
+                <a
+                  href={`tel:${row.phone}`}
+                  className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+                >
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  {[row.phone_country, row.phone].filter(Boolean).join(" ")}
+                </a>
+              )}
+              {(row.preferred_location || row.location || row.city || row.province) && (
+                <div className="flex items-center gap-2 text-sm text-slate-700">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  {[row.preferred_location || row.location || row.city, row.province].filter(Boolean).join(" · ")}
+                </div>
+              )}
+              {row.resume_url && (
+                <a
+                  href={row.resume_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> View Resume
+                </a>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {detailFields.map((f) => (
+                <Field
+                  key={f.key}
+                  label={f.label}
+                  value={typeof f.get === "function" ? f.get(row) : row[f.key]}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Right: email thread */}
+          <div className="overflow-hidden p-4 bg-slate-50">
+            {ticketType ? (
+              <EmailThreadPanel
+                ticket={row}
+                ticketType={ticketType}
+                currentUser={user}
+              />
+            ) : (
+              <div className="text-sm text-slate-500 p-6">Email not available for this submission.</div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

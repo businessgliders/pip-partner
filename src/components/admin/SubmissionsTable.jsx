@@ -35,7 +35,7 @@ function Field({ label, value }) {
   );
 }
 
-export default function SubmissionsTable({ rows, columns, detailFields, accentColor = "#0f172a", accentBg = "#f8fafc" }) {
+export default function SubmissionsTable({ rows, columns, detailFields, accentColor = "#0f172a", accentBg = "#f8fafc", onRowClick }) {
   const [expanded, setExpanded] = useState(null);
 
   if (!rows || rows.length === 0) {
@@ -67,7 +67,10 @@ export default function SubmissionsTable({ rows, columns, detailFields, accentCo
               return (
                 <React.Fragment key={row.id}>
                   <tr
-                    onClick={() => setExpanded(isOpen ? null : row.id)}
+                    onClick={() => {
+                      if (onRowClick) onRowClick(row);
+                      else setExpanded(isOpen ? null : row.id);
+                    }}
                     className="border-b border-slate-100 hover:bg-slate-50/50 cursor-pointer transition-colors"
                   >
                     <td className="px-2">

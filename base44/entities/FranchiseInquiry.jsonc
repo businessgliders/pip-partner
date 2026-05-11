@@ -122,6 +122,28 @@
         "closed"
       ],
       "default": "new"
+    },
+    "ai_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "body_html": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    },
+    "ai_suggestions_generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ai_suggestions_message_count": {
+      "type": "integer"
     }
   },
   "required": [

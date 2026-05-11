@@ -1,31 +1,25 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Inbox, Megaphone, Settings as SettingsIcon } from "lucide-react";
+import { FileText, PenLine } from "lucide-react";
 import BackToHome from "../components/BackToHome";
 
 const TILES = [
   {
-    title: "Submissions",
-    description: "Franchise, influencer, instructor & front desk applications",
-    icon: Inbox,
-    href: "/AdminDashboard/Submissions",
+    title: "Email Templates",
+    description: "Reusable HTML templates with variables",
+    icon: FileText,
+    href: "/AdminDashboard/Settings/Templates",
   },
   {
-    title: "Marketing",
-    description: "Coming soon",
-    icon: Megaphone,
-    href: "/AdminDashboard/Marketing",
-  },
-  {
-    title: "Settings",
-    description: "Email templates & your signature",
-    icon: SettingsIcon,
-    href: "/AdminDashboard/Settings",
+    title: "My Signature",
+    description: "Your personal HTML signature appended to outgoing emails",
+    icon: PenLine,
+    href: "/AdminDashboard/Settings/Signature",
   },
 ];
 
-export default function AdminHome() {
+export default function AdminSettings() {
   return (
     <div
       className="min-h-screen"
@@ -34,21 +28,11 @@ export default function AdminHome() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
-      <BackToHome />
-
+      <BackToHome to="/AdminDashboard" label="Admin" />
       <div className="max-w-5xl mx-auto px-6 py-14">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center"
-        >
-          <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png"
-            alt="Pilates in Pink™"
-            className="w-16 h-16 mx-auto mb-4"
-          />
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10 text-center">
           <p className="text-[11px] tracking-[0.25em] text-white/90 font-semibold mb-2">ADMIN</p>
-          <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Dashboard</h1>
+          <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Settings</h1>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -63,7 +47,7 @@ export default function AdminHome() {
               >
                 <Link
                   to={tile.href}
-                  className="group block bg-white/80 backdrop-blur-sm rounded-3xl p-10 md:p-12 text-center shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  className="group block bg-white/80 backdrop-blur-sm rounded-3xl p-10 text-center shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
                 >
                   <div className="flex justify-center mb-4">
                     <div className="w-14 h-14 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center">
