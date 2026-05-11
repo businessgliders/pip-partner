@@ -1,0 +1,38 @@
+{
+  "name": "EmailTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "General",
+        "Franchise",
+        "Influencer",
+        "Hiring",
+        "Follow-up",
+        "Other"
+      ],
+      "default": "General"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Supports {{client_name}}, {{client_first_name}}, etc."
+    },
+    "body_html": {
+      "type": "string",
+      "description": "Supports {{client_name}}, {{staff_name}}, etc."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "subject",
+    "body_html"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "signature_html": {
+      "type": "string",
+      "description": "Personal HTML signature appended to outgoing emails"
+    }
+  }
+}
