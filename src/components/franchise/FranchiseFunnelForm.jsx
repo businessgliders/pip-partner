@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import CityInput from "./CityInput";
 
@@ -52,7 +53,6 @@ const OPERATION_STYLES = [
   "Owner-Operator (hands-on daily)",
   "Semi-Absentee (with a manager)",
   "Investor (fully managed)",
-  "Multi-Unit Developer",
 ];
 
 const NDA_OPTIONS = ["Yes", "No", "Need more info first"];
@@ -73,7 +73,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
     if (step === 1) return formData.first_name && formData.last_name && formData.email && isValidPhone(formData.phone);
     if (step === 2) return formData.available_capital && formData.province && formData.preferred_location;
     if (step === 3) return formData.operation_style && formData.ready_to_sign_nda;
-    if (step === 4) return formData.why_pilates_in_pink && (formData.business_experience || "").trim().length >= 100;
+    if (step === 4) return (formData.why_pilates_in_pink || "").length > 0 && (formData.business_experience || "").trim().length >= 100;
     return false;
   };
 
@@ -260,20 +260,34 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
           {step === 4 && (
             <>
               <div className="space-y-2">
-                <Label className={labelClass}>Why Pilates in Pink? *</Label>
-                <Select
-                  value={formData.why_pilates_in_pink || ""}
-                  onValueChange={(v) => onChange("why_pilates_in_pink", v)}
-                >
-                  <SelectTrigger className={inputClass}>
-                    <SelectValue placeholder="Please select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WHY_OPTIONS.map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className={labelClass}>Why Pilates in Pink? * <span className="font-normal text-[#b67651]/60">(select all that apply)</span></Label>
+                <div className="grid gap-2">
+                  {WHY_OPTIONS.map((o) => {
+                    const selected = (formData.why_pilates_in_pink || "").split(", ").filter(Boolean);
+                    const isChecked = selected.includes(o);
+                    const toggle = () => {
+                      const next = isChecked ? selected.filter((s) => s !== o) : [...selected, o];
+                      onChange("why_pilates_in_pink", next.join(", "));
+                    };
+                    return (
+                      <label
+                        key={o}
+                        className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
+                          isChecked
+                            ? "bg-[#fbe0e2]/60 border-[#f1889b]"
+                            : "bg-white/70 border-[#f7b1bd]/50 hover:bg-white"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={toggle}
+                          className="border-[#f1889b] data-[state=checked]:bg-[#f1889b] data-[state=checked]:border-[#f1889b]"
+                        />
+                        <span className="text-sm text-[#b67651]">{o}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -285,7 +299,6 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
                   className="rounded-xl bg-white/70 border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 min-h-[140px] resize-none"
                 />
                 <div className="flex justify-between items-center">
-                  <p className={hintClass}>Minimum 100 characters</p>
                   <p className={`text-xs ${(formData.business_experience || "").trim().length >= 100 ? "text-[#b67651]/60" : "text-red-500"}`}>
                     {(formData.business_experience || "").trim().length} / 100
                   </p>
@@ -327,6 +340,9 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
           )}
         </Button>
       </div>
+      {step === totalSteps && (
+        <p className={`${hintClass} mt-3 text-center`}>Minimum 100 characters for business experience</p>
+      )}
     </div>
   );
 }
