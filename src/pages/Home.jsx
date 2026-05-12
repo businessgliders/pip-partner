@@ -14,7 +14,6 @@ const TILES = [
     href: "/OwnAStudio",
     icon: Sparkles,
     image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/8525e2e00_generated_image.png",
-    locked: true,
   },
   {
     title: "Influencer Program",
