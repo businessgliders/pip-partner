@@ -45,11 +45,7 @@ const CAPITAL_RANGES = [
   "Under $100K",
   "$100K - $200K",
   "$200K - $300K",
-  "$300K - $500K",
-  "$500K - $750K",
-  "$750K - $1M",
-  "$1M - $1.5M",
-  "$1.5M+",
+  "$300K+",
 ];
 
 const OPERATION_STYLES = [
