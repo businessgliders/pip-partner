@@ -43,6 +43,14 @@ export default function OwnAStudio() {
     setStage("loading");
     const record = await base44.entities.FranchiseInquiry.create({ ...formData, status: "new" });
     setInquiryId(record.id);
+
+    // Notify owners immediately, even if user never picks a slot
+    base44.functions.invoke("sendFranchiseInquiryEmail", {
+      inquiryData: formData,
+      scheduledTime: "",
+      ownerOnly: true,
+    });
+
     // small dramatic pause for the loading state
     setTimeout(() => {
       setIsSubmitting(false);

@@ -61,14 +61,28 @@ function ownerEmail(inquiry, scheduledTime) {
     ? `<tr><td style="padding:8px 0;font-size:12px;letter-spacing:1.5px;color:${BRAND_ROSE};font-weight:600;width:160px;vertical-align:top;">${label}</td><td style="padding:8px 0;font-size:14px;color:#5a3a28;">${value}</td></tr>`
     : '';
 
-  const inner = `
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:300;color:${BRAND_ROSE};">New franchise inquiry &middot; <em style="color:${BRAND_PINK};">call booked</em></h1>
-    <p style="margin:0 0 24px;font-size:14px;color:rgba(90,58,40,0.7);">A new applicant has scheduled a discovery call.</p>
+  const hasSlot = !!scheduledTime;
+  const heading = hasSlot
+    ? `New franchise inquiry &middot; <em style="color:${BRAND_PINK};">call booked</em>`
+    : `New franchise inquiry &middot; <em style="color:${BRAND_PINK};">no slot selected</em>`;
+  const subheading = hasSlot
+    ? `A new applicant has scheduled a discovery call.`
+    : `A new applicant submitted the franchise form but has not selected a time slot yet.`;
+  const callBlock = hasSlot
+    ? `<div style="background:#fbe0e2;border-radius:16px;padding:18px;margin:0 0 24px;">
+         <div style="font-size:11px;letter-spacing:2px;color:${BRAND_ROSE};font-weight:600;margin-bottom:6px;">SCHEDULED CALL</div>
+         <div style="font-size:17px;color:${BRAND_ROSE};font-weight:500;">${scheduledTime}</div>
+       </div>`
+    : `<div style="background:#fbe0e2;border-radius:16px;padding:18px;margin:0 0 24px;">
+         <div style="font-size:11px;letter-spacing:2px;color:${BRAND_ROSE};font-weight:600;margin-bottom:6px;">STATUS</div>
+         <div style="font-size:15px;color:${BRAND_ROSE};font-weight:500;">Awaiting time slot selection</div>
+       </div>`;
 
-    <div style="background:#fbe0e2;border-radius:16px;padding:18px;margin:0 0 24px;">
-      <div style="font-size:11px;letter-spacing:2px;color:${BRAND_ROSE};font-weight:600;margin-bottom:6px;">SCHEDULED CALL</div>
-      <div style="font-size:17px;color:${BRAND_ROSE};font-weight:500;">${scheduledTime}</div>
-    </div>
+  const inner = `
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:300;color:${BRAND_ROSE};">${heading}</h1>
+    <p style="margin:0 0 24px;font-size:14px;color:rgba(90,58,40,0.7);">${subheading}</p>
+
+    ${callBlock}
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
       ${row('NAME', fullName)}
@@ -83,7 +97,7 @@ function ownerEmail(inquiry, scheduledTime) {
       ${row('BUSINESS EXPERIENCE', inquiry.business_experience ? String(inquiry.business_experience).replace(/\n/g, '<br/>') : '')}
     </table>
   `;
-  return brandedShell(inner, `New franchise inquiry from ${fullName} — ${scheduledTime}`);
+  return brandedShell(inner, hasSlot ? `New franchise inquiry from ${fullName} — ${scheduledTime}` : `New franchise inquiry from ${fullName}`);
 }
 
 async function sendViaResend({ to, subject, html }) {
@@ -108,12 +122,13 @@ async function sendViaResend({ to, subject, html }) {
 
 Deno.serve(async (req) => {
   try {
-    const { inquiryData = {}, scheduledTime = '' } = await req.json();
+    const { inquiryData = {}, scheduledTime = '', ownerOnly = false } = await req.json();
     const fullName = `${inquiryData.first_name || ''} ${inquiryData.last_name || ''}`.trim() || 'Applicant';
 
     const tasks = [];
 
-    if (inquiryData.email) {
+    // Only send the submitter confirmation when a slot is booked
+    if (!ownerOnly && scheduledTime && inquiryData.email) {
       tasks.push(sendViaResend({
         to: inquiryData.email,
         subject: `Your discovery call is confirmed — Pilates in Pink™`,
@@ -121,9 +136,13 @@ Deno.serve(async (req) => {
       }));
     }
 
+    const ownerSubject = scheduledTime
+      ? `New franchise inquiry: ${fullName} — ${scheduledTime}`
+      : `New franchise inquiry (no slot yet): ${fullName}`;
+
     tasks.push(sendViaResend({
       to: OWNER_EMAILS,
-      subject: `New franchise inquiry: ${fullName} — ${scheduledTime}`,
+      subject: ownerSubject,
       html: ownerEmail(inquiryData, scheduledTime),
     }));
 
