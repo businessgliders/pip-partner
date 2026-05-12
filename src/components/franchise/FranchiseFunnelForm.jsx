@@ -8,7 +8,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import CityInput from "./CityInput";
 
-const PROVINCES = ["Ontario", "British Columbia", "Alberta"];
+const PROVINCES = [
+  "Alberta",
+  "British Columbia",
+  "Manitoba",
+  "New Brunswick",
+  "Newfoundland and Labrador",
+  "Nova Scotia",
+  "Northwest Territories",
+  "Nunavut",
+  "Ontario",
+  "Prince Edward Island",
+  "Quebec",
+  "Saskatchewan",
+  "Yukon",
+];
 
 // Validates a North American phone number (10 digits after stripping formatting).
 // Rejects obvious fakes like 1234567890, 0000000000, all-same digits, or sequential patterns.
@@ -28,8 +42,10 @@ const isValidPhone = (raw) => {
 };
 
 const CAPITAL_RANGES = [
-  "Under $250K",
-  "$250K - $500K",
+  "Under $100K",
+  "$100K - $200K",
+  "$200K - $300K",
+  "$300K - $500K",
   "$500K - $750K",
   "$750K - $1M",
   "$1M - $1.5M",
