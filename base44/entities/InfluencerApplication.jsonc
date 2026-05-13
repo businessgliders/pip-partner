@@ -60,6 +60,49 @@
       "default": "pending",
       "description": "Application status"
     },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Urgent"
+      ],
+      "default": "Medium"
+    },
+    "status_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": []
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "string"
+    },
+    "app_number": {
+      "type": "integer",
+      "description": "Auto-incremented application number"
+    },
     "ai_suggestions": {
       "type": "array",
       "items": {

@@ -16,6 +16,7 @@ import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
 import AdminSettings from './pages/AdminSettings';
 import AdminSettingsTemplates from './pages/AdminSettingsTemplates';
 import AdminSettingsSignature from './pages/AdminSettingsSignature';
+import ApplicationBoard from './pages/ApplicationBoard';
 import AdminGate from './components/AdminGate';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -86,6 +87,7 @@ const AuthenticatedApp = () => {
       <Route path="/AdminDashboard/Settings" element={<AdminGate><AdminSettings /></AdminGate>} />
       <Route path="/AdminDashboard/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
       <Route path="/AdminDashboard/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
+      <Route path="/ApplicationBoard" element={<AdminGate><ApplicationBoard /></AdminGate>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
