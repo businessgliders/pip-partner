@@ -16,7 +16,6 @@ import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 const PRIMARY = "#f1889b";
 const LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png";
 
-// Match AdminDashboard detail field configs so the existing modal renders the right info
 const DETAIL_FIELDS = {
   franchise: [
     { key: "phone", label: "Phone", get: (r) => [r.phone_country, r.phone].filter(Boolean).join(" ") },
@@ -47,7 +46,6 @@ export default function ApplicationBoard() {
   const [activeTab, setActiveTab] = useState("franchise");
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
 
-  // State
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [highlightedTicketId, setHighlightedTicketId] = useState(null);
   const [dragNoteDialog, setDragNoteDialog] = useState(null);
@@ -64,7 +62,6 @@ export default function ApplicationBoard() {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const swimlaneScrollRef = useRef(null);
 
-  // Reset transient state when changing tab
   useEffect(() => {
     setSearchQuery("");
     setViewMode("status");
@@ -73,14 +70,12 @@ export default function ApplicationBoard() {
     setCleanupDismissed(false);
   }, [activeTab]);
 
-  // Data fetch — refetch every 5s
   const { data: rawTickets = [], isLoading } = useQuery({
     queryKey: ["app-board", board.entity],
     queryFn: () => base44.entities[board.entity].list("-created_date", 500),
     refetchInterval: 5000,
   });
 
-  // Decorate with display name + category for cards
   const tickets = useMemo(
     () =>
       (rawTickets || []).map((t) => ({
@@ -92,13 +87,11 @@ export default function ApplicationBoard() {
     [rawTickets, board.categoryField]
   );
 
-  // Mutation: update a single record
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities[board.entity].update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["app-board", board.entity] }),
   });
 
-  // Columns
   const allStatusColumns = board.statuses;
   const allCategoryColumns = useMemo(() => {
     if (!board.categoryField) return [];
@@ -111,7 +104,6 @@ export default function ApplicationBoard() {
   const columns = (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
     .filter((c) => !hiddenColumns.includes(c));
 
-  // URL deep-link
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("ticket");
@@ -126,7 +118,6 @@ export default function ApplicationBoard() {
     }
   }, [tickets]);
 
-  // Filter tickets per column
   const matchesSearch = (t) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -155,7 +146,6 @@ export default function ApplicationBoard() {
   const firstColumn = columns[0];
   const firstColumnCount = firstColumn ? getTicketsByColumn(firstColumn).length : 0;
 
-  // Resolved cleanup auto-popup (use the "second-to-last" status column, e.g. qualified/approved)
   const resolvedKey = useMemo(() => {
     const last = board.statuses[board.statuses.length - 1];
     const candidates = ["qualified", "approved", "reviewed"];
@@ -171,7 +161,6 @@ export default function ApplicationBoard() {
     if (!cleanupDismissed && resolvedTickets.length > 6) setShowCleanupPopup(true);
   }, [resolvedTickets.length, cleanupDismissed]);
 
-  // Drag handling
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
     if (!destination || destination.droppableId === source.droppableId) return;
@@ -204,7 +193,6 @@ export default function ApplicationBoard() {
     setDragNoteDialog(null);
   };
 
-  // Archive operations
   const handleArchiveSome = async () => {
     const closedKey = board.statuses[board.statuses.length - 1];
     const now = new Date();
@@ -255,7 +243,6 @@ export default function ApplicationBoard() {
     setCleanupDismissed(true);
   };
 
-  // Swimlane scroll arrows
   const updateScrollState = () => {
     const el = swimlaneScrollRef.current;
     if (!el) return;
@@ -290,7 +277,6 @@ export default function ApplicationBoard() {
       <div className="absolute top-0 left-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-pink-300/40 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Floating icons */}
       <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
         <Link to="/AdminDashboard" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
           <BarChart3 className="w-4 h-4" />
@@ -301,7 +287,6 @@ export default function ApplicationBoard() {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10 flex flex-col flex-1 w-full lg:min-h-0">
-        {/* Sticky header */}
         <div
           className="sticky top-0 z-30 lg:static -mx-4 md:-mx-8 px-4 md:px-8 pt-4 md:pt-8 -mt-4 md:-mt-8 mb-4 lg:mb-0 backdrop-blur-sm lg:backdrop-blur-none lg:p-0 lg:m-0 pb-3 lg:pb-0"
           style={{ background: `linear-gradient(180deg, ${PRIMARY} 0%, ${PRIMARY}f2 60%, ${PRIMARY}cc 100%)` }}
@@ -365,7 +350,6 @@ export default function ApplicationBoard() {
             </div>
           </div>
 
-          {/* Tab switcher */}
           <div className="flex gap-2 mt-3 overflow-x-auto -mx-2 px-2">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
@@ -386,7 +370,6 @@ export default function ApplicationBoard() {
           </div>
         </div>
 
-        {/* Board / archived */}
         {showArchived ? (
           <div className="flex-1 lg:min-h-0 flex flex-col mt-2">
             <ArchivedTicketsList
@@ -399,7 +382,6 @@ export default function ApplicationBoard() {
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="relative flex-1 lg:min-h-0 mt-2">
-              {/* Mobile arrows */}
               {canScrollLeft && (
                 <button
                   onClick={() => scrollSwimlanes("left")}
@@ -454,7 +436,6 @@ export default function ApplicationBoard() {
         </div>
       </div>
 
-      {/* Dialogs */}
       <StatusChangeDialog
         open={!!dragNoteDialog}
         payload={dragNoteDialog}
@@ -487,7 +468,6 @@ export default function ApplicationBoard() {
         onMoveToClosed={handleTidyUpMove}
       />
 
-      {/* Reuse existing submission detail modal */}
       <SubmissionDetailModal
         open={!!selectedTicket}
         onOpenChange={(v) => { if (!v) setSelectedTicket(null); }}
