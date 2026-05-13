@@ -64,7 +64,6 @@ const AuthenticatedApp = () => {
           <MainPage />
         </LayoutWrapper>
       } />
-      <Route path="/Home" element={<Navigate to="/" replace />} />
       {Object.entries(Pages)
         .filter(([path]) => path !== "Home")
         .map(([path, Page]) => (
