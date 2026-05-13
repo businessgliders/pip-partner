@@ -1,138 +1,144 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Archive } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Archive, ChevronDown, ChevronRight } from "lucide-react";
 
-const ACCENT = "#b67651";
-
-function getClosedDate(ticket) {
-  const history = ticket.status_history || [];
-  const closedEntry = [...history].reverse().find((h) => /closed|declined/i.test(h.status || ""));
-  const ts = closedEntry?.timestamp || history[history.length - 1]?.timestamp || ticket.created_date;
-  if (!ts) return null;
-  const iso = /Z|[+-]\d\d:?\d\d$/.test(ts) ? ts : ts + "Z";
-  return new Date(iso);
+function closedTimestamp(t) {
+  const hist = Array.isArray(t.status_history) ? t.status_history : [];
+  const closedEntry = [...hist].reverse().find((e) => String(e?.status || "").toLowerCase() === "closed");
+  return closedEntry?.timestamp || hist[hist.length - 1]?.timestamp || t.created_date;
 }
 
-function fmtMonth(y, m) {
-  return new Date(y, m, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-}
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-export default function ArchivedTicketsList({ tickets, onView, onRestore }) {
+export default function ArchivedTicketsList({ tickets, onRestore, onView, accentColor = "#b67651" }) {
   const grouped = useMemo(() => {
-    const map = {};
+    const tree = {};
     (tickets || []).forEach((t) => {
-      const d = getClosedDate(t);
-      if (!d) return;
-      const y = d.getFullYear();
-      const m = d.getMonth();
-      if (!map[y]) map[y] = {};
-      if (!map[y][m]) map[y][m] = [];
-      map[y][m].push({ ...t, _closedAt: d });
+      const ts = closedTimestamp(t);
+      if (!ts) return;
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return;
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      if (!tree[year]) tree[year] = {};
+      if (!tree[year][month]) tree[year][month] = [];
+      tree[year][month].push(t);
     });
-    return map;
+    return tree;
   }, [tickets]);
 
   const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
-  const [expandedYears, setExpandedYears] = useState(() => new Set(years.slice(0, 1)));
-  const initialMonth = years[0] != null ? Math.max(...Object.keys(grouped[years[0]]).map(Number)) : null;
-  const [selected, setSelected] = useState(initialMonth != null ? { y: years[0], m: initialMonth } : null);
+  const initialYear = years[0];
+  const initialMonth = initialYear != null ? Object.keys(grouped[initialYear]).map(Number).sort((a, b) => b - a)[0] : null;
 
-  if (!years.length) {
+  const [openYears, setOpenYears] = useState(() => (initialYear != null ? { [initialYear]: true } : {}));
+  const [selected, setSelected] = useState(() =>
+    initialYear != null && initialMonth != null ? { year: initialYear, month: initialMonth } : null
+  );
+
+  if (!tickets || tickets.length === 0) {
     return (
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-12 text-center shadow-xl flex-1">
-        <Archive className="w-10 h-10 mx-auto text-white/60 mb-2" />
-        <p className="text-white/80 text-sm">No archived applications</p>
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-xl flex-1 flex flex-col items-center justify-center text-white/70">
+        <Archive className="w-10 h-10 mb-2 opacity-70" />
+        <div>No archived applications</div>
       </div>
     );
   }
 
-  const toggleYear = (y) => {
-    const next = new Set(expandedYears);
-    if (next.has(y)) next.delete(y); else next.add(y);
-    setExpandedYears(next);
-  };
-
-  const monthRows = selected ? (grouped[selected.y]?.[selected.m] || []) : [];
+  const monthTickets = selected ? (grouped[selected.year]?.[selected.month] || []) : [];
 
   return (
-    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 md:p-6 shadow-xl flex-1 overflow-y-auto">
+    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 md:p-6 shadow-xl flex-1 overflow-hidden">
       <div className="flex flex-col md:flex-row gap-4 h-full">
-        <aside className="md:w-60 flex-shrink-0">
+        <div className="md:w-60 overflow-y-auto custom-scrollbar">
           <h3 className="text-white font-semibold mb-3">Archive</h3>
-          <div className="space-y-1">
-            {years.map((y) => {
-              const yearTotal = Object.values(grouped[y]).reduce((s, arr) => s + arr.length, 0);
-              const months = Object.keys(grouped[y]).map(Number).sort((a, b) => b - a);
-              const isOpen = expandedYears.has(y);
-              return (
-                <div key={y}>
-                  <button
-                    onClick={() => toggleYear(y)}
-                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-white/90 hover:bg-white/10 text-sm"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                      {y}
-                    </span>
-                    <Badge className="bg-white/20 text-white border-0">{yearTotal}</Badge>
-                  </button>
-                  {isOpen && (
-                    <div className="ml-5 space-y-0.5 mt-0.5">
-                      {months.map((m) => {
-                        const isSel = selected?.y === y && selected?.m === m;
-                        return (
-                          <button
-                            key={m}
-                            onClick={() => setSelected({ y, m })}
-                            className={`w-full text-left px-2 py-1 rounded text-xs ${isSel ? "text-white" : "text-white/70 hover:bg-white/10"}`}
-                            style={isSel ? { background: ACCENT } : {}}
-                          >
-                            {new Date(y, m, 1).toLocaleString("en-US", { month: "long" })} ({grouped[y][m].length})
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </aside>
+          {years.map((year) => {
+            const months = Object.keys(grouped[year]).map(Number).sort((a, b) => b - a);
+            const total = months.reduce((s, m) => s + grouped[year][m].length, 0);
+            const isOpen = !!openYears[year];
+            return (
+              <div key={year} className="mb-2">
+                <button
+                  onClick={() => setOpenYears((s) => ({ ...s, [year]: !s[year] }))}
+                  className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-white hover:bg-white/20 text-sm"
+                >
+                  <span className="flex items-center gap-1">
+                    {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    {year}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 border border-white/30">{total}</span>
+                </button>
+                {isOpen && (
+                  <div className="ml-5 mt-1 space-y-0.5">
+                    {months.map((m) => {
+                      const isSel = selected?.year === year && selected?.month === m;
+                      return (
+                        <button
+                          key={m}
+                          onClick={() => setSelected({ year, month: m })}
+                          className={`w-full text-left px-2 py-1 rounded-md text-xs ${
+                            isSel ? "text-white" : "text-white/80 hover:bg-white/20"
+                          }`}
+                          style={isSel ? { background: accentColor } : undefined}
+                        >
+                          {MONTHS[m]} <span className="opacity-70">({grouped[year][m].length})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-        <main className="flex-1 min-w-0">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           {selected && (
             <>
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-white text-xl font-light">{fmtMonth(selected.y, selected.m)}</h2>
-                <Badge className="bg-white/20 text-white border-0">{monthRows.length}</Badge>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-white text-lg font-semibold">{MONTHS[selected.month]} {selected.year}</h3>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white">
+                  {monthTickets.length}
+                </span>
               </div>
               <div className="space-y-2">
-                {monthRows.map((t) => {
-                  const name = t.full_name || `${t.first_name || ""} ${t.last_name || ""}`.trim() || "—";
+                {monthTickets.map((t) => {
+                  const ts = closedTimestamp(t);
+                  const closedDate = ts ? new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }) : "";
                   return (
-                    <div key={t.id} className="backdrop-blur-md bg-white/40 border border-white/50 rounded-xl p-3 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/30 border border-white/40 backdrop-blur-md">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-gray-900">{name}</span>
-                          {(t.province || t.content_style) && <Badge variant="outline" className="bg-white/40 border-white/60 text-xs">{t.province || t.content_style}</Badge>}
-                          <Badge variant="outline" className="bg-white/40 border-white/60 text-xs capitalize">{t.status}</Badge>
+                        <div className="text-sm font-medium text-white truncate">{t._display_name || "Unknown"}</div>
+                        <div className="text-[11px] text-white/80 truncate">
+                          {t._category || ""} · {t.status} · {t.email || ""}
                         </div>
-                        <div className="text-xs text-gray-600 mt-0.5 truncate">
-                          {t.email} · Closed {t._closedAt.toLocaleDateString("en-US", { timeZone: "America/New_York" })} EST
-                        </div>
+                        <div className="text-[11px] text-white/70">Closed {closedDate} EST</div>
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
-                        <button onClick={() => onView(t)} className="px-3 py-1.5 rounded-lg bg-white/70 hover:bg-white text-xs font-medium text-gray-900">View</button>
-                        <button onClick={() => onRestore(t.id)} className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-medium text-white">Restore</button>
-                      </div>
+                      <button
+                        onClick={() => onView?.(t)}
+                        className="px-2 py-1 text-[11px] rounded-md bg-white/40 border border-white/50 text-white hover:bg-white/60"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => onRestore?.(t)}
+                        className="px-2 py-1 text-[11px] rounded-md bg-emerald-500/80 border border-emerald-400 text-white hover:bg-emerald-500"
+                      >
+                        Restore
+                      </button>
                     </div>
                   );
                 })}
               </div>
             </>
           )}
-        </main>
+        </div>
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 8px; }
+      `}</style>
     </div>
   );
 }

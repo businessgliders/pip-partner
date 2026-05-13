@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Inbox, Megaphone, Settings as SettingsIcon } from "lucide-react";
+import { Inbox, Megaphone, Settings as SettingsIcon, Kanban } from "lucide-react";
 import BackToHome from "../components/BackToHome";
 
 const TILES = [
@@ -10,6 +10,12 @@ const TILES = [
     description: "Franchise, influencer, instructor & front desk applications",
     icon: Inbox,
     href: "/AdminDashboard/Submissions",
+  },
+  {
+    title: "Application Board",
+    description: "Drag-and-drop Kanban for all applications",
+    icon: Kanban,
+    href: "/ApplicationBoard",
   },
   {
     title: "Marketing",

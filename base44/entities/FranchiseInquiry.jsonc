@@ -142,7 +142,7 @@
           "note": {
             "type": "string"
           },
-          "author": {
+          "by_name": {
             "type": "string"
           },
           "timestamp": {
@@ -158,7 +158,8 @@
       "default": false
     },
     "notes": {
-      "type": "string"
+      "type": "string",
+      "description": "Internal staff notes"
     },
     "app_number": {
       "type": "integer",

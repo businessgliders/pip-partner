@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Search } from "lucide-react";
 
-const ACCENT = "#b67651";
-const ACCENT_HOVER = "#a06a4a";
+const glass = "bg-white/95 backdrop-blur-2xl border border-white/40";
 
-export function StatusChangeDialog({ open, onOpenChange, ticketName, fromStatus, toStatus, onConfirm }) {
+export function StatusChangeDialog({ open, payload, onConfirm, onCancel }) {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
 
@@ -16,35 +14,31 @@ export function StatusChangeDialog({ open, onOpenChange, ticketName, fromStatus,
     if (open) { setName(""); setNote(""); }
   }, [open]);
 
+  if (!payload) return null;
+  const canSubmit = name.trim() && note.trim();
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="backdrop-blur-2xl bg-white/95 border-white/40 max-w-md">
-        <h3 className="text-base font-semibold text-gray-900">Move application</h3>
-        <p className="text-sm text-gray-600 mt-1">
-          Moving <span className="font-semibold">{ticketName}</span> from{" "}
-          <span className="font-semibold text-blue-600 capitalize">{fromStatus}</span> to{" "}
-          <span className="font-semibold text-green-600 capitalize">{toStatus}</span>.
+    <Dialog open={open} onOpenChange={(v) => !v && onCancel?.()}>
+      <DialogContent className={`${glass} max-w-md`}>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">Move application</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Moving <span className="font-medium">{payload.ticketName}</span> from{" "}
+          <span className="font-medium text-blue-600">{payload.from}</span> to{" "}
+          <span className="font-medium text-emerald-600">{payload.to}</span>
         </p>
-        <div className="space-y-3 mt-4">
-          <div>
-            <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Your Name</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="mt-1" />
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Note</label>
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Why are you moving this?" rows={3} className="mt-1" />
-          </div>
+        <div className="space-y-3">
+          <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Textarea placeholder="Note about this change..." value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
         </div>
         <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button
-            disabled={!name.trim() || !note.trim()}
-            onClick={() => onConfirm({ name: name.trim(), note: note.trim() })}
-            style={{ background: ACCENT }}
-            className="text-white hover:opacity-90 disabled:opacity-40"
+          <button onClick={onCancel} className="px-3 py-1.5 text-sm rounded-md bg-white border border-gray-200 text-gray-700 hover:bg-gray-50">Cancel</button>
+          <button
+            disabled={!canSubmit}
+            onClick={() => onConfirm?.({ name: name.trim(), note: note.trim() })}
+            className="px-3 py-1.5 text-sm rounded-md bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Confirm Move
-          </Button>
+            Confirm move
+          </button>
         </div>
       </DialogContent>
     </Dialog>
@@ -53,13 +47,13 @@ export function StatusChangeDialog({ open, onOpenChange, ticketName, fromStatus,
 
 export function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel }) {
   return (
-    <Dialog open={isOpen} onOpenChange={(v) => { if (!v) onCancel(); }}>
-      <DialogContent className="backdrop-blur-2xl bg-white/95 border-white/40 max-w-md">
-        <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-600 mt-2">{message}</p>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button onClick={onConfirm} style={{ background: ACCENT }} className="text-white hover:opacity-90">Confirm</Button>
+    <Dialog open={isOpen} onOpenChange={(v) => !v && onCancel?.()}>
+      <DialogContent className={`${glass} max-w-md`}>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-600 mb-4">{message}</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={onCancel} className="px-3 py-1.5 text-sm rounded-md bg-white border border-gray-200 text-gray-700 hover:bg-gray-50">Cancel</button>
+          <button onClick={onConfirm} className="px-3 py-1.5 text-sm rounded-md bg-gray-900 text-white hover:bg-gray-800">Confirm</button>
         </div>
       </DialogContent>
     </Dialog>
@@ -68,44 +62,38 @@ export function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel }) {
 
 export function AlertDialogComponent({ isOpen, message, onClose }) {
   return (
-    <Dialog open={isOpen} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="backdrop-blur-2xl bg-white/95 border-white/40 max-w-md">
-        <p className="text-sm text-gray-800">{message}</p>
+    <Dialog open={isOpen} onOpenChange={(v) => !v && onClose?.()}>
+      <DialogContent className={`${glass} max-w-sm`}>
+        <p className="text-sm text-gray-700">{message}</p>
         <div className="flex justify-end mt-4">
-          <Button onClick={onClose} style={{ background: ACCENT }} className="text-white hover:opacity-90">OK</Button>
+          <button onClick={onClose} className="px-3 py-1.5 text-sm rounded-md bg-gray-900 text-white hover:bg-gray-800">OK</button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-export function MobileSearchDialog({ open, onOpenChange, value, onChange, onSubmit }) {
-  const [local, setLocal] = useState(value || "");
-  useEffect(() => { if (open) setLocal(value || ""); }, [open, value]);
-
-  const submit = () => { onChange(local); onSubmit && onSubmit(); onOpenChange(false); };
-
+export function MobileSearchDialog({ open, onClose, value, onChange, onSubmit }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="backdrop-blur-2xl bg-white/95 border-white/40 max-w-md">
-        <h3 className="text-base font-semibold text-gray-900 mb-3">Search applications</h3>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              autoFocus
-              value={local}
-              onChange={(e) => setLocal(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
-              placeholder="Type to search..."
-              className="pl-9"
-            />
+    <Dialog open={open} onOpenChange={(v) => !v && onClose?.()}>
+      <DialogContent className={`${glass} max-w-sm`}>
+        <form
+          onSubmit={(e) => { e.preventDefault(); onSubmit?.(); onClose?.(); }}
+          className="flex flex-col gap-3"
+        >
+          <div className="flex items-center gap-2">
+            <Search className="w-4 h-4 text-gray-400" />
+            <Input autoFocus placeholder="Search applications..." value={value} onChange={(e) => onChange?.(e.target.value)} />
           </div>
-          <Button onClick={submit} style={{ background: ACCENT }} className="text-white hover:opacity-90">Search</Button>
-        </div>
+          <button
+            type="submit"
+            className="px-3 py-2 text-sm rounded-md text-white hover:opacity-90"
+            style={{ background: "#b67651" }}
+          >
+            Search
+          </button>
+        </form>
       </DialogContent>
     </Dialog>
   );
 }
-
-export { ACCENT, ACCENT_HOVER };
