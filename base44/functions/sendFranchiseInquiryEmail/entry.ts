@@ -10,6 +10,7 @@ const OWNER_EMAILS = [
   'sahil@pilatesinpinkstudio.com',
   'rashmeen@pilatesinpinkstudio.com',
   'gurpreen@pilatesinpinkstudio.com',
+  'franchise@pilatesinpinkstudio.com',
 ];
 
 const FROM_EMAIL = 'partner@pilatesinpinkstudio.com';
