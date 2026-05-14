@@ -283,18 +283,19 @@ export default function ApplicationBoard() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none select-none fixed inset-0 flex items-center justify-center z-0 overflow-hidden"
+        className="pointer-events-none select-none fixed inset-0 z-0 overflow-hidden flex items-center"
       >
-        <span
-          className="font-light tracking-[0.15em] text-white/20 drop-shadow-sm"
+        <div
+          className="flex whitespace-nowrap font-light tracking-[0.15em] text-white/20 drop-shadow-sm"
           style={{
-            fontSize: "clamp(6rem, 22vw, 22rem)",
+            fontSize: "clamp(5rem, 18vw, 18rem)",
             lineHeight: 1,
-            whiteSpace: "nowrap",
           }}
         >
-          Applications
-        </span>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <span key={i} className="px-8">Applications</span>
+          ))}
+        </div>
       </div>
 
       <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
