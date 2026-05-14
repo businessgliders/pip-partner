@@ -8,10 +8,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const apiKey = Deno.env.get('CAL_API_KEY');
     const eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID');
@@ -23,6 +19,22 @@ Deno.serve(async (req) => {
 
     let body = {};
     try { body = await req.json(); } catch (_) { body = {}; }
+
+    // Auth: this is called from the public franchise funnel where applicants
+    // are not logged in. Instead of a user session, we require the caller to
+    // present an inquiryId they own — verified via user-scoped RLS (which
+    // allows the anonymous creator session or an admin). This blocks bots
+    // scraping availability without a real submission.
+    const { inquiryId } = body || {};
+    if (!inquiryId) {
+      return Response.json({ error: 'Missing inquiryId' }, { status: 400 });
+    }
+    try {
+      const inquiry = await base44.entities.FranchiseInquiry.get(inquiryId);
+      if (!inquiry) return Response.json({ error: 'Not found' }, { status: 404 });
+    } catch (_) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const timeZone = body.timeZone || 'America/Toronto';
 

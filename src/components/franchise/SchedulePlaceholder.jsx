@@ -26,7 +26,7 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function SchedulePlaceholder({ onConfirm, isSubmitting }) {
+export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId }) {
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [slotsByDay, setSlotsByDay] = useState({});
@@ -39,7 +39,7 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await base44.functions.invoke("getCalAvailability", { timeZone: TZ });
+        const res = await base44.functions.invoke("getCalAvailability", { timeZone: TZ, inquiryId });
         if (cancelled) return;
         const slots = res?.data?.slots || {};
         setSlotsByDay(slots);
@@ -50,7 +50,7 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting }) {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [inquiryId]);
 
   const days = useMemo(() => {
     return Object.keys(slotsByDay)

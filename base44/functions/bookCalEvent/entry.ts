@@ -14,10 +14,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const apiKey = Deno.env.get('CAL_API_KEY');
     const eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID');
@@ -27,10 +23,23 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { start, timeZone = 'America/Toronto', name, email, phone, notes } = body || {};
+    const { start, timeZone = 'America/Toronto', name, email, phone, notes, inquiryId } = body || {};
 
     if (!start || !name || !email) {
       return Response.json({ error: 'Missing required fields: start, name, email' }, { status: 400 });
+    }
+
+    // Auth: same model as getCalAvailability — require a real inquiryId
+    // readable under user-scoped RLS, so anonymous applicants can book but
+    // random callers can't create bookings on the studio's Cal.com.
+    if (!inquiryId) {
+      return Response.json({ error: 'Missing inquiryId' }, { status: 400 });
+    }
+    try {
+      const inquiry = await base44.entities.FranchiseInquiry.get(inquiryId);
+      if (!inquiry) return Response.json({ error: 'Not found' }, { status: 404 });
+    } catch (_) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const payload = {

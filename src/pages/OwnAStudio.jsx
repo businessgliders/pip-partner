@@ -71,6 +71,7 @@ export default function OwnAStudio() {
       email: formData.email,
       phone: formData.phone,
       notes: `Franchise inquiry — ${formData.preferred_location || ""} (${formData.available_capital || ""})`,
+      inquiryId,
     });
 
     if (bookingRes?.data?.error) {
@@ -144,6 +145,7 @@ export default function OwnAStudio() {
             {stage === "schedule" && (
               <SchedulePlaceholder
                 key="schedule"
+                inquiryId={inquiryId}
                 onConfirm={handleScheduleConfirm}
                 isSubmitting={isSubmitting}
               />
