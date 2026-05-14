@@ -17,48 +17,70 @@ const PROGRAM_LABELS = {
 };
 
 function buildIntakeSummary(ticket, ticketType) {
-  const rows = [];
-  const add = (label, value) => {
-    if (value === undefined || value === null || value === "") return;
-    rows.push(
-      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:#94a3b8;font-weight:600;width:140px;word-break:break-word;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:#334155;word-break:break-word;overflow-wrap:anywhere;">${value}</td></tr>`
-    );
-  };
-
-  // Contact (all ticket types)
-  const phone = [ticket?.phone_country, ticket?.phone].filter(Boolean).join(" ");
-  add("Email", ticket?.email);
-  add("Phone", phone);
+  const name =
+    ticket?.full_name ||
+    `${ticket?.first_name || ""} ${ticket?.last_name || ""}`.trim() ||
+    "An applicant";
+  const sentences = [];
 
   if (ticketType === "FranchiseInquiry") {
-    add("Province", ticket?.province);
-    add("Preferred Location", ticket?.preferred_location);
-    add("Available Capital", ticket?.available_capital);
-    add("Operation Style", ticket?.operation_style);
-    add("Ready to Sign NDA", ticket?.ready_to_sign_nda);
-    add("Why Pilates in Pink", ticket?.why_pilates_in_pink);
-    add("Business Experience", ticket?.business_experience);
-    add("Discovery Call", ticket?.scheduled_call_time);
+    const loc = [ticket?.preferred_location, ticket?.province].filter(Boolean).join(", ");
+    sentences.push(
+      `${name} submitted a franchise inquiry${loc ? ` for ${loc}` : ""}${ticket?.available_capital ? ` with ${ticket.available_capital} available capital` : ""}.`
+    );
+    if (ticket?.operation_style || ticket?.ready_to_sign_nda) {
+      sentences.push(
+        [
+          ticket?.operation_style ? `Prefers ${ticket.operation_style.toLowerCase()}` : "",
+          ticket?.ready_to_sign_nda ? `NDA: ${ticket.ready_to_sign_nda}` : "",
+        ].filter(Boolean).join(" · ") + "."
+      );
+    }
+    if (ticket?.why_pilates_in_pink || ticket?.scheduled_call_time) {
+      sentences.push(
+        [
+          ticket?.why_pilates_in_pink ? `Motivation: ${ticket.why_pilates_in_pink}` : "",
+          ticket?.scheduled_call_time ? `Discovery call: ${ticket.scheduled_call_time}` : "",
+        ].filter(Boolean).join(" · ") + "."
+      );
+    }
   } else if (ticketType === "InfluencerApplication") {
-    add("Instagram", ticket?.instagram_handle ? `@${ticket.instagram_handle}` : "");
-    add("TikTok", ticket?.tiktok_handle ? `@${ticket.tiktok_handle}` : "");
-    add("Followers", ticket?.follower_count);
-    add("Content Style", ticket?.content_style);
-    add("Location", ticket?.location);
-    add("Why Partner", ticket?.why_partner);
+    const handles = [
+      ticket?.instagram_handle ? `@${ticket.instagram_handle} on Instagram` : "",
+      ticket?.tiktok_handle ? `@${ticket.tiktok_handle} on TikTok` : "",
+    ].filter(Boolean).join(" and ");
+    sentences.push(
+      `${name}${handles ? ` (${handles})` : ""} applied to the influencer program${ticket?.follower_count ? ` with ${ticket.follower_count} followers` : ""}${ticket?.location ? ` from ${ticket.location}` : ""}.`
+    );
+    if (ticket?.content_style) sentences.push(`Content focus: ${ticket.content_style}.`);
+    if (ticket?.why_partner) sentences.push(`Why partner: ${ticket.why_partner}`);
   } else if (ticketType === "InstructorApplication" || ticketType === "FrontAdminApplication") {
-    add("Preferred Studio", ticket?.preferred_studio);
-    add("Postal Code", ticket?.postal_code);
-    add("Province", ticket?.province);
-    if (ticket?.qualifications?.length) add("Qualifications", ticket.qualifications.join(", "));
-    if (ticket?.resume_url) add("Resume", `<a href="${ticket.resume_url}" target="_blank" rel="noopener noreferrer" style="color:#0f172a;text-decoration:underline;">View Resume</a>`);
-    add("Message", ticket?.message);
+    const role = ticketType === "InstructorApplication" ? "instructor" : "front desk";
+    const loc = [ticket?.preferred_studio, ticket?.province].filter(Boolean).join(", ");
+    sentences.push(
+      `${name} applied for a ${role} role${loc ? ` at ${loc}` : ""}${ticket?.postal_code ? ` (${ticket.postal_code})` : ""}.`
+    );
+    if (ticket?.qualifications?.length) {
+      sentences.push(`Qualifications: ${ticket.qualifications.join(", ")}.`);
+    }
+    if (ticket?.message) sentences.push(ticket.message);
   }
 
-  if (!rows.length) {
-    return `<p><em>${PROGRAM_LABELS[ticketType]} submitted — no additional notes.</em></p>`;
+  if (!sentences.length) {
+    sentences.push(`${PROGRAM_LABELS[ticketType]} submitted — no additional notes.`);
   }
-  return `<table style="border-collapse:collapse;width:100%;">${rows.join("")}</table>`;
+
+  const escape = (s) =>
+    String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const body = sentences
+    .slice(0, 3)
+    .map((s) => `<p style="margin:0 0 6px 0;font-size:13px;line-height:1.55;color:#334155;">${escape(s)}</p>`)
+    .join("");
+
+  const badge = `<div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;">✨ AI Summary</div>`;
+
+  return `${badge}${body}`;
 }
 
 export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId }) {
