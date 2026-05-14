@@ -1,5 +1,5 @@
 import React from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, FileText, Instagram, Music2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -171,6 +171,48 @@ export default function TicketCard({
               >
                 📍 {toSentenceCase(ticket.preferred_location)}
               </span>
+            ) : null
+          ) : boardKey === "influencer" ? (
+            <div className="flex items-center gap-1.5 max-w-[60%]" onClick={(e) => e.stopPropagation()}>
+              {ticket.instagram_handle && (
+                <a
+                  href={`https://instagram.com/${String(ticket.instagram_handle).replace(/^@/, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white truncate"
+                  title={ticket.instagram_handle}
+                >
+                  <Instagram className="w-3 h-3" />
+                  <span className="truncate">@{String(ticket.instagram_handle).replace(/^@/, "")}</span>
+                </a>
+              )}
+              {ticket.tiktok_handle && (
+                <a
+                  href={`https://tiktok.com/@${String(ticket.tiktok_handle).replace(/^@/, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white truncate"
+                  title={ticket.tiktok_handle}
+                >
+                  <Music2 className="w-3 h-3" />
+                  <span className="truncate">@{String(ticket.tiktok_handle).replace(/^@/, "")}</span>
+                </a>
+              )}
+            </div>
+          ) : (boardKey === "instructor" || boardKey === "frontadmin") ? (
+            ticket.resume_url ? (
+              <a
+                href={ticket.resume_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white"
+                title="Download resume"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                Resume
+              </a>
             ) : null
           ) : (
             <div
