@@ -298,7 +298,7 @@ export default function ApplicationBoard() {
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
       style={{
         backgroundImage:
-          "linear-gradient(180deg, #1f2937 0%, #374151 45%, #4b5563 100%)",
+          "linear-gradient(180deg, #e5e7eb 0%, #eef0f3 45%, #f8f9fb 100%)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
