@@ -14,6 +14,11 @@ const VALID_ENTITIES = new Set([
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json();
     const entityName = body?.event?.entity_name;
     const entityId = body?.event?.entity_id;

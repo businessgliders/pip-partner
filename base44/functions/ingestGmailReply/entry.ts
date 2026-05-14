@@ -167,6 +167,11 @@ async function processMessageId(base44, accessToken, messageId) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json();
 
     // Accept webhook payload { data: { new_message_ids } } or poller { message_ids }
