@@ -192,43 +192,75 @@ async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   return { ok: true, data: await res.json() };
 }
 
+// Delay (ms) before sending the submitter's discovery-call confirmation,
+// so the welcome email lands first in their inbox.
+const SUBMITTER_CONFIRMATION_DELAY_MS = 6 * 60 * 1000; // 6 minutes
+
+// Wait up to ~10s for an app_number to be assigned by the entity automation.
+async function fetchRawAppNumber(base44, inquiryId) {
+  if (!inquiryId) return null;
+  for (let i = 0; i < 10; i++) {
+    try {
+      const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+      if (rec?.app_number) return rec.app_number;
+    } catch (_) {}
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { inquiryData = {}, scheduledTime = '', ownerOnly = false } = await req.json();
+    const { inquiryId, inquiryData = {}, scheduledTime = '', ownerOnly = false } = await req.json();
     const fullName = `${inquiryData.first_name || ''} ${inquiryData.last_name || ''}`.trim() || 'Applicant';
-    const rawNumber = inquiryData.app_number || '';
+
+    // Prefer the canonical app_number from the saved record so both welcome
+    // and discovery-call emails share the same reference number.
+    const rawNumber = (await fetchRawAppNumber(base44, inquiryId)) || inquiryData.app_number || '';
     const appNumber = rawNumber ? formatAppNumber(rawNumber) : '';
     const appTag = appNumber ? `[Application #${appNumber}] ` : '';
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
-    const tasks = [];
-
-    if (!ownerOnly && scheduledTime && inquiryData.email) {
-      tasks.push(sendGmail({
-        accessToken,
-        to: inquiryData.email,
-        subject: `${appTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`,
-        html: submitterEmail(inquiryData, scheduledTime, appNumber),
-      }));
-    }
-
+    // 1) Send the owner notification immediately
     const ownerSubject = scheduledTime
       ? `${appTag}New franchise inquiry: ${fullName} \u2014 ${scheduledTime}`
       : `${appTag}New franchise inquiry (no slot yet): ${fullName}`;
 
-    tasks.push(sendGmail({
+    const ownerResult = await sendGmail({
       accessToken,
       to: OWNER_EMAILS,
       subject: ownerSubject,
       html: ownerEmail(inquiryData, scheduledTime, appNumber),
       replyTo: inquiryData.email || undefined,
-    }));
+    });
 
-    const results = await Promise.all(tasks);
-    const allOk = results.every((r) => r.ok);
-    return Response.json({ success: allOk, results });
+    // 2) Schedule the submitter's discovery-call confirmation after a delay,
+    //    so it arrives after the welcome email. Runs in the background.
+    if (!ownerOnly && scheduledTime && inquiryData.email) {
+      (async () => {
+        try {
+          await new Promise((r) => setTimeout(r, SUBMITTER_CONFIRMATION_DELAY_MS));
+          // Refresh access token + app_number in case they changed during the wait
+          const { accessToken: freshToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+          const freshRaw = (await fetchRawAppNumber(base44, inquiryId)) || rawNumber || '';
+          const freshApp = freshRaw ? formatAppNumber(freshRaw) : '';
+          const freshTag = freshApp ? `[Application #${freshApp}] ` : '';
+          const res = await sendGmail({
+            accessToken: freshToken,
+            to: inquiryData.email,
+            subject: `${freshTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`,
+            html: submitterEmail(inquiryData, scheduledTime, freshApp),
+          });
+          if (!res.ok) console.error('Delayed submitter confirmation failed:', res.error);
+        } catch (err) {
+          console.error('Delayed submitter confirmation error:', err);
+        }
+      })();
+    }
+
+    return Response.json({ success: ownerResult.ok, ownerResult, delayedSubmitterEmail: !ownerOnly && !!scheduledTime && !!inquiryData.email });
   } catch (error) {
     console.error('sendFranchiseInquiryEmail error', error);
     return Response.json({ error: error.message }, { status: 500 });

@@ -46,6 +46,7 @@ export default function OwnAStudio() {
 
     // Notify owners immediately, even if user never picks a slot
     base44.functions.invoke("sendFranchiseInquiryEmail", {
+      inquiryId: record.id,
       inquiryData: formData,
       scheduledTime: "",
       ownerOnly: true,
@@ -86,8 +87,10 @@ export default function OwnAStudio() {
       });
     }
 
-    // 3) Send branded confirmation emails
-    await base44.functions.invoke("sendFranchiseInquiryEmail", {
+    // 3) Send branded confirmation emails (fire-and-forget — backend delays
+    //    submitter confirmation so it lands after the welcome email)
+    base44.functions.invoke("sendFranchiseInquiryEmail", {
+      inquiryId: inquiryId,
       inquiryData: formData,
       scheduledTime: slot.friendly,
     });
