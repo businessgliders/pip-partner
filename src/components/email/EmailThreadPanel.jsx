@@ -57,7 +57,6 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
   );
 
   // Synthesize intake bubble (always)
-  const ticketShortId = ticket.id.slice(-8);
   const clientName =
     ticket?.full_name ||
     `${ticket?.first_name || ""} ${ticket?.last_name || ""}`.trim() ||
@@ -88,7 +87,8 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
         body_html: buildWelcomeHtml({
           clientName,
           programLabel: PROGRAM_LABELS[ticketType],
-          ticketShortId,
+          appNumber: ticket?.app_number,
+          ticketShortId: ticket.id.slice(-8),
         }),
         sent_at: ticket?.created_date,
         send_status: "sent",

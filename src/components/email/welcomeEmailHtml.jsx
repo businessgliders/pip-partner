@@ -1,6 +1,7 @@
 // Renders the same welcome HTML used by sendWelcomeEmail — used for the
 // synthetic in-thread welcome bubble preview.
-export function buildWelcomeHtml({ clientName, programLabel, ticketShortId }) {
+export function buildWelcomeHtml({ clientName, programLabel, appNumber, ticketShortId }) {
+  const ref = appNumber ? `Application #${appNumber}` : `Application #${ticketShortId || ""}`;
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#fbe0e2;font-family:'Helvetica Neue',Arial,sans-serif;color:#3a2a23;">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;background:#fff8f4;border-radius:16px;">
   <div style="text-align:center;margin-bottom:24px;">
@@ -11,6 +12,6 @@ export function buildWelcomeHtml({ clientName, programLabel, ticketShortId }) {
   <p style="line-height:1.6;font-size:15px;">In the meantime, feel free to reply to this email with any questions — we read every message.</p>
   <p style="line-height:1.6;font-size:15px;color:#b67651;font-style:italic;">Pretty. Powerful. Pilates.</p>
   <hr style="border:none;border-top:1px solid #f7b1bd;margin:24px 0;"/>
-  <p style="font-size:11px;color:#a08778;text-align:center;">Reference: Ticket #${ticketShortId}</p>
+  <p style="font-size:11px;color:#a08778;text-align:center;">Reference: ${ref}</p>
 </div></body></html>`;
 }

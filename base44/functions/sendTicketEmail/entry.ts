@@ -100,8 +100,9 @@ function base64url(str) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function buildSubjectTag(ticketId) {
-  return `[Ticket #${ticketId.slice(-8)}]`;
+function buildSubjectTag(ticket) {
+  if (ticket?.app_number) return `[Application #${ticket.app_number}]`;
+  return `[Application #${(ticket?.id || '').slice(-8)}]`;
 }
 
 Deno.serve(async (req) => {
@@ -143,11 +144,14 @@ Deno.serve(async (req) => {
     const realEmails = existing.filter((m) => !m.is_welcome);
     const lastReal = realEmails[realEmails.length - 1];
 
-    const subjectTag = buildSubjectTag(ticket_id);
+    const subjectTag = buildSubjectTag(ticket);
     let subject;
     if (lastReal?.subject) {
-      // Strip existing Re: and tag from previous subject, then rebuild
-      let prev = lastReal.subject.replace(/^(Re:\s*)+/i, '').replace(/^\[Ticket #[^\]]+\]\s*/, '').trim();
+      // Strip existing Re: and tag (old or new format) from previous subject, then rebuild
+      let prev = lastReal.subject
+        .replace(/^(Re:\s*)+/i, '')
+        .replace(/^\[(Ticket|Application) #[^\]]+\]\s*/, '')
+        .trim();
       subject = `Re: ${subjectTag} ${prev}`;
     } else {
       const inquiryWord =

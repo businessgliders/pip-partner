@@ -1,8 +1,10 @@
-// Sends two branded emails after a franchise discovery call is booked:
-//   1) A confirmation to the submitter
-//   2) A notification to the three owners (sahil, rashmeen, gurpreen)
-// Uses Resend.
-// Payload: { inquiryData: {...}, scheduledTime: "Friendly string", scheduledISO?: "ISO" }
+// Sends franchise inquiry notifications via Gmail integration.
+//   1) Confirmation to the submitter (when scheduledTime is provided)
+//   2) Notification to the three owners (sahil, rashmeen, gurpreen)
+//
+// Payload: { inquiryData: {...}, scheduledTime?: string, scheduledISO?: string, ownerOnly?: boolean }
+
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const OWNER_EMAILS = [
   'sahil@pilatesinpinkstudio.com',
@@ -10,9 +12,52 @@ const OWNER_EMAILS = [
   'gurpreen@pilatesinpinkstudio.com',
 ];
 
+const FROM_EMAIL = 'franchise@pilatesinpinkstudio.com';
+const FROM_NAME = 'Pilates in Pink \u2122';
+
 const BRAND_PINK = '#f1889b';
 const BRAND_ROSE = '#b67651';
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png';
+
+function rfc2047(str) {
+  if (/^[\x20-\x7E]*$/.test(str)) return str;
+  const b64 = btoa(unescape(encodeURIComponent(str)));
+  return `=?UTF-8?B?${b64}?=`;
+}
+
+function base64url(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function quotedPrintable(input) {
+  const bytes = new TextEncoder().encode(input);
+  let out = '';
+  let lineLen = 0;
+  const writeChunk = (chunk) => {
+    if (lineLen + chunk.length > 75) { out += '=\r\n'; lineLen = 0; }
+    out += chunk;
+    lineLen += chunk.length;
+  };
+  for (let i = 0; i < bytes.length; i++) {
+    const b = bytes[i];
+    if (b === 0x0a) { out += '\r\n'; lineLen = 0; }
+    else if (b === 0x0d) {}
+    else if (b === 0x20 || b === 0x09) {
+      const next = bytes[i + 1];
+      if (next === 0x0a || next === undefined) writeChunk('=' + b.toString(16).toUpperCase().padStart(2, '0'));
+      else writeChunk(String.fromCharCode(b));
+    } else if (b >= 0x21 && b <= 0x7e && b !== 0x3d) writeChunk(String.fromCharCode(b));
+    else writeChunk('=' + b.toString(16).toUpperCase().padStart(2, '0'));
+  }
+  return out;
+}
+
+function htmlToText(html) {
+  return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
+}
 
 function brandedShell(innerHtml, preheader = '') {
   return `<!DOCTYPE html>
@@ -38,7 +83,7 @@ function brandedShell(innerHtml, preheader = '') {
 </body></html>`;
 }
 
-function submitterEmail(inquiry, scheduledTime) {
+function submitterEmail(inquiry, scheduledTime, appNumber) {
   const firstName = inquiry.first_name || 'there';
   const inner = `
     <h1 style="margin:0 0 16px;font-size:28px;font-weight:300;color:${BRAND_ROSE};line-height:1.2;">Your discovery call is <em style="color:${BRAND_PINK};">confirmed</em></h1>
@@ -51,11 +96,12 @@ function submitterEmail(inquiry, scheduledTime) {
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#5a3a28;">You'll receive a separate calendar invite from Cal.com with the meeting link. Please add it to your calendar and check your spam folder if you don't see it.</p>
     <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:#5a3a28;">In the meantime, feel free to explore our website and come prepared with any questions you'd like to discuss.</p>
     <p style="margin:24px 0 0;font-size:15px;color:${BRAND_ROSE};font-style:italic;">With warmth,<br/>The Pilates in Pink&trade; Franchise Team</p>
+    ${appNumber ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${appNumber}</p>` : ''}
   `;
   return brandedShell(inner, `Your Pilates in Pink discovery call is confirmed for ${scheduledTime}`);
 }
 
-function ownerEmail(inquiry, scheduledTime) {
+function ownerEmail(inquiry, scheduledTime, appNumber) {
   const fullName = `${inquiry.first_name || ''} ${inquiry.last_name || ''}`.trim() || 'New applicant';
   const row = (label, value) => value
     ? `<tr><td style="padding:8px 0;font-size:12px;letter-spacing:1.5px;color:${BRAND_ROSE};font-weight:600;width:160px;vertical-align:top;">${label}</td><td style="padding:8px 0;font-size:14px;color:#5a3a28;">${value}</td></tr>`
@@ -81,10 +127,9 @@ function ownerEmail(inquiry, scheduledTime) {
   const inner = `
     <h1 style="margin:0 0 8px;font-size:24px;font-weight:300;color:${BRAND_ROSE};">${heading}</h1>
     <p style="margin:0 0 24px;font-size:14px;color:rgba(90,58,40,0.7);">${subheading}</p>
-
     ${callBlock}
-
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      ${row('APPLICATION #', appNumber ? `#${appNumber}` : '')}
       ${row('NAME', fullName)}
       ${row('EMAIL', inquiry.email ? `<a href="mailto:${inquiry.email}" style="color:${BRAND_ROSE};">${inquiry.email}</a>` : '')}
       ${row('PHONE', inquiry.phone)}
@@ -100,50 +145,75 @@ function ownerEmail(inquiry, scheduledTime) {
   return brandedShell(inner, hasSlot ? `New franchise inquiry from ${fullName} — ${scheduledTime}` : `New franchise inquiry from ${fullName}`);
 }
 
-async function sendViaResend({ to, subject, html }) {
-  const resp = await fetch('https://api.resend.com/emails', {
+async function sendGmail({ accessToken, to, subject, html }) {
+  const text = htmlToText(html);
+  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const recipients = Array.isArray(to) ? to.join(', ') : to;
+  const headers = [
+    `From: ${rfc2047(FROM_NAME)} <${FROM_EMAIL}>`,
+    `To: ${recipients}`,
+    `Reply-To: ${FROM_EMAIL}`,
+    `Subject: ${rfc2047(subject)}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+  ];
+  const mimeBody = [
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: quoted-printable', '',
+    quotedPrintable(text), '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: quoted-printable', '',
+    quotedPrintable(html), '',
+    `--${boundary}--`, '',
+  ].join('\r\n');
+  const rawMime = headers.join('\r\n') + '\r\n\r\n' + mimeBody;
+  const raw = base64url(rawMime);
+
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'Pilates in Pink™ <noreply@pilatesinpink.ca>',
-      to: Array.isArray(to) ? to : [to],
-      reply_to: 'franchise@pilatesinpinkstudio.com',
-      subject,
-      html,
-    }),
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw }),
   });
-  const data = await resp.json().catch(() => ({}));
-  if (!resp.ok) console.error('Resend error', resp.status, data);
-  return { ok: resp.ok, data };
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error('Gmail send failed:', errText);
+    return { ok: false, error: errText };
+  }
+  return { ok: true, data: await res.json() };
 }
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
     const { inquiryData = {}, scheduledTime = '', ownerOnly = false } = await req.json();
     const fullName = `${inquiryData.first_name || ''} ${inquiryData.last_name || ''}`.trim() || 'Applicant';
+    const appNumber = inquiryData.app_number || '';
+    const appTag = appNumber ? `[Application #${appNumber}] ` : '';
+
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
     const tasks = [];
 
-    // Only send the submitter confirmation when a slot is booked
     if (!ownerOnly && scheduledTime && inquiryData.email) {
-      tasks.push(sendViaResend({
+      tasks.push(sendGmail({
+        accessToken,
         to: inquiryData.email,
-        subject: `Your discovery call is confirmed — Pilates in Pink™`,
-        html: submitterEmail(inquiryData, scheduledTime),
+        subject: `${appTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`,
+        html: submitterEmail(inquiryData, scheduledTime, appNumber),
       }));
     }
 
     const ownerSubject = scheduledTime
-      ? `New franchise inquiry: ${fullName} — ${scheduledTime}`
-      : `New franchise inquiry (no slot yet): ${fullName}`;
+      ? `${appTag}New franchise inquiry: ${fullName} \u2014 ${scheduledTime}`
+      : `${appTag}New franchise inquiry (no slot yet): ${fullName}`;
 
-    tasks.push(sendViaResend({
+    tasks.push(sendGmail({
+      accessToken,
       to: OWNER_EMAILS,
       subject: ownerSubject,
-      html: ownerEmail(inquiryData, scheduledTime),
+      html: ownerEmail(inquiryData, scheduledTime, appNumber),
     }));
 
     const results = await Promise.all(tasks);

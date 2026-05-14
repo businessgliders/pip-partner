@@ -61,7 +61,7 @@ function htmlToText(html) {
   return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
 }
 
-function buildWelcomeHtml({ clientName, programLabel, ticketShortId }) {
+function buildWelcomeHtml({ clientName, programLabel, appNumber }) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#fbe0e2;font-family:'Helvetica Neue',Arial,sans-serif;color:#3a2a23;">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;background:#fff8f4;border-radius:16px;">
   <div style="text-align:center;margin-bottom:24px;">
@@ -72,8 +72,20 @@ function buildWelcomeHtml({ clientName, programLabel, ticketShortId }) {
   <p style="line-height:1.6;font-size:15px;">In the meantime, feel free to reply to this email with any questions — we read every message.</p>
   <p style="line-height:1.6;font-size:15px;color:#b67651;font-style:italic;">Pretty. Powerful. Pilates.</p>
   <hr style="border:none;border-top:1px solid #f7b1bd;margin:24px 0;"/>
-  <p style="font-size:11px;color:#a08778;text-align:center;">Reference: Ticket #${ticketShortId}</p>
+  <p style="font-size:11px;color:#a08778;text-align:center;">Reference: Application #${appNumber}</p>
 </div></body></html>`;
+}
+
+async function ensureAppNumber(base44, ticket_type, ticket_id, ticket) {
+  if (ticket?.app_number) return ticket.app_number;
+  // Race-safe: re-fetch in case automation already assigned it
+  const fresh = await base44.asServiceRole.entities[ticket_type].get(ticket_id);
+  if (fresh?.app_number) return fresh.app_number;
+  // Assign now
+  const recent = await base44.asServiceRole.entities[ticket_type].list('-app_number', 1);
+  const nextNumber = (recent?.[0]?.app_number || 0) + 1;
+  await base44.asServiceRole.entities[ticket_type].update(ticket_id, { app_number: nextNumber });
+  return nextNumber;
 }
 
 Deno.serve(async (req) => {
@@ -109,10 +121,10 @@ Deno.serve(async (req) => {
 
     const clientName = ticketName(ticket);
     const programLabel = PROGRAM_LABELS[ticket_type];
-    const ticketShortId = ticket_id.slice(-8);
-    const bodyHtml = buildWelcomeHtml({ clientName, programLabel, ticketShortId });
+    const appNumber = await ensureAppNumber(base44, ticket_type, ticket_id, ticket);
+    const bodyHtml = buildWelcomeHtml({ clientName, programLabel, appNumber });
     const bodyText = htmlToText(bodyHtml);
-    const subject = `[Ticket #${ticketShortId}] Welcome to Pilates in Pink \u2122`;
+    const subject = `[Application #${appNumber}] Welcome to Pilates in Pink \u2122`;
     const fromEmail = FROM_ALIASES[ticket_type];
     const fromHeader = `${rfc2047('Pilates in Pink \u2122')} <${fromEmail}>`;
 
