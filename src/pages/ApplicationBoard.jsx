@@ -17,7 +17,8 @@ import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColum
 import { LayoutGrid, Table2, Download } from "lucide-react";
 
 const PRIMARY = "#f1889b";
-const LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png";
+const LOGO_URL = "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c51835c8a_PiPPartner.png";
+const FOOTER_LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png";
 
 const DETAIL_FIELDS = {
   franchise: [
@@ -296,7 +297,7 @@ export default function ApplicationBoard() {
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
       style={{
         backgroundImage:
-          "linear-gradient(180deg, rgba(246,238,231,0.85) 0%, rgba(232,210,189,0.7) 40%, rgba(200,156,124,0.6) 75%, rgba(182,118,81,0.55) 100%), url('https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/af7c6e2d7_generated_image.png')",
+          "linear-gradient(180deg, rgba(182,118,81,0.55) 0%, rgba(200,156,124,0.6) 25%, rgba(232,210,189,0.7) 60%, rgba(246,238,231,0.85) 100%), url('https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/af7c6e2d7_generated_image.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
@@ -529,7 +530,7 @@ export default function ApplicationBoard() {
         )}
 
         <div className="mt-2 mb-0 flex items-center justify-center gap-3 flex-shrink-0">
-          <img src={LOGO_URL} className="w-6 h-6 rounded shadow" alt="" />
+          <img src={FOOTER_LOGO_URL} className="w-6 h-6 rounded shadow" alt="" />
           <p className="text-gray-500 text-xs">© {new Date().getFullYear()} Pilates in Pink™ Studio • All rights reserved</p>
         </div>
       </div>
