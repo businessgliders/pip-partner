@@ -86,7 +86,7 @@ export default function EmailMessageItem({ message, isHighlighted }) {
             {isFailed && <span className="text-red-700">⚠️ FAILED TO SEND</span>}
             {!isFailed && <span>{senderName}</span>}
           </div>
-          <div className="text-sm text-gray-800 whitespace-pre-wrap line-clamp-2">
+          <div className="text-sm text-gray-800 whitespace-pre-wrap break-words line-clamp-2">
             {cleanText || "(empty)"}
           </div>
           {isLong && (
@@ -128,7 +128,7 @@ function MessageDialog({ open, onOpenChange, message }) {
           </div>
         )}
         <div
-          className="prose prose-sm max-w-none"
+          className="prose prose-sm max-w-none break-words [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_td]:whitespace-normal [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
           dangerouslySetInnerHTML={{
             __html: message.body_html || `<pre>${message.body_text || ""}</pre>`,
           }}

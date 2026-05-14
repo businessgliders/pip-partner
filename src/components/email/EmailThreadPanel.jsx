@@ -21,7 +21,7 @@ function buildIntakeSummary(ticket, ticketType) {
   const add = (label, value) => {
     if (value === undefined || value === null || value === "") return;
     rows.push(
-      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:#94a3b8;font-weight:600;white-space:nowrap;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:#334155;">${value}</td></tr>`
+      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:#94a3b8;font-weight:600;width:140px;word-break:break-word;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:#334155;word-break:break-word;overflow-wrap:anywhere;">${value}</td></tr>`
     );
   };
 

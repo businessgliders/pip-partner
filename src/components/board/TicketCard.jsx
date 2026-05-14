@@ -139,10 +139,18 @@ export default function TicketCard({
               <div className="text-sm font-semibold text-gray-900 truncate">
                 <span className="font-bold text-gray-500 mr-1">{num}</span>{name}
               </div>
-              {category && (
-                <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700">
-                  {category}
-                </span>
+              {boardKey === "franchise" ? (
+                (ticket.preferred_location || ticket.province) && (
+                  <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
+                    📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province].filter(Boolean).join(" · ")}
+                  </span>
+                )
+              ) : (
+                category && (
+                  <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700">
+                    {category}
+                  </span>
+                )
               )}
             </div>
           </div>
@@ -165,12 +173,12 @@ export default function TicketCard({
         <div className="flex items-center justify-between mt-3 gap-2">
           <span className="text-[11px] text-gray-600 whitespace-nowrap">{time}</span>
           {boardKey === "franchise" ? (
-            ticket.preferred_location ? (
+            ticket.available_capital ? (
               <span
                 className="text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 font-medium truncate max-w-[60%]"
-                title={toSentenceCase(ticket.preferred_location)}
+                title={ticket.available_capital}
               >
-                📍 {toSentenceCase(ticket.preferred_location)}
+                💰 {ticket.available_capital}
               </span>
             ) : null
           ) : boardKey === "influencer" ? (
