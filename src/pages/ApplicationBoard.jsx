@@ -14,6 +14,7 @@ import { BOARD_TYPES, displayName } from "../components/board/boardConfig";
 import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
+import ProgramDock from "../components/board/ProgramDock";
 import { LayoutGrid, Table2, Download } from "lucide-react";
 
 const PRIMARY = "#f1889b";
@@ -330,7 +331,9 @@ export default function ApplicationBoard() {
         </Link>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 flex flex-col flex-1 w-full lg:min-h-0">
+      <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <div className="max-w-7xl mx-auto relative z-10 flex flex-col flex-1 w-full lg:min-h-0 lg:pl-20">
         <div className="mb-4 lg:mb-0 pb-3 lg:pb-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -420,7 +423,8 @@ export default function ApplicationBoard() {
             </div>
           </div>
 
-          <div className="flex gap-2 mt-3 overflow-x-auto -mx-2 px-2">
+          {/* Mobile-only horizontal pill switcher */}
+          <div className="flex gap-2 mt-3 overflow-x-auto -mx-2 px-2 lg:hidden">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
               return (
