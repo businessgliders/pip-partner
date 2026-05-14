@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
     );
 
     const candidate = (matches || []).find(
-      (r) => !r.archived && !r.scheduled_call_time && (r.status === 'new' || !r.status)
+      (r) => !r.archived && !r.scheduled_call_time
     );
 
     if (!candidate) {
