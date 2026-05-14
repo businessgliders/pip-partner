@@ -17,20 +17,48 @@ const PROGRAM_LABELS = {
 };
 
 function buildIntakeSummary(ticket, ticketType) {
-  const lines = [];
-  if (ticket?.message) lines.push(ticket.message);
-  if (ticket?.why_partner) lines.push(ticket.why_partner);
-  if (ticket?.why_pilates_in_pink) lines.push(`Why: ${ticket.why_pilates_in_pink}`);
-  if (ticket?.business_experience) lines.push(`Experience: ${ticket.business_experience}`);
-  if (ticket?.preferred_location) lines.push(`Preferred location: ${ticket.preferred_location}`);
-  if (ticket?.preferred_studio) lines.push(`Preferred studio: ${ticket.preferred_studio}`);
-  if (ticket?.available_capital) lines.push(`Capital: ${ticket.available_capital}`);
-  if (ticket?.instagram_handle) lines.push(`Instagram: @${ticket.instagram_handle}`);
-  if (ticket?.tiktok_handle) lines.push(`TikTok: @${ticket.tiktok_handle}`);
-  if (ticket?.follower_count) lines.push(`Followers: ${ticket.follower_count}`);
-  if (ticket?.content_style) lines.push(`Content: ${ticket.content_style}`);
-  if (ticket?.qualifications?.length) lines.push(`Qualifications: ${ticket.qualifications.join(", ")}`);
-  return lines.length ? lines.map((l) => `<p>${l}</p>`).join("") : `<p><em>${PROGRAM_LABELS[ticketType]} submitted — no additional notes.</em></p>`;
+  const rows = [];
+  const add = (label, value) => {
+    if (value === undefined || value === null || value === "") return;
+    rows.push(
+      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:#94a3b8;font-weight:600;white-space:nowrap;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:#334155;">${value}</td></tr>`
+    );
+  };
+
+  // Contact (all ticket types)
+  const phone = [ticket?.phone_country, ticket?.phone].filter(Boolean).join(" ");
+  add("Email", ticket?.email);
+  add("Phone", phone);
+
+  if (ticketType === "FranchiseInquiry") {
+    add("Province", ticket?.province);
+    add("Preferred Location", ticket?.preferred_location);
+    add("Available Capital", ticket?.available_capital);
+    add("Operation Style", ticket?.operation_style);
+    add("Ready to Sign NDA", ticket?.ready_to_sign_nda);
+    add("Why Pilates in Pink", ticket?.why_pilates_in_pink);
+    add("Business Experience", ticket?.business_experience);
+    add("Discovery Call", ticket?.scheduled_call_time);
+  } else if (ticketType === "InfluencerApplication") {
+    add("Instagram", ticket?.instagram_handle ? `@${ticket.instagram_handle}` : "");
+    add("TikTok", ticket?.tiktok_handle ? `@${ticket.tiktok_handle}` : "");
+    add("Followers", ticket?.follower_count);
+    add("Content Style", ticket?.content_style);
+    add("Location", ticket?.location);
+    add("Why Partner", ticket?.why_partner);
+  } else if (ticketType === "InstructorApplication" || ticketType === "FrontAdminApplication") {
+    add("Preferred Studio", ticket?.preferred_studio);
+    add("Postal Code", ticket?.postal_code);
+    add("Province", ticket?.province);
+    if (ticket?.qualifications?.length) add("Qualifications", ticket.qualifications.join(", "));
+    if (ticket?.resume_url) add("Resume", `<a href="${ticket.resume_url}" target="_blank" rel="noopener noreferrer" style="color:#0f172a;text-decoration:underline;">View Resume</a>`);
+    add("Message", ticket?.message);
+  }
+
+  if (!rows.length) {
+    return `<p><em>${PROGRAM_LABELS[ticketType]} submitted — no additional notes.</em></p>`;
+  }
+  return `<table style="border-collapse:collapse;width:100%;">${rows.join("")}</table>`;
 }
 
 export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId }) {

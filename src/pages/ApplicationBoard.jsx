@@ -19,24 +19,36 @@ const LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pub
 const DETAIL_FIELDS = {
   franchise: [
     { key: "phone", label: "Phone", get: (r) => [r.phone_country, r.phone].filter(Boolean).join(" ") },
+    { key: "province", label: "Province" },
+    { key: "preferred_location", label: "Preferred Location" },
+    { key: "available_capital", label: "Available Capital" },
     { key: "operation_style", label: "Operation Style" },
     { key: "ready_to_sign_nda", label: "Ready to Sign NDA" },
     { key: "why_pilates_in_pink", label: "Why Pilates in Pink" },
     { key: "business_experience", label: "Business Experience" },
-    { key: "preferred_location", label: "Preferred Location" },
+    { key: "scheduled_call_time", label: "Discovery Call" },
   ],
   influencer: [
-    { key: "tiktok_handle", label: "TikTok" },
+    { key: "instagram_handle", label: "Instagram", get: (r) => r.instagram_handle ? `@${r.instagram_handle}` : "" },
+    { key: "tiktok_handle", label: "TikTok", get: (r) => r.tiktok_handle ? `@${r.tiktok_handle}` : "" },
+    { key: "follower_count", label: "Followers" },
+    { key: "content_style", label: "Content Style" },
     { key: "location", label: "Location" },
     { key: "why_partner", label: "Why Partner" },
   ],
   instructor: [
+    { key: "preferred_studio", label: "Preferred Studio" },
     { key: "postal_code", label: "Postal Code" },
+    { key: "province", label: "Province" },
     { key: "qualifications", label: "Qualifications", get: (r) => (r.qualifications || []).join(", ") },
+    { key: "resume_url", label: "Resume" },
     { key: "message", label: "Message" },
   ],
   frontadmin: [
+    { key: "preferred_studio", label: "Preferred Studio" },
     { key: "postal_code", label: "Postal Code" },
+    { key: "province", label: "Province" },
+    { key: "resume_url", label: "Resume" },
     { key: "message", label: "Message" },
   ],
 };
