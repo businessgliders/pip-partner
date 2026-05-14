@@ -73,14 +73,10 @@ function buildIntakeSummary(ticket, ticketType) {
   const escape = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  const body = sentences
+  return sentences
     .slice(0, 3)
     .map((s) => `<p style="margin:0 0 6px 0;font-size:13px;line-height:1.55;color:#334155;">${escape(s)}</p>`)
     .join("");
-
-  const badge = `<div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;">✨ AI Summary</div>`;
-
-  return `${badge}${body}`;
 }
 
 export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId }) {
@@ -121,6 +117,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     body_html: buildIntakeSummary(ticket, ticketType),
     sent_at: ticket?.created_date,
     send_status: "received",
+    is_ai_summary: true,
   };
 
   const hasRealWelcome = visibleReal.some((m) => m.is_welcome);

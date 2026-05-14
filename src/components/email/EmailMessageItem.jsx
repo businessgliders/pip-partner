@@ -72,13 +72,13 @@ export default function EmailMessageItem({ message, isHighlighted }) {
         id={`msg-${message.id}`}
       >
         <div
-          className={`max-w-[80%] rounded-2xl px-4 py-2.5 cursor-pointer transition-all ${
+          className={`relative max-w-[80%] rounded-2xl px-4 py-2.5 cursor-pointer transition-all ${
             isInbound
               ? "bg-white border border-gray-200 rounded-bl-sm"
               : isFailed
               ? "bg-red-50 border border-red-300 rounded-br-sm"
               : "bg-pink-100 rounded-br-sm"
-          } ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""}`}
+          } ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
           onClick={() => setOpen(true)}
         >
           <div className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
@@ -86,15 +86,30 @@ export default function EmailMessageItem({ message, isHighlighted }) {
             {isFailed && <span className="text-red-700">⚠️ FAILED TO SEND</span>}
             {!isFailed && <span>{senderName}</span>}
           </div>
-          <div className="text-sm text-gray-800 whitespace-pre-wrap break-words line-clamp-2">
-            {cleanText || "(empty)"}
-          </div>
-          {isLong && (
+          {message.is_ai_summary ? (
+            <div
+              className="text-sm text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
+              dangerouslySetInnerHTML={{ __html: message.body_html }}
+            />
+          ) : (
+            <div className="text-sm text-gray-800 whitespace-pre-wrap break-words line-clamp-2">
+              {cleanText || "(empty)"}
+            </div>
+          )}
+          {isLong && !message.is_ai_summary && (
             <div className="text-xs text-gray-500 mt-1 italic">Tap to view full message</div>
           )}
           <div className="text-[10px] text-gray-500 mt-1">
             {time ? format(new Date(time), "MMM d, h:mm a") : ""}
           </div>
+          {message.is_ai_summary && (
+            <div
+              title="AI Summary"
+              className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-sm"
+            >
+              <Sparkles className="w-3 h-3 text-white" />
+            </div>
+          )}
         </div>
       </div>
       <MessageDialog open={open} onOpenChange={setOpen} message={message} />
