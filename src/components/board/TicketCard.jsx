@@ -84,12 +84,12 @@ export default function TicketCard({
   const initials = initialsFor(name, ticket.email);
   const category = ticket._category || "";
 
-  const baseCls = `relative overflow-hidden backdrop-blur-md bg-white/40 border-2 ${borderCls} rounded-xl p-2 md:p-4 group`;
+  const baseCls = `relative overflow-hidden backdrop-blur-md bg-white/70 border-2 ${borderCls} rounded-xl p-2 md:p-4 group`;
   const stateCls = isDragging
-    ? "shadow-2xl bg-white/90 cursor-grabbing ring-4 ring-white/60"
+    ? "shadow-2xl bg-white/95 cursor-grabbing ring-4 ring-white/60"
     : isHighlighted
-      ? "shadow-2xl bg-white/70 ring-4 ring-yellow-400/50 animate-shake cursor-grab transition-all"
-      : "hover:bg-white/50 shadow-lg hover:shadow-xl cursor-grab transition-all";
+      ? "shadow-2xl bg-white/85 ring-4 ring-yellow-400/50 animate-shake cursor-grab transition-all"
+      : "hover:bg-white/80 shadow-lg hover:shadow-xl cursor-grab transition-all";
 
   return (
     <div className={`${baseCls} ${stateCls}`} onClick={onClick}>
