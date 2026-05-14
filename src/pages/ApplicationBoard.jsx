@@ -286,7 +286,7 @@ export default function ApplicationBoard() {
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
       style={{
         backgroundImage:
-          "linear-gradient(180deg, rgba(241,136,155,0.55) 0%, rgba(247,177,189,0.35) 35%, rgba(251,224,226,0.35) 70%, rgba(246,238,231,0.6) 100%), url('https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/af7c6e2d7_generated_image.png')",
+          "linear-gradient(180deg, rgba(246,238,231,0.85) 0%, rgba(232,210,189,0.7) 40%, rgba(200,156,124,0.6) 75%, rgba(182,118,81,0.55) 100%), url('https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/af7c6e2d7_generated_image.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
