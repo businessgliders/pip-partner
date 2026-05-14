@@ -295,29 +295,47 @@ export default function ApplicationBoard() {
 
   return (
     <div
-      className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
+      className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-hidden"
       style={{
-        backgroundImage:
-          "linear-gradient(180deg, #e8dcc4 0%, #f0e6d2 45%, #faf3e3 100%)",
+        backgroundImage: "linear-gradient(to bottom, #b67651, #f6eee7)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       }}
     >
-
       <div
         aria-hidden="true"
-        className="pointer-events-none select-none fixed inset-0 z-0 overflow-hidden flex items-center"
+        className="absolute inset-0 overflow-hidden pointer-events-none select-none"
+        style={{
+          zIndex: 1,
+          WebkitMaskImage:
+            "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,1) 85%, rgba(0,0,0,1) 100%), linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 110px, rgba(0,0,0,1) 160px, rgba(0,0,0,1) 100%)",
+          maskImage:
+            "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,1) 85%, rgba(0,0,0,1) 100%), linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 110px, rgba(0,0,0,1) 160px, rgba(0,0,0,1) 100%)",
+          WebkitMaskComposite: "source-in",
+          maskComposite: "intersect",
+        }}
       >
         <div
-          className="flex whitespace-nowrap font-light tracking-[0.15em] text-white/20 drop-shadow-sm"
           style={{
-            fontSize: "clamp(5rem, 18vw, 18rem)",
-            lineHeight: 1,
+            position: "absolute",
+            top: "-20%",
+            left: "-20%",
+            width: "140%",
+            height: "140%",
+            transform: "rotate(-30deg)",
+            transformOrigin: "center center",
+            fontFamily: "Georgia, serif",
+            fontWeight: 700,
+            fontSize: "7rem",
+            lineHeight: "210px",
+            letterSpacing: "0.25em",
+            color: "rgba(255,255,255,0.16)",
+            whiteSpace: "nowrap",
           }}
         >
-          {Array.from({ length: 6 }).map((_, i) => (
-            <span key={i} className="px-8">Applications</span>
+          {Array.from({ length: 8 }).map((_, row) => (
+            <div key={row}>APPLICATIONS&nbsp;&nbsp;APPLICATIONS&nbsp;&nbsp;APPLICATIONS</div>
           ))}
         </div>
       </div>
@@ -333,7 +351,7 @@ export default function ApplicationBoard() {
 
       <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="max-w-7xl mx-auto relative z-10 flex flex-col flex-1 w-full lg:min-h-0 lg:pl-20">
+      <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full lg:min-h-0 lg:pl-20" style={{ zIndex: 2 }}>
         <div className="mb-4 lg:mb-0 pb-3 lg:pb-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
