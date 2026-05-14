@@ -6,6 +6,12 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Obfuscated 4-digit display number — see /src/lib/appNumberDisplay.js
+function formatAppNumber(n) {
+  if (!n && n !== 0) return '';
+  return String(4720 + Number(n) * 17);
+}
+
 const OWNER_EMAILS = [
   'sahil@pilatesinpinkstudio.com',
   'rashmeen@pilatesinpinkstudio.com',
@@ -191,7 +197,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { inquiryData = {}, scheduledTime = '', ownerOnly = false } = await req.json();
     const fullName = `${inquiryData.first_name || ''} ${inquiryData.last_name || ''}`.trim() || 'Applicant';
-    const appNumber = inquiryData.app_number || '';
+    const rawNumber = inquiryData.app_number || '';
+    const appNumber = rawNumber ? formatAppNumber(rawNumber) : '';
     const appTag = appNumber ? `[Application #${appNumber}] ` : '';
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');

@@ -3,6 +3,12 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Obfuscated 4-digit display number — see /src/lib/appNumberDisplay.js
+function formatAppNumber(n) {
+  if (!n && n !== 0) return '';
+  return String(2380 + Number(n) * 23);
+}
+
 const OWNER_EMAILS = ['info@pilatesinpinkstudio.com'];
 const FROM_EMAIL = 'partner@pilatesinpinkstudio.com';
 const FROM_NAME = 'Pilates in Pink \u2122';
@@ -123,7 +129,8 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { applicationData = {} } = await req.json();
-    const appNumber = applicationData.app_number || '';
+    const rawNumber = applicationData.app_number || '';
+    const appNumber = rawNumber ? formatAppNumber(rawNumber) : '';
     const appTag = appNumber ? `[Application #${appNumber}] ` : '';
     const html = buildHtml(applicationData, appNumber);
 

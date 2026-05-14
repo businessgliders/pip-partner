@@ -14,6 +14,19 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: 'Front Desk Application',
 };
 
+// Obfuscated 4-digit display number — see /src/lib/appNumberDisplay.js
+const DISPLAY_CFG = {
+  FranchiseInquiry:      { base: 4720, stride: 17 },
+  InfluencerApplication: { base: 2380, stride: 23 },
+  InstructorApplication: { base: 6150, stride: 19 },
+  FrontAdminApplication: { base: 3840, stride: 29 },
+};
+function formatAppNumber(n, type) {
+  if (!n && n !== 0) return '';
+  const cfg = DISPLAY_CFG[type];
+  return cfg ? String(cfg.base + Number(n) * cfg.stride) : String(n);
+}
+
 function ticketName(t) {
   if (t?.full_name) return t.full_name;
   const fn = t?.first_name || '';
@@ -122,9 +135,10 @@ Deno.serve(async (req) => {
     const clientName = ticketName(ticket);
     const programLabel = PROGRAM_LABELS[ticket_type];
     const appNumber = await ensureAppNumber(base44, ticket_type, ticket_id, ticket);
-    const bodyHtml = buildWelcomeHtml({ clientName, programLabel, appNumber });
+    const displayNumber = formatAppNumber(appNumber, ticket_type);
+    const bodyHtml = buildWelcomeHtml({ clientName, programLabel, appNumber: displayNumber });
     const bodyText = htmlToText(bodyHtml);
-    const subject = `[Application #${appNumber}] Welcome to Pilates in Pink \u2122`;
+    const subject = `[Application #${displayNumber}] Welcome to Pilates in Pink \u2122`;
     const fromEmail = FROM_ALIASES[ticket_type];
     const fromHeader = `${rfc2047('Pilates in Pink \u2122')} <${fromEmail}>`;
 

@@ -4,6 +4,7 @@ import { X, Mail, Phone, ExternalLink, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import EmailThreadPanel from "../email/EmailThreadPanel";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
+import { formatAppNumber } from "@/lib/appNumberDisplay";
 
 const ENTITY_KEY_TO_NAME = {
   franchise: "FranchiseInquiry",
@@ -48,7 +49,7 @@ export default function SubmissionDetailModal({
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-[10px] tracking-[0.2em] uppercase font-semibold mb-1" style={{ color: accentColor }}>
-                  Submission
+                  Submission {row.app_number ? `#${formatAppNumber(row.app_number, tabKey)}` : ""}
                 </p>
                 <h2 className="text-xl font-semibold text-slate-900">{displayName}</h2>
                 <div className="mt-2 flex items-center gap-2">

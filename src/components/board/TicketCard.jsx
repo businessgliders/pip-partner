@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatAppNumber } from "@/lib/appNumberDisplay";
 
 const priorityBorderColors = {
   Low: "border-green-500",
@@ -77,7 +78,7 @@ export default function TicketCard({
   const borderCls = priorityBorderColors[priority] || priorityBorderColors.Medium;
   const emoji = categoryEmoji[boardKey] || "📌";
   const name = ticket._display_name || "Unknown";
-  const num = ticket.app_number ? `#${ticket.app_number}` : `#${(ticket.id || "").slice(-4).toUpperCase()}`;
+  const num = ticket.app_number ? `#${formatAppNumber(ticket.app_number, boardKey)}` : `#${(ticket.id || "").slice(-4).toUpperCase()}`;
   const time = formatRelativeTime(ticket.created_date);
   const bubbleColor = hashColor(ticket.email || ticket.id || "");
   const initials = initialsFor(name, ticket.email);
