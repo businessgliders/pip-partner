@@ -102,8 +102,8 @@ export default function Hire() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await base44.entities.InstructorApplication.create(formData);
-    await base44.functions.invoke('sendInstructorApplicationEmail', { applicationData: formData });
+    const record = await base44.entities.InstructorApplication.create(formData);
+    await base44.functions.invoke('sendInstructorApplicationEmail', { applicationId: record.id });
     setIsSubmitting(false);
     setIsSubmitted(true);
   };

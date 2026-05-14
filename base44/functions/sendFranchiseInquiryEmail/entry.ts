@@ -233,7 +233,24 @@ async function fetchRawAppNumber(base44, inquiryId) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { inquiryId, inquiryData = {}, scheduledTime = '', ownerOnly = false } = await req.json();
+    const { inquiryId, scheduledTime = '', ownerOnly = false } = await req.json();
+
+    // Require a real inquiry id and verify the requester can read it (RLS enforces
+    // ownership: only the anonymous creator's session or an admin will succeed).
+    // This blocks unauthenticated attackers from triggering bogus owner emails.
+    if (!inquiryId) {
+      return Response.json({ error: 'Missing inquiryId' }, { status: 400 });
+    }
+    let inquiryData;
+    try {
+      inquiryData = await base44.entities.FranchiseInquiry.get(inquiryId);
+    } catch (_) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (!inquiryData) {
+      return Response.json({ error: 'Not found' }, { status: 404 });
+    }
+
     const fullName = `${inquiryData.first_name || ''} ${inquiryData.last_name || ''}`.trim() || 'Applicant';
 
     // Prefer the canonical app_number from the saved record so both welcome

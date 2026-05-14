@@ -38,8 +38,8 @@ export default function InfluencerProgram() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    await base44.entities.InfluencerApplication.create(formData);
-    await base44.functions.invoke('sendInfluencerApplicationEmail', { applicationData: formData });
+    const record = await base44.entities.InfluencerApplication.create(formData);
+    await base44.functions.invoke('sendInfluencerApplicationEmail', { applicationId: record.id });
     
     setIsSubmitting(false);
     setIsSubmitted(true);

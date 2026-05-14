@@ -154,7 +154,24 @@ async function sendGmail({ accessToken, to, subject, html, replyTo }) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { applicationData = {} } = await req.json();
+    const { applicationId } = await req.json();
+
+    // Require a real application id and verify the requester can read it (RLS
+    // enforces ownership: only the anonymous creator's session or an admin
+    // will succeed). Blocks unauthenticated attackers from triggering emails.
+    if (!applicationId) {
+      return Response.json({ error: 'Missing applicationId' }, { status: 400 });
+    }
+    let applicationData;
+    try {
+      applicationData = await base44.entities.InfluencerApplication.get(applicationId);
+    } catch (_) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (!applicationData) {
+      return Response.json({ error: 'Not found' }, { status: 404 });
+    }
+
     const rawNumber = applicationData.app_number || '';
     const appNumber = rawNumber ? formatAppNumber(rawNumber) : '';
     const appTag = appNumber ? `[Application #${appNumber}] ` : '';

@@ -55,8 +55,8 @@ export default function FrontAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await base44.entities.FrontAdminApplication.create(formData);
-    await base44.functions.invoke('sendFrontAdminApplicationEmail', { applicationData: formData });
+    const record = await base44.entities.FrontAdminApplication.create(formData);
+    await base44.functions.invoke('sendFrontAdminApplicationEmail', { applicationId: record.id });
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
