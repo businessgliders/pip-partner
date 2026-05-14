@@ -3,6 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { Lock, ShieldAlert, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const ALLOWED_DOMAINS = ["pilatesinpinkstudio.com", "pilatesinpink.ca"];
+const hasAllowedDomain = (email) =>
+  !!email && ALLOWED_DOMAINS.some((d) => email.toLowerCase().endsWith(`@${d}`));
+
 export default function AdminGate({ children }) {
   const [status, setStatus] = useState("checking"); // checking | unauthenticated | not_admin | ok
   const [user, setUser] = useState(null);
@@ -14,7 +18,7 @@ export default function AdminGate({ children }) {
         const me = await base44.auth.me();
         if (cancelled) return;
         setUser(me);
-        if (me?.role === "admin") {
+        if (me?.role === "admin" && hasAllowedDomain(me?.email)) {
           setStatus("ok");
         } else {
           setStatus("not_admin");
