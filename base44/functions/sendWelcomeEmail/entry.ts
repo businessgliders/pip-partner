@@ -212,13 +212,22 @@ Deno.serve(async (req) => {
     const ticket_id = body?.ticket_id || body?.event?.entity_id;
     const ticket_type = body?.ticket_type || body?.event?.entity_name;
 
-    // Auth model: this endpoint is triggered by an entity automation (system)
-    // OR by an admin. Reject anything else. Automations call without a user
-    // session, so we allow null user, but a non-admin signed-in caller is
-    // explicitly blocked from triggering welcome emails.
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    // Auth: this endpoint accepts ONLY two callers —
+    //   1) The entity automation, which passes a shared secret in the body
+    //      (configured via the WELCOME_EMAIL_AUTOMATION_SECRET env var and the
+    //      automation's function_args).
+    //   2) A signed-in admin user (for manual re-sends / testing).
+    // Unauthenticated public callers are rejected so a leaked ticket id can't
+    // be used to flood applicants with welcome emails.
+    const expectedSecret = Deno.env.get('WELCOME_EMAIL_AUTOMATION_SECRET') || '';
+    const providedSecret = body?.automation_secret || '';
+    const isAutomation = !!expectedSecret && providedSecret === expectedSecret;
+
+    if (!isAutomation) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     if (!ticket_id || !ticket_type) {
