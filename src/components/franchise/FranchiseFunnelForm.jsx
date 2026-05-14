@@ -43,8 +43,7 @@ const isValidPhone = (raw) => {
 };
 
 const CAPITAL_RANGES = [
-  "Under $100K",
-  "$100K - $200K",
+  "$150K - $200K",
   "$200K - $300K",
   "$300K+",
 ];
