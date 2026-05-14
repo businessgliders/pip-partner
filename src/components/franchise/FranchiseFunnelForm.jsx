@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -64,9 +65,26 @@ const WHY_OPTIONS = [
   "Other",
 ];
 
-export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSubmitting }) {
+export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSubmitting, onExistingEmailFound }) {
   const [step, setStep] = useState(1);
   const totalSteps = 4;
+  const checkedEmailsRef = useRef(new Set());
+
+  const handleEmailBlur = async () => {
+    const email = (formData.email || "").trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+    if (checkedEmailsRef.current.has(email)) return;
+    checkedEmailsRef.current.add(email);
+    try {
+      const res = await base44.functions.invoke("checkInquiryByEmail", { email });
+      const data = res?.data || res;
+      if (data?.found && onExistingEmailFound) {
+        onExistingEmailFound(email);
+      }
+    } catch (_) {
+      // silent — don't block the form on lookup failure
+    }
+  };
 
   const canProceed = () => {
     if (step === 1) return formData.first_name && formData.last_name && formData.email && isValidPhone(formData.phone);
@@ -149,6 +167,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
                   placeholder="your.email@example.com"
                   value={formData.email || ""}
                   onChange={(e) => onChange("email", e.target.value)}
+                  onBlur={handleEmailBlur}
                   className={inputClass}
                 />
               </div>

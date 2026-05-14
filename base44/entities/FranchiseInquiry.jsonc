@@ -185,6 +185,20 @@
     },
     "ai_suggestions_message_count": {
       "type": "integer"
+    },
+    "resume_pin_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the 6-digit resume PIN"
+    },
+    "resume_pin_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiry timestamp for the resume PIN"
+    },
+    "resume_pin_attempts": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of failed PIN verification attempts"
     }
   },
   "required": [

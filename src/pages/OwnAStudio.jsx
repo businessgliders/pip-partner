@@ -12,6 +12,7 @@ import IdealPartnerSection from "../components/franchise/IdealPartnerSection";
 import FranchiseFunnelForm from "../components/franchise/FranchiseFunnelForm";
 import SchedulePlaceholder from "../components/franchise/SchedulePlaceholder";
 import LoadingTransition from "../components/franchise/LoadingTransition";
+import ResumeInquiryDialog from "../components/franchise/ResumeInquiryDialog";
 
 export default function OwnAStudio() {
   const [stage, setStage] = useState("form"); // form | loading | schedule | done
@@ -30,10 +31,31 @@ export default function OwnAStudio() {
     why_pilates_in_pink: "",
     business_experience: "",
   });
+  const [resumeDialog, setResumeDialog] = useState({ open: false, email: "" });
   const formSectionRef = useRef(null);
 
   const handleChange = (field, value) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const handleExistingEmailFound = (email) => {
+    setResumeDialog({ open: true, email });
+  };
+
+  const handleResumeVerified = (inquiry) => {
+    // Pre-fill the form data so SchedulePlaceholder + booking have everything they need
+    setFormData((prev) => ({
+      ...prev,
+      first_name: inquiry.first_name || prev.first_name,
+      last_name: inquiry.last_name || prev.last_name,
+      email: inquiry.email || prev.email,
+      phone: inquiry.phone || prev.phone,
+      preferred_location: inquiry.preferred_location || prev.preferred_location,
+      available_capital: inquiry.available_capital || prev.available_capital,
+    }));
+    setInquiryId(inquiry.id);
+    setResumeDialog({ open: false, email: "" });
+    setStage("schedule");
+  };
 
   const scrollToForm = () => {
     formSectionRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -112,6 +134,12 @@ export default function OwnAStudio() {
     >
       <BackToHome />
       <AdminPadlock />
+      <ResumeInquiryDialog
+        open={resumeDialog.open}
+        email={resumeDialog.email}
+        onClose={() => setResumeDialog({ open: false, email: "" })}
+        onVerified={handleResumeVerified}
+      />
       <HeroSection onCTAClick={scrollToForm} />
       <PillarsSection />
       <OpportunitySection />
@@ -141,6 +169,7 @@ export default function OwnAStudio() {
                   onChange={handleChange}
                   onSubmit={handleFormSubmit}
                   isSubmitting={isSubmitting}
+                  onExistingEmailFound={handleExistingEmailFound}
                 />
               </motion.div>
             )}
