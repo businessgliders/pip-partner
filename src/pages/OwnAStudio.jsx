@@ -163,8 +163,7 @@ export default function OwnAStudio() {
               TAKE THE NEXT STEP
             </p>
             <h2 className="text-4xl md:text-5xl font-light text-[#b67651] mb-4">
-              Confidential <span className="italic">enquiries</span>
-              <br /> welcome
+              Let's <span className="italic">Get Started</span>
             </h2>
             <p className="text-[#b67651]/70 max-w-md mx-auto">
               Answer a few quick questions and we'll set up a private discovery call with our franchise team.
