@@ -297,7 +297,7 @@ export default function ApplicationBoard() {
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
       style={{
         backgroundImage:
-          "linear-gradient(180deg, rgba(182,118,81,0.55) 0%, rgba(200,156,124,0.6) 25%, rgba(232,210,189,0.7) 60%, rgba(246,238,231,0.85) 100%), url('https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/af7c6e2d7_generated_image.png')",
+          "linear-gradient(180deg, #1f2937 0%, #374151 45%, #4b5563 100%)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
@@ -380,18 +380,6 @@ export default function ApplicationBoard() {
                     <LayoutGrid className="w-4 h-4" />
                     <span className="hidden md:inline">Board</span>
                   </button>
-                  {board.categoryField && (
-                    <button
-                      onClick={() => setViewMode("category")}
-                      title="View by category"
-                      className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                        viewMode === "category" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <span className="text-base leading-none">📂</span>
-                      <span className="hidden md:inline">Category</span>
-                    </button>
-                  )}
                   <button
                     onClick={() => setViewMode("table")}
                     title="Table view"
