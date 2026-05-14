@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Sparkles, Briefcase, Users, ClipboardList, Lock } from "lucide-react";
+import AdminPadlock from "../components/AdminPadlock";
 
 const TILES = [
   {
@@ -47,16 +48,7 @@ export default function Home() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
-      {/* Admin padlock */}
-      <div className="absolute top-4 right-4 z-20">
-        <Link
-          to="/ApplicationBoard"
-          aria-label="Admin"
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white shadow-lg transition-colors"
-        >
-          <Lock className="w-4 h-4" />
-        </Link>
-      </div>
+      <AdminPadlock />
 
       {/* Header */}
       <section className="pt-20 pb-10 md:pt-28 md:pb-14 px-6 text-center relative overflow-hidden">

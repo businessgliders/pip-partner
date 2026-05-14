@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 
 import HeroSection from "../components/franchise/HeroSection";
 import BackToHome from "../components/BackToHome";
+import AdminPadlock from "../components/AdminPadlock";
 import PillarsSection from "../components/franchise/PillarsSection";
 import OpportunitySection from "../components/franchise/OpportunitySection";
 import IdealPartnerSection from "../components/franchise/IdealPartnerSection";
@@ -109,6 +110,7 @@ export default function OwnAStudio() {
       }}
     >
       <BackToHome />
+      <AdminPadlock />
       <HeroSection onCTAClick={scrollToForm} />
       <PillarsSection />
       <OpportunitySection />

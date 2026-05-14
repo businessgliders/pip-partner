@@ -15,6 +15,7 @@ import {
 import { Sparkles, Gift, Users, Camera, Heart, CheckCircle2, Briefcase, ClipboardList, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import BackToHome from "../components/BackToHome";
+import AdminPadlock from "../components/AdminPadlock";
 
 export default function InfluencerProgram() {
   const [formData, setFormData] = useState({
@@ -71,6 +72,7 @@ export default function InfluencerProgram() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 40%, #fbe0e2 75%, #fce8ee 100%)" }}>
       <BackToHome />
+      <AdminPadlock />
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">

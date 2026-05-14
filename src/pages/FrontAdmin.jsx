@@ -15,6 +15,7 @@ import {
 import { Sparkles, CheckCircle2, Smile, CalendarDays, Camera, Home, Briefcase, Users, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import BackToHome from "@/components/BackToHome";
+import AdminPadlock from "@/components/AdminPadlock";
 
 const PROVINCES = [
   "Alberta", "British Columbia", "Manitoba", "New Brunswick",
@@ -71,6 +72,7 @@ export default function FrontAdmin() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #5f8fa8 0%, #89b4cc 30%, #d6eaf4 60%, #eef6fa 100%)" }}>
       <BackToHome color="#3d7a9e" />
+      <AdminPadlock />
       {/* Hero */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
