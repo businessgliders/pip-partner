@@ -6,6 +6,7 @@ import { DragDropContext } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
 import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon } from "lucide-react";
 
+import UserMenu from "../components/dashboard/UserMenu";
 import KanbanColumn from "../components/board/KanbanColumn";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
@@ -438,6 +439,7 @@ export default function ApplicationBoard() {
               >
                 <Archive className="w-4 h-4" />
               </button>
+              <UserMenu />
             </div>
           </div>
 
