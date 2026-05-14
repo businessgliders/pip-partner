@@ -1,10 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowUpRight, Sparkles, Briefcase, Users, ClipboardList, Lock } from "lucide-react";
-import PasswordModal from "../components/PasswordModal";
-
-const STORAGE_KEY = "pip_home_unlocked";
 
 const TILES = [
   {
@@ -42,24 +39,6 @@ const TILES = [
 ];
 
 export default function Home() {
-  const navigate = useNavigate();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [pendingHref, setPendingHref] = useState(null);
-
-  const handleTileClick = (e, tile) => {
-    if (!tile.locked) return;
-    const unlocked = typeof window !== "undefined" && sessionStorage.getItem(STORAGE_KEY) === "1";
-    if (unlocked) return;
-    e.preventDefault();
-    setPendingHref(tile.href);
-    setModalOpen(true);
-  };
-
-  const handleSuccess = () => {
-    setModalOpen(false);
-    if (pendingHref) navigate(pendingHref);
-  };
-
   return (
     <div
       className="min-h-screen"
@@ -133,7 +112,6 @@ export default function Home() {
               >
                 <Link
                   to={tile.href}
-                  onClick={(e) => handleTileClick(e, tile)}
                   className="group block"
                 >
                   <div className="relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
@@ -201,11 +179,6 @@ export default function Home() {
         </div>
       </section>
 
-      <PasswordModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSuccess={handleSuccess}
-      />
     </div>
   );
 }
