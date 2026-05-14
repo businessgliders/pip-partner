@@ -351,7 +351,7 @@ export default function ApplicationBoard() {
 
       <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full lg:min-h-0 lg:pl-20" style={{ zIndex: 2 }}>
+      <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full lg:min-h-0" style={{ zIndex: 2 }}>
         <div className="mb-4 lg:mb-0 pb-3 lg:pb-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
