@@ -7,7 +7,7 @@ export const BOARD_TYPES = [
     label: "Franchise",
     entity: "FranchiseInquiry",
     tabKey: "franchise",
-    statuses: ["new", "scheduled", "contacted", "qualified", "closed"],
+    statuses: ["new", "scheduled", "qualified", "closed"],
     categoryField: "province",
     color: "#b67651",
     bg: "#fbe0e2",

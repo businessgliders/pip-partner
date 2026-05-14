@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
-import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon } from "lucide-react";
+import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon } from "lucide-react";
 
 import KanbanColumn from "../components/board/KanbanColumn";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
@@ -278,16 +278,16 @@ export default function ApplicationBoard() {
       <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-pink-300/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
+        <Link to="/" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
+          <HomeIcon className="w-4 h-4" />
+        </Link>
         <Link to="/Settings" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
           <SettingsIcon className="w-4 h-4" />
         </Link>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10 flex flex-col flex-1 w-full lg:min-h-0">
-        <div
-          className="sticky top-0 z-30 lg:static -mx-4 md:-mx-8 px-4 md:px-8 pt-4 md:pt-8 -mt-4 md:-mt-8 mb-4 lg:mb-0 backdrop-blur-sm lg:backdrop-blur-none lg:p-0 lg:m-0 pb-3 lg:pb-0"
-          style={{ background: `linear-gradient(180deg, ${PRIMARY} 0%, ${PRIMARY}f2 60%, ${PRIMARY}cc 100%)` }}
-        >
+        <div className="mb-4 lg:mb-0 pb-3 lg:pb-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Link
