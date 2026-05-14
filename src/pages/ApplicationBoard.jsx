@@ -272,7 +272,7 @@ export default function ApplicationBoard() {
   return (
     <div
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
-      style={{ background: `linear-gradient(180deg, ${PRIMARY} 0%, #ffffff 100%)` }}
+      style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)" }}
     >
       <div className="absolute top-0 left-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-pink-300/40 rounded-full blur-3xl pointer-events-none" />
