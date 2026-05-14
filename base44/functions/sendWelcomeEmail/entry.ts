@@ -14,6 +14,38 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: 'Front Desk Application',
 };
 
+// Per-program branding for welcome emails (mirrors owner-notification look)
+const PROGRAM_THEMES = {
+  FranchiseInquiry: {
+    headingTitle: 'Welcome to Pilates in Pink \u2122',
+    bgGradient: 'linear-gradient(180deg, #f1889b 0%, #f7b1bd 30%, #fbe0e2 60%, #fbe0e2 100%)',
+    accent: '#b67651',
+    softBg: '#fbe0e2',
+    borderColor: '#f7b1bd',
+  },
+  InfluencerApplication: {
+    headingTitle: 'Welcome to the Pilates in Pink \u2122 Influencer Program',
+    bgGradient: 'linear-gradient(180deg, #f1889b 0%, #f7b1bd 30%, #fce8ee 60%, #fce8ee 100%)',
+    accent: '#f1889b',
+    softBg: '#fce8ee',
+    borderColor: '#f7b1bd',
+  },
+  InstructorApplication: {
+    headingTitle: 'Welcome to the Pilates in Pink \u2122 Instructor Team',
+    bgGradient: 'linear-gradient(180deg, #c4896b 0%, #d4a088 30%, #f6eee7 60%, #f6eee7 100%)',
+    accent: '#c4896b',
+    softBg: '#f6eee7',
+    borderColor: '#d4a088',
+  },
+  FrontAdminApplication: {
+    headingTitle: 'Welcome to the Pilates in Pink \u2122 Front Desk Team',
+    bgGradient: 'linear-gradient(180deg, #d4a088 0%, #e0b59c 30%, #faf3ec 60%, #faf3ec 100%)',
+    accent: '#d4a088',
+    softBg: '#faf3ec',
+    borderColor: '#e0b59c',
+  },
+};
+
 // Obfuscated 4-digit display number — see /src/lib/appNumberDisplay.js
 const DISPLAY_CFG = {
   FranchiseInquiry:      { base: 4720, stride: 17 },
@@ -74,19 +106,26 @@ function htmlToText(html) {
   return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
 }
 
-function buildWelcomeHtml({ clientName, programLabel, appNumber }) {
-  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#fbe0e2;font-family:'Helvetica Neue',Arial,sans-serif;color:#3a2a23;">
-<div style="max-width:560px;margin:0 auto;padding:32px 24px;background:#fff8f4;border-radius:16px;">
-  <div style="text-align:center;margin-bottom:24px;">
-    <img src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/35f492e1c_Pilatesinpinklogojusticon1.png" alt="Pilates in Pink" style="height:48px;"/>
-  </div>
-  <h2 style="color:#b67651;font-weight:500;font-size:22px;margin:0 0 12px;">Hi ${clientName},</h2>
-  <p style="line-height:1.6;font-size:15px;">Thank you for submitting your ${programLabel} to <strong>Pilates in Pink™</strong>. We've received it and a member of our team will be in touch personally within 1-2 business days.</p>
-  <p style="line-height:1.6;font-size:15px;">In the meantime, feel free to reply to this email with any questions — we read every message.</p>
-  <p style="line-height:1.6;font-size:15px;color:#b67651;font-style:italic;">Pretty. Powerful. Pilates.</p>
-  <hr style="border:none;border-top:1px solid #f7b1bd;margin:24px 0;"/>
-  <p style="font-size:11px;color:#a08778;text-align:center;">Reference: Application #${appNumber}</p>
-</div></body></html>`;
+function buildWelcomeHtml({ clientName, programLabel, appNumber, theme }) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: ${theme.bgGradient}; padding: 40px 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png" alt="Pilates in Pink" style="width: 80px; height: 80px; margin-bottom: 15px;" />
+      </div>
+      <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="color: ${theme.accent}; margin-top: 0; font-size: 24px; font-weight: 300;">${theme.headingTitle}${appNumber ? ` &middot; #${appNumber}` : ''}</h2>
+        <div style="margin: 20px 0; padding: 18px 20px; background: ${theme.softBg}; border-radius: 10px;">
+          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Hi ${clientName},</p>
+          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Thank you for submitting your ${programLabel} to <strong style="color:${theme.accent};">Pilates in Pink&trade;</strong>. We&rsquo;ve received it and a member of our team will be in touch personally within 1-2 business days.</p>
+          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">In the meantime, feel free to reply to this email with any questions &mdash; we read every message.</p>
+          <p style="margin: 0; color: ${theme.accent}; font-style: italic; font-size: 15px;">Pretty. Powerful. Pilates.</p>
+        </div>
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid ${theme.borderColor};">
+          <p style="color: ${theme.accent}; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function ensureAppNumber(base44, ticket_type, ticket_id, ticket) {
@@ -134,9 +173,10 @@ Deno.serve(async (req) => {
 
     const clientName = ticketName(ticket);
     const programLabel = PROGRAM_LABELS[ticket_type];
+    const theme = PROGRAM_THEMES[ticket_type];
     const appNumber = await ensureAppNumber(base44, ticket_type, ticket_id, ticket);
     const displayNumber = formatAppNumber(appNumber, ticket_type);
-    const bodyHtml = buildWelcomeHtml({ clientName, programLabel, appNumber: displayNumber });
+    const bodyHtml = buildWelcomeHtml({ clientName, programLabel, appNumber: displayNumber, theme });
     const bodyText = htmlToText(bodyHtml);
     const subject = `[Application #${displayNumber}] Welcome to Pilates in Pink \u2122`;
     const fromEmail = FROM_ALIASES[ticket_type];
@@ -148,6 +188,7 @@ Deno.serve(async (req) => {
     const headers = [
       `From: ${fromHeader}`,
       `To: ${ticket.email}`,
+      `Reply-To: ${fromEmail}`,
       `Subject: ${rfc2047(subject)}`,
       'MIME-Version: 1.0',
       `Content-Type: multipart/alternative; boundary="${boundary}"`,

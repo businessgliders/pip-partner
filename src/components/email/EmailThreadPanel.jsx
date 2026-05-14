@@ -89,6 +89,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
           programLabel: PROGRAM_LABELS[ticketType],
           appNumber: ticket?.app_number,
           ticketShortId: ticket.id.slice(-8),
+          ticketType,
         }),
         sent_at: ticket?.created_date,
         send_status: "sent",
