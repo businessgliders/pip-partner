@@ -272,10 +272,14 @@ export default function ApplicationBoard() {
   return (
     <div
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-x-hidden lg:overflow-hidden"
-      style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)" }}
+      style={{
+        backgroundImage:
+          "linear-gradient(180deg, rgba(241,136,155,0.55) 0%, rgba(247,177,189,0.35) 35%, rgba(251,224,226,0.35) 70%, rgba(246,238,231,0.6) 100%), url('https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/af7c6e2d7_generated_image.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
     >
-      <div className="absolute top-0 left-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-pink-300/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
         <Link to="/" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
