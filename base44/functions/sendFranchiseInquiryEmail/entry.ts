@@ -12,12 +12,13 @@ function formatAppNumber(n) {
   return String(4720 + Number(n) * 17);
 }
 
-const OWNER_EMAILS = [
-  'sahil@pilatesinpinkstudio.com',
-  'rashmeen@pilatesinpinkstudio.com',
-  'gurpreen@pilatesinpinkstudio.com',
-  'franchise@pilatesinpinkstudio.com',
-];
+// Owner notification recipients are configured via the FRANCHISE_OWNER_EMAILS
+// environment variable (comma-separated). Kept out of source to avoid leaking
+// internal staff addresses.
+const OWNER_EMAILS = (Deno.env.get('FRANCHISE_OWNER_EMAILS') || '')
+  .split(',')
+  .map((e) => e.trim())
+  .filter(Boolean);
 
 const FROM_EMAIL = 'partner@pilatesinpinkstudio.com';
 const REPLY_TO_EMAIL = 'franchise@pilatesinpinkstudio.com';

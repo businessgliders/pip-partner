@@ -205,16 +205,21 @@ async function ensureAppNumber(base44, ticket_type, ticket_id, ticket) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     const body = await req.json();
 
     // Supports entity automation payload: { event: { entity_id, entity_name }, data }
     const ticket_id = body?.ticket_id || body?.event?.entity_id;
     const ticket_type = body?.ticket_type || body?.event?.entity_name;
+
+    // Auth model: this endpoint is triggered by an entity automation (system)
+    // OR by an admin. Reject anything else. Automations call without a user
+    // session, so we allow null user, but a non-admin signed-in caller is
+    // explicitly blocked from triggering welcome emails.
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     if (!ticket_id || !ticket_type) {
       return Response.json({ error: 'Missing ticket_id or ticket_type' }, { status: 400 });

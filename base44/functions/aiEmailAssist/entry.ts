@@ -1,6 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const STAFF_DOMAINS = ['pilatesinpinkstudio.com', 'pilatesinpink.ca'];
+// Staff email domains authorized for AI assist are configured via the
+// STAFF_EMAIL_DOMAINS environment variable (comma-separated, no @ prefix).
+const STAFF_DOMAINS = (Deno.env.get('STAFF_EMAIL_DOMAINS') || '')
+  .split(',')
+  .map((d) => d.trim().toLowerCase().replace(/^@/, ''))
+  .filter(Boolean);
 
 const ENTITY_NAMES = {
   FranchiseInquiry: 'FranchiseInquiry',
