@@ -297,7 +297,7 @@ export default function ApplicationBoard() {
     <div
       className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-hidden"
       style={{
-        backgroundImage: "linear-gradient(to bottom, #b67651, #f6eee7)",
+        backgroundImage: "linear-gradient(to bottom, #2b1a1f, #5a3a42)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
