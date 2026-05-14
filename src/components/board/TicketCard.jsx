@@ -155,14 +155,25 @@ export default function TicketCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex items-center justify-between mt-3">
-          <span className="text-[11px] text-gray-600">{time}</span>
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold text-white shadow"
-            style={{ background: bubbleColor }}
-          >
-            {initials}
-          </div>
+        <div className="flex items-center justify-between mt-3 gap-2">
+          <span className="text-[11px] text-gray-600 whitespace-nowrap">{time}</span>
+          {boardKey === "franchise" ? (
+            ticket.preferred_location ? (
+              <span
+                className="text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 font-medium truncate max-w-[60%]"
+                title={ticket.preferred_location}
+              >
+                📍 {ticket.preferred_location}
+              </span>
+            ) : null
+          ) : (
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold text-white shadow"
+              style={{ background: bubbleColor }}
+            >
+              {initials}
+            </div>
+          )}
         </div>
       </div>
 
