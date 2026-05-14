@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, Search, Loader2 } from "lucide-react";
 import CityInput from "./CityInput";
 
 const PROVINCES = [
@@ -69,22 +69,32 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
   const [step, setStep] = useState(1);
   const totalSteps = 4;
   const checkedEmailsRef = useRef(new Set());
+  const [lookupState, setLookupState] = useState("idle"); // idle | loading | notfound
 
-  const handleEmailBlur = async () => {
+  const isEmailValid = (e) => !!e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+  const runLookup = async ({ force = false } = {}) => {
     const email = (formData.email || "").trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
-    if (checkedEmailsRef.current.has(email)) return;
+    if (!isEmailValid(email)) return;
+    if (!force && checkedEmailsRef.current.has(email)) return;
     checkedEmailsRef.current.add(email);
+    setLookupState("loading");
     try {
       const res = await base44.functions.invoke("checkInquiryByEmail", { email });
       const data = res?.data || res;
       if (data?.found && onExistingEmailFound) {
         onExistingEmailFound(email);
+        setLookupState("idle");
+      } else {
+        setLookupState(force ? "notfound" : "idle");
       }
     } catch (_) {
-      // silent — don't block the form on lookup failure
+      setLookupState("idle");
     }
   };
+
+  const handleEmailBlur = () => runLookup();
+  const handleEmailSearch = () => runLookup({ force: true });
 
   const canProceed = () => {
     if (step === 1) return formData.first_name && formData.last_name && formData.email && isValidPhone(formData.phone);
@@ -162,14 +172,43 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
               </div>
               <div className="space-y-2">
                 <Label className={labelClass}>Email *</Label>
-                <Input
-                  type="email"
-                  placeholder="your.email@example.com"
-                  value={formData.email || ""}
-                  onChange={(e) => onChange("email", e.target.value)}
-                  onBlur={handleEmailBlur}
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <Input
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={formData.email || ""}
+                    onChange={(e) => { onChange("email", e.target.value); if (lookupState === "notfound") setLookupState("idle"); }}
+                    onBlur={handleEmailBlur}
+                    className={`${inputClass} pr-12`}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleEmailSearch}
+                    disabled={!isEmailValid((formData.email || "").trim()) || lookupState === "loading"}
+                    title="Already applied? Look up your application"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-lg flex items-center justify-center text-[#b67651] hover:bg-[#fbe0e2]/70 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {lookupState === "loading" ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <p className={hintClass}>
+                  Already applied?{" "}
+                  <button
+                    type="button"
+                    onClick={handleEmailSearch}
+                    disabled={!isEmailValid((formData.email || "").trim()) || lookupState === "loading"}
+                    className="underline text-[#f1889b] hover:text-[#b67651] disabled:opacity-50 disabled:no-underline"
+                  >
+                    Find my application
+                  </button>
+                </p>
+                {lookupState === "notfound" && (
+                  <p className="text-xs text-[#b67651]/80">No application found for that email — please continue below.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label className={labelClass}>Phone *</Label>
