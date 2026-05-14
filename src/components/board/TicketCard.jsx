@@ -28,6 +28,12 @@ function hashColor(str = "") {
   return palette[h % palette.length];
 }
 
+function toSentenceCase(str = "") {
+  return str
+    .toLowerCase()
+    .replace(/(^|[\s\-/,])([a-z])/g, (_, sep, c) => sep + c.toUpperCase());
+}
+
 function initialsFor(name = "", email = "") {
   const base = (name || email || "?").trim();
   const parts = base.split(/\s+/).filter(Boolean);
@@ -161,9 +167,9 @@ export default function TicketCard({
             ticket.preferred_location ? (
               <span
                 className="text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 font-medium truncate max-w-[60%]"
-                title={ticket.preferred_location}
+                title={toSentenceCase(ticket.preferred_location)}
               >
-                📍 {ticket.preferred_location}
+                📍 {toSentenceCase(ticket.preferred_location)}
               </span>
             ) : null
           ) : (
