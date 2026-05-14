@@ -22,19 +22,22 @@ Deno.serve(async (req) => {
 
     // Auth: this is called from the public franchise funnel where applicants
     // are not logged in. Instead of a user session, we require the caller to
-    // present an inquiryId they own — verified via user-scoped RLS (which
-    // allows the anonymous creator session or an admin). This blocks bots
-    // scraping availability without a real submission.
+    // present an unguessable inquiryId (24-char Mongo-style hex) that resolves
+    // to a real FranchiseInquiry record. We use service role + a short retry
+    // to tolerate read-replica lag right after the inquiry was just created.
     const { inquiryId } = body || {};
-    if (!inquiryId) {
-      return Response.json({ error: 'Missing inquiryId' }, { status: 400 });
+    if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+      return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
     }
-    try {
-      const inquiry = await base44.entities.FranchiseInquiry.get(inquiryId);
-      if (!inquiry) return Response.json({ error: 'Not found' }, { status: 404 });
-    } catch (_) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    let found = false;
+    for (let i = 0; i < 5; i++) {
+      try {
+        const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+        if (rec) { found = true; break; }
+      } catch (_) {}
+      await new Promise((r) => setTimeout(r, 400));
     }
+    if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
 
     const timeZone = body.timeZone || 'America/Toronto';
 

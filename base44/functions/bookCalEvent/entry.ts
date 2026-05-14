@@ -29,18 +29,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: start, name, email' }, { status: 400 });
     }
 
-    // Auth: same model as getCalAvailability — require a real inquiryId
-    // readable under user-scoped RLS, so anonymous applicants can book but
-    // random callers can't create bookings on the studio's Cal.com.
-    if (!inquiryId) {
-      return Response.json({ error: 'Missing inquiryId' }, { status: 400 });
+    // Auth: same model as getCalAvailability — require an unguessable inquiryId
+    // (24-char hex) that resolves to a real FranchiseInquiry. Service role +
+    // short retry handles read-replica lag right after creation.
+    if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+      return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
     }
-    try {
-      const inquiry = await base44.entities.FranchiseInquiry.get(inquiryId);
-      if (!inquiry) return Response.json({ error: 'Not found' }, { status: 404 });
-    } catch (_) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    let found = false;
+    for (let i = 0; i < 5; i++) {
+      try {
+        const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+        if (rec) { found = true; break; }
+      } catch (_) {}
+      await new Promise((r) => setTimeout(r, 400));
     }
+    if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
 
     const payload = {
       start,
