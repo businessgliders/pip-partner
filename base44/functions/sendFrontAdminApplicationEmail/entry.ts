@@ -57,6 +57,28 @@ function htmlToText(html) {
   return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
 }
 
+function escapeHtml(input) {
+  if (input === null || input === undefined) return '';
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
+function isValidUrl(url) {
+  if (typeof url !== 'string') return false;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch { return false; }
+}
+
 function buildHtml(applicationData, appNumber) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #7b9e9e 0%, #a8c5c5 30%, #d6eaea 60%, #eef6f6 100%); padding: 40px 20px;">
@@ -67,21 +89,21 @@ function buildHtml(applicationData, appNumber) {
         <h2 style="color: #4a7c7c; margin-top: 0; font-size: 24px; font-weight: 300;">New Front Desk Admin Application${appNumber ? ` &middot; #${appNumber}` : ''}</h2>
         <div style="margin: 20px 0; padding: 15px; background: #d6eaea; border-radius: 10px;">
           <h3 style="color: #4a7c7c; margin: 0 0 15px 0; font-size: 16px;">Contact Information</h3>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Name:</strong> ${applicationData.first_name || ''} ${applicationData.last_name || ''}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Email:</strong> ${applicationData.email || ''}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Preferred Studio:</strong> ${applicationData.preferred_studio || 'Not provided'}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Postal Code:</strong> ${applicationData.postal_code || 'Not provided'}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Province:</strong> ${applicationData.province || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Name:</strong> ${escapeHtml(applicationData.first_name)} ${escapeHtml(applicationData.last_name)}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Email:</strong> ${escapeHtml(applicationData.email)}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Preferred Studio:</strong> ${escapeHtml(applicationData.preferred_studio) || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Postal Code:</strong> ${escapeHtml(applicationData.postal_code) || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #4a7c7c;">Province:</strong> ${escapeHtml(applicationData.province) || 'Not provided'}</p>
         </div>
         ${applicationData.message ? `
         <div style="margin: 20px 0; padding: 15px; background: #d6eaea; border-radius: 10px;">
           <h3 style="color: #4a7c7c; margin: 0 0 15px 0; font-size: 16px;">Message</h3>
-          <p style="margin: 0; color: #666; line-height: 1.6;">${applicationData.message}</p>
+          <p style="margin: 0; color: #666; line-height: 1.6;">${escapeHtml(applicationData.message).replace(/\n/g, '<br/>')}</p>
         </div>` : ''}
-        ${applicationData.resume_url ? `
+        ${isValidUrl(applicationData.resume_url) ? `
         <div style="margin: 20px 0; padding: 15px; background: #d6eaea; border-radius: 10px;">
           <h3 style="color: #4a7c7c; margin: 0 0 15px 0; font-size: 16px;">Resume</h3>
-          <a href="${applicationData.resume_url}" style="color: #4a7c7c;">View Attached Resume</a>
+          <a href="${escapeHtml(applicationData.resume_url)}" style="color: #4a7c7c;">View Attached Resume</a>
         </div>` : ''}
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #a8c5c5;">
           <p style="color: #4a7c7c; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
@@ -141,12 +163,15 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
+    const safeReplyTo = isValidEmail(applicationData.email) ? applicationData.email : undefined;
+    const safeName = escapeHtml(name).slice(0, 200);
+
     const result = await sendGmail({
       accessToken,
       to: OWNER_EMAILS.join(', '),
-      subject: `${appTag}New Front Desk Admin Application: ${name}`,
+      subject: `${appTag}New Front Desk Admin Application: ${safeName}`,
       html,
-      replyTo: applicationData.email || undefined,
+      replyTo: safeReplyTo,
     });
 
     return Response.json({ success: result.ok, results: [result] });

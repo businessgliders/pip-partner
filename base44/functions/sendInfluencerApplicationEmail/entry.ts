@@ -53,6 +53,32 @@ function htmlToText(html) {
   return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
 }
 
+function escapeHtml(input) {
+  if (input === null || input === undefined) return '';
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(input) {
+  return escapeHtml(input);
+}
+
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
+function isValidUrl(url) {
+  if (typeof url !== 'string') return false;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch { return false; }
+}
+
 function buildHtml(applicationData, appNumber) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #f1889b 0%, #f7b1bd 30%, #fbe0e2 60%, #f6eee7 100%); padding: 40px 20px;">
@@ -63,21 +89,21 @@ function buildHtml(applicationData, appNumber) {
         <h2 style="color: #b67651; margin-top: 0; font-size: 24px; font-weight: 300;">New Influencer Application${appNumber ? ` &middot; #${appNumber}` : ''}</h2>
         <div style="margin: 20px 0; padding: 15px; background: #fbe0e2; border-radius: 10px;">
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Contact Information</h3>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Name:</strong> ${applicationData.full_name || ''}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Email:</strong> ${applicationData.email || ''}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Location:</strong> ${applicationData.location || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Name:</strong> ${escapeHtml(applicationData.full_name)}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Email:</strong> ${escapeHtml(applicationData.email)}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Location:</strong> ${escapeHtml(applicationData.location) || 'Not provided'}</p>
         </div>
         <div style="margin: 20px 0; padding: 15px; background: #fbe0e2; border-radius: 10px;">
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Social Media</h3>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Instagram:</strong> ${applicationData.instagram_handle || ''}</p>
-          ${applicationData.tiktok_handle ? `<p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">TikTok:</strong> ${applicationData.tiktok_handle}</p>` : ''}
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Follower Count:</strong> ${applicationData.follower_count || 'Not provided'}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Content Style:</strong> ${applicationData.content_style || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Instagram:</strong> ${escapeHtml(applicationData.instagram_handle)}</p>
+          ${applicationData.tiktok_handle ? `<p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">TikTok:</strong> ${escapeHtml(applicationData.tiktok_handle)}</p>` : ''}
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Follower Count:</strong> ${escapeHtml(applicationData.follower_count) || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Content Style:</strong> ${escapeHtml(applicationData.content_style) || 'Not provided'}</p>
         </div>
         ${applicationData.why_partner ? `
         <div style="margin: 20px 0; padding: 15px; background: #fbe0e2; border-radius: 10px;">
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Why Partner with Us</h3>
-          <p style="margin: 0; color: #666; line-height: 1.6;">${applicationData.why_partner}</p>
+          <p style="margin: 0; color: #666; line-height: 1.6;">${escapeHtml(applicationData.why_partner).replace(/\n/g, '<br/>')}</p>
         </div>` : ''}
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f7b1bd;">
           <p style="color: #b67651; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
@@ -136,12 +162,15 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
+    const safeReplyTo = isValidEmail(applicationData.email) ? applicationData.email : undefined;
+    const safeName = escapeHtml(applicationData.full_name).slice(0, 200);
+
     const results = await Promise.all(OWNER_EMAILS.map((to) => sendGmail({
       accessToken,
       to,
-      subject: `${appTag}New Influencer Application: ${applicationData.full_name || ''}`,
+      subject: `${appTag}New Influencer Application: ${safeName}`,
       html,
-      replyTo: applicationData.email || undefined,
+      replyTo: safeReplyTo,
     })));
 
     const allOk = results.every((r) => r.ok);

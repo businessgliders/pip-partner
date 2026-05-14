@@ -28,6 +28,10 @@ function getTicketEmail(ticket) {
   return ticket?.email || '';
 }
 
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
 function getTicketName(ticket) {
   if (ticket?.full_name) return ticket.full_name;
   const fn = ticket?.first_name || '';
@@ -131,9 +135,20 @@ Deno.serve(async (req) => {
     }
 
     const toEmail = getTicketEmail(ticket);
-    if (!toEmail) {
-      return Response.json({ error: 'Ticket has no email address' }, { status: 400 });
+    if (!toEmail || !isValidEmail(toEmail)) {
+      return Response.json({ error: 'Ticket has no valid email address' }, { status: 400 });
     }
+
+    // Defense-in-depth: enforce that the From alias is one of our known senders.
+    // This prevents misuse if FROM_ALIASES is ever mutated or a bad ticket_type slips through.
+    const ALLOWED_FROM = new Set(Object.values(FROM_ALIASES));
+    const candidateFrom = FROM_ALIASES[ticket_type];
+    if (!candidateFrom || !ALLOWED_FROM.has(candidateFrom)) {
+      return Response.json({ error: 'Sender alias not allowed' }, { status: 400 });
+    }
+
+    // Cap subject length to prevent malformed headers from oversized input
+    const safeSubjectInput = (s) => String(s || '').slice(0, 200).replace(/[\r\n]+/g, ' ');
 
     // Find existing thread context
     const existing = await base44.asServiceRole.entities.EmailMessage.filter(
@@ -152,14 +167,14 @@ Deno.serve(async (req) => {
         .replace(/^(Re:\s*)+/i, '')
         .replace(/^\[(Ticket|Application) #[^\]]+\]\s*/, '')
         .trim();
-      subject = `Re: ${subjectTag} ${prev}`;
+      subject = safeSubjectInput(`Re: ${subjectTag} ${prev}`);
     } else {
       const inquiryWord =
         ticket_type === 'FranchiseInquiry' ? 'Franchise Inquiry'
           : ticket_type === 'InfluencerApplication' ? 'Influencer Application'
           : ticket_type === 'InstructorApplication' ? 'Instructor Application'
           : 'Front Desk Application';
-      subject = `${subjectTag} Your ${inquiryWord}`;
+      subject = safeSubjectInput(`${subjectTag} Your ${inquiryWord}`);
     }
 
     // Auto-append signature unless welcome

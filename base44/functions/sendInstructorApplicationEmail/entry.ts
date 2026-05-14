@@ -57,8 +57,30 @@ function htmlToText(html) {
   return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
 }
 
+function escapeHtml(input) {
+  if (input === null || input === undefined) return '';
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
+function isValidUrl(url) {
+  if (typeof url !== 'string') return false;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch { return false; }
+}
+
 function buildHtml(applicationData, appNumber) {
-  const qualList = (applicationData.qualifications || []).map((q) => `<li style="color:#666; margin:4px 0;">${q}</li>`).join('');
+  const qualList = (applicationData.qualifications || []).map((q) => `<li style="color:#666; margin:4px 0;">${escapeHtml(q)}</li>`).join('');
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #c4896b 0%, #d4a088 30%, #f6eee7 60%, #f6eee7 100%); padding: 40px 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
@@ -68,11 +90,11 @@ function buildHtml(applicationData, appNumber) {
         <h2 style="color: #b67651; margin-top: 0; font-size: 24px; font-weight: 300;">New Instructor Application${appNumber ? ` &middot; #${appNumber}` : ''}</h2>
         <div style="margin: 20px 0; padding: 15px; background: #f6eee7; border-radius: 10px;">
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Contact Information</h3>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Name:</strong> ${applicationData.first_name || ''} ${applicationData.last_name || ''}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Email:</strong> ${applicationData.email || ''}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Preferred Studio:</strong> ${applicationData.preferred_studio || 'Not provided'}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Postal Code:</strong> ${applicationData.postal_code || 'Not provided'}</p>
-          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Province:</strong> ${applicationData.province || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Name:</strong> ${escapeHtml(applicationData.first_name)} ${escapeHtml(applicationData.last_name)}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Email:</strong> ${escapeHtml(applicationData.email)}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Preferred Studio:</strong> ${escapeHtml(applicationData.preferred_studio) || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Postal Code:</strong> ${escapeHtml(applicationData.postal_code) || 'Not provided'}</p>
+          <p style="margin: 8px 0; color: #666;"><strong style="color: #b67651;">Province:</strong> ${escapeHtml(applicationData.province) || 'Not provided'}</p>
         </div>
         ${qualList ? `
         <div style="margin: 20px 0; padding: 15px; background: #f6eee7; border-radius: 10px;">
@@ -82,12 +104,12 @@ function buildHtml(applicationData, appNumber) {
         ${applicationData.message ? `
         <div style="margin: 20px 0; padding: 15px; background: #f6eee7; border-radius: 10px;">
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Message</h3>
-          <p style="margin: 0; color: #666; line-height: 1.6;">${applicationData.message}</p>
+          <p style="margin: 0; color: #666; line-height: 1.6;">${escapeHtml(applicationData.message).replace(/\n/g, '<br/>')}</p>
         </div>` : ''}
-        ${applicationData.resume_url ? `
+        ${isValidUrl(applicationData.resume_url) ? `
         <div style="margin: 20px 0; padding: 15px; background: #f6eee7; border-radius: 10px;">
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Resume</h3>
-          <a href="${applicationData.resume_url}" style="color: #b67651;">View Attached Resume</a>
+          <a href="${escapeHtml(applicationData.resume_url)}" style="color: #b67651;">View Attached Resume</a>
         </div>` : ''}
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #d4a088;">
           <p style="color: #b67651; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
@@ -147,12 +169,15 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
+    const safeReplyTo = isValidEmail(applicationData.email) ? applicationData.email : undefined;
+    const safeName = escapeHtml(name).slice(0, 200);
+
     const result = await sendGmail({
       accessToken,
       to: OWNER_EMAILS.join(', '),
-      subject: `${appTag}New Instructor Application: ${name}`,
+      subject: `${appTag}New Instructor Application: ${safeName}`,
       html,
-      replyTo: applicationData.email || undefined,
+      replyTo: safeReplyTo,
     });
 
     return Response.json({ success: result.ok, results: [result] });

@@ -42,6 +42,32 @@ function clientName(ticket) {
   return `${fn} ${ln}`.trim() || 'the client';
 }
 
+// ---- Rate limiting (per-user, in-memory, per warm instance) ----
+// Cold starts reset counters, which is acceptable as a defensive cost-control.
+const RATE_WINDOW_MS = 60 * 60 * 1000;     // 1 hour
+const RATE_MAX_PER_USER = 30;              // max LLM calls/user/hour
+const TICKET_COOLDOWN_MS = 10 * 1000;      // 10s between calls on the same ticket
+const userCallLog = new Map();             // email -> [timestamps]
+const ticketLastCall = new Map();          // ticket_id -> timestamp
+
+function checkRateLimits(userEmail, ticket_id) {
+  const now = Date.now();
+  // Per-ticket cooldown
+  const lastTicket = ticketLastCall.get(ticket_id) || 0;
+  if (now - lastTicket < TICKET_COOLDOWN_MS) {
+    return { ok: false, reason: 'Please wait a moment before requesting AI assistance again.' };
+  }
+  // Per-user hourly limit
+  const log = (userCallLog.get(userEmail) || []).filter((t) => now - t < RATE_WINDOW_MS);
+  if (log.length >= RATE_MAX_PER_USER) {
+    return { ok: false, reason: 'Hourly AI assistance limit reached. Try again later.' };
+  }
+  log.push(now);
+  userCallLog.set(userEmail, log);
+  ticketLastCall.set(ticket_id, now);
+  return { ok: true };
+}
+
 async function buildThreadTranscript(base44, ticket_id, ticket_type) {
   const messages = await base44.asServiceRole.entities.EmailMessage.filter(
     { ticket_id, ticket_type },
@@ -74,6 +100,17 @@ Deno.serve(async (req) => {
     if (!mode || !ticket_id || !ticket_type) {
       return Response.json({ error: 'Missing mode, ticket_id or ticket_type' }, { status: 400 });
     }
+
+    // Bound input sizes — protects against abusively large prompts driving up LLM cost
+    if (description && String(description).length > 4000) {
+      return Response.json({ error: 'Description too long (max 4000 chars).' }, { status: 400 });
+    }
+    if (draft && String(draft).length > 20000) {
+      return Response.json({ error: 'Draft too long (max 20000 chars).' }, { status: 400 });
+    }
+
+    // Rate-limit cached "suggest" calls don't need to be limited; only LLM-bound calls do.
+    // We check before LLM invocation below (after the cache check for suggest mode).
 
     const entityName = ENTITY_NAMES[ticket_type];
     if (!entityName) {
@@ -108,6 +145,9 @@ Deno.serve(async (req) => {
           suggestions: ticket.ai_suggestions,
         });
       }
+
+      const rl = checkRateLimits(user.email, ticket_id);
+      if (!rl.ok) return Response.json({ error: rl.reason }, { status: 429 });
 
       const prompt = `${STYLE_GUIDE}\n\n${contextHeader}\n\nGenerate exactly 3 distinct reply suggestions for the staff member. Each must take a DIFFERENT angle:\n1. Direct & quick — short, gets to the point\n2. Detailed & thorough — answers anticipated questions\n3. Warm & relational — leads with empathy/connection\n\nReturn HTML body using only <p> tags. No greeting line beyond "Hi [first name]," and no signature (added separately).`;
 
@@ -151,6 +191,9 @@ Deno.serve(async (req) => {
       if (!description) {
         return Response.json({ error: 'Missing description' }, { status: 400 });
       }
+      const rl = checkRateLimits(user.email, ticket_id);
+      if (!rl.ok) return Response.json({ error: rl.reason }, { status: 429 });
+
       const prompt = `${STYLE_GUIDE}\n\n${contextHeader}\n\nThe staff member wants to convey this: "${description}"\n\nWrite the full email body in HTML using only <p> tags. Start with "Hi [first name]," and do not include a signature.`;
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -167,6 +210,9 @@ Deno.serve(async (req) => {
       if (!draft) {
         return Response.json({ error: 'Missing draft' }, { status: 400 });
       }
+      const rl = checkRateLimits(user.email, ticket_id);
+      if (!rl.ok) return Response.json({ error: rl.reason }, { status: 429 });
+
       const prompt = `${STYLE_GUIDE}\n\n${contextHeader}\n\nPolish this draft for grammar, tone, and flow while preserving the writer's intent. Keep it in HTML using only <p> tags. Do not add or remove core content.\n\nDraft:\n${draft}`;
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,

@@ -48,6 +48,9 @@ Deno.serve(async (req) => {
       message_ids: newIds,
     });
 
+    // Log counts only — never log message contents, subjects, or sender addresses
+    console.log(`pollGmailReplies: scanned=${messages.length} new=${newIds.length}`);
+
     return Response.json({
       found: messages.length,
       new: newIds.length,

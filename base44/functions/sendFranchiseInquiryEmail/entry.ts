@@ -67,6 +67,20 @@ function htmlToText(html) {
   return (html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').trim();
 }
 
+function escapeHtml(input) {
+  if (input === null || input === undefined) return '';
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
 function brandedShell(innerHtml, preheader = '') {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
@@ -92,25 +106,30 @@ function brandedShell(innerHtml, preheader = '') {
 }
 
 function submitterEmail(inquiry, scheduledTime, appNumber) {
-  const firstName = inquiry.first_name || 'there';
+  const firstName = escapeHtml(inquiry.first_name) || 'there';
+  const safeTime = escapeHtml(scheduledTime);
+  const safeApp = escapeHtml(appNumber);
   const inner = `
     <h1 style="margin:0 0 16px;font-size:28px;font-weight:300;color:${BRAND_ROSE};line-height:1.2;">Your discovery call is <em style="color:${BRAND_PINK};">confirmed</em></h1>
     <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#5a3a28;">Hi ${firstName}, thank you for your interest in becoming a Pilates in Pink&trade; franchise partner. We're so excited to connect with you.</p>
     <div style="background:#fbe0e2;border-radius:16px;padding:20px;margin:24px 0;">
       <div style="font-size:11px;letter-spacing:2px;color:${BRAND_ROSE};font-weight:600;margin-bottom:8px;">YOUR CALL</div>
-      <div style="font-size:18px;color:${BRAND_ROSE};font-weight:500;">${scheduledTime}</div>
+      <div style="font-size:18px;color:${BRAND_ROSE};font-weight:500;">${safeTime}</div>
       <div style="font-size:14px;color:rgba(90,58,40,0.7);margin-top:6px;">30 minutes &middot; Virtual &middot; With our Franchise Team</div>
     </div>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#5a3a28;">You'll receive a separate calendar invite from Cal.com with the meeting link. Please add it to your calendar and check your spam folder if you don't see it.</p>
     <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:#5a3a28;">In the meantime, feel free to explore our website and come prepared with any questions you'd like to discuss.</p>
     <p style="margin:24px 0 0;font-size:15px;color:${BRAND_ROSE};font-style:italic;">With warmth,<br/>The Pilates in Pink&trade; Franchise Team</p>
-    ${appNumber ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${appNumber}</p>` : ''}
+    ${safeApp ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${safeApp}</p>` : ''}
   `;
-  return brandedShell(inner, `Your Pilates in Pink discovery call is confirmed for ${scheduledTime}`);
+  return brandedShell(inner, `Your Pilates in Pink discovery call is confirmed for ${safeTime}`);
 }
 
 function ownerEmail(inquiry, scheduledTime, appNumber) {
   const fullName = `${inquiry.first_name || ''} ${inquiry.last_name || ''}`.trim() || 'New applicant';
+  const safeFullName = escapeHtml(fullName);
+  const safeTime = escapeHtml(scheduledTime);
+  const safeApp = escapeHtml(appNumber);
   const row = (label, value) => value
     ? `<tr><td style="padding:8px 0;font-size:12px;letter-spacing:1.5px;color:${BRAND_ROSE};font-weight:600;width:160px;vertical-align:top;">${label}</td><td style="padding:8px 0;font-size:14px;color:#5a3a28;">${value}</td></tr>`
     : '';
@@ -125,29 +144,31 @@ function ownerEmail(inquiry, scheduledTime, appNumber) {
   const callBlock = hasSlot
     ? `<div style="background:#fbe0e2;border-radius:16px;padding:18px;margin:0 0 24px;">
          <div style="font-size:11px;letter-spacing:2px;color:${BRAND_ROSE};font-weight:600;margin-bottom:6px;">SCHEDULED CALL</div>
-         <div style="font-size:17px;color:${BRAND_ROSE};font-weight:500;">${scheduledTime}</div>
+         <div style="font-size:17px;color:${BRAND_ROSE};font-weight:500;">${safeTime}</div>
        </div>`
     : `<div style="background:#fbe0e2;border-radius:16px;padding:18px;margin:0 0 24px;">
          <div style="font-size:11px;letter-spacing:2px;color:${BRAND_ROSE};font-weight:600;margin-bottom:6px;">STATUS</div>
          <div style="font-size:15px;color:${BRAND_ROSE};font-weight:500;">Awaiting time slot selection</div>
        </div>`;
 
+  const safeEmail = isValidEmail(inquiry.email) ? escapeHtml(inquiry.email) : '';
+
   const inner = `
     <h1 style="margin:0 0 8px;font-size:24px;font-weight:300;color:${BRAND_ROSE};">${heading}</h1>
     <p style="margin:0 0 24px;font-size:14px;color:rgba(90,58,40,0.7);">${subheading}</p>
     ${callBlock}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-      ${row('APPLICATION #', appNumber ? `#${appNumber}` : '')}
-      ${row('NAME', fullName)}
-      ${row('EMAIL', inquiry.email ? `<a href="mailto:${inquiry.email}" style="color:${BRAND_ROSE};">${inquiry.email}</a>` : '')}
-      ${row('PHONE', inquiry.phone)}
-      ${row('PROVINCE', inquiry.province)}
-      ${row('PREFERRED LOCATION', inquiry.preferred_location)}
-      ${row('AVAILABLE CAPITAL', inquiry.available_capital)}
-      ${row('OPERATION STYLE', inquiry.operation_style)}
-      ${row('READY TO SIGN NDA', inquiry.ready_to_sign_nda)}
-      ${row('WHY PILATES IN PINK', inquiry.why_pilates_in_pink)}
-      ${row('BUSINESS EXPERIENCE', inquiry.business_experience ? String(inquiry.business_experience).replace(/\n/g, '<br/>') : '')}
+      ${row('APPLICATION #', safeApp ? `#${safeApp}` : '')}
+      ${row('NAME', safeFullName)}
+      ${row('EMAIL', safeEmail ? `<a href="mailto:${safeEmail}" style="color:${BRAND_ROSE};">${safeEmail}</a>` : '')}
+      ${row('PHONE', escapeHtml(inquiry.phone))}
+      ${row('PROVINCE', escapeHtml(inquiry.province))}
+      ${row('PREFERRED LOCATION', escapeHtml(inquiry.preferred_location))}
+      ${row('AVAILABLE CAPITAL', escapeHtml(inquiry.available_capital))}
+      ${row('OPERATION STYLE', escapeHtml(inquiry.operation_style))}
+      ${row('READY TO SIGN NDA', escapeHtml(inquiry.ready_to_sign_nda))}
+      ${row('WHY PILATES IN PINK', escapeHtml(inquiry.why_pilates_in_pink))}
+      ${row('BUSINESS EXPERIENCE', inquiry.business_experience ? escapeHtml(inquiry.business_experience).replace(/\n/g, '<br/>') : '')}
     </table>
   `;
   return brandedShell(inner, hasSlot ? `New franchise inquiry from ${fullName} — ${scheduledTime}` : `New franchise inquiry from ${fullName}`);
@@ -228,12 +249,14 @@ Deno.serve(async (req) => {
       ? `${appTag}New franchise inquiry: ${fullName} \u2014 ${scheduledTime}`
       : `${appTag}New franchise inquiry (no slot yet): ${fullName}`;
 
+    const safeReplyTo = isValidEmail(inquiryData.email) ? inquiryData.email : undefined;
+
     const ownerResult = await sendGmail({
       accessToken,
       to: OWNER_EMAILS,
       subject: ownerSubject,
       html: ownerEmail(inquiryData, scheduledTime, appNumber),
-      replyTo: inquiryData.email || undefined,
+      replyTo: safeReplyTo,
     });
 
     // 2) Schedule the submitter's discovery-call confirmation after a delay,

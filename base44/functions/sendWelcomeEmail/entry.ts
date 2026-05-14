@@ -71,6 +71,20 @@ function ticketName(t) {
   return `${fn} ${ln}`.trim() || 'there';
 }
 
+function escapeHtml(input) {
+  if (input === null || input === undefined) return '';
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
 function rfc2047(str) {
   if (/^[\x20-\x7E]*$/.test(str)) return str;
   const b64 = btoa(unescape(encodeURIComponent(str)));
@@ -117,13 +131,15 @@ const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pub
 function buildFranchiseWelcomeHtml({ firstName, appNumber }) {
   const BRAND_PINK = '#f1889b';
   const BRAND_ROSE = '#b67651';
+  const safeFirst = escapeHtml(firstName);
+  const safeApp = escapeHtml(appNumber);
   const inner = `
     <h1 style="margin:0 0 16px;font-size:28px;font-weight:300;color:${BRAND_ROSE};line-height:1.2;">Welcome to <em style="color:${BRAND_PINK};">Pilates in Pink&trade;</em></h1>
-    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#5a3a28;">Hi ${firstName}, thank you for your interest in becoming a Pilates in Pink&trade; franchise partner. We're so excited to connect with you.</p>
+    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#5a3a28;">Hi ${safeFirst}, thank you for your interest in becoming a Pilates in Pink&trade; franchise partner. We're so excited to connect with you.</p>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#5a3a28;">We've received your inquiry and a member of our Franchise Team will be in touch personally within 1-2 business days to discuss the next steps.</p>
     <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:#5a3a28;">In the meantime, feel free to reply to this email with any questions &mdash; we read every message.</p>
     <p style="margin:24px 0 0;font-size:15px;color:${BRAND_ROSE};font-style:italic;">With warmth,<br/>The Pilates in Pink&trade; Franchise Team</p>
-    ${appNumber ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${appNumber}</p>` : ''}
+    ${safeApp ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${safeApp}</p>` : ''}
   `;
   const preheader = `Thank you for your interest in becoming a Pilates in Pink franchise partner.`;
   return `<!DOCTYPE html>
@@ -150,21 +166,24 @@ function buildFranchiseWelcomeHtml({ firstName, appNumber }) {
 }
 
 function buildWelcomeHtml({ clientName, programLabel, appNumber, theme }) {
+  const safeName = escapeHtml(clientName);
+  const safeProgram = escapeHtml(programLabel);
+  const safeApp = escapeHtml(appNumber);
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: ${theme.bgGradient}; padding: 40px 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
         <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png" alt="Pilates in Pink" style="width: 80px; height: 80px; margin-bottom: 15px;" />
       </div>
       <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h2 style="color: ${theme.accent}; margin-top: 0; font-size: 24px; font-weight: 300;">${theme.headingTitle}${appNumber ? ` &middot; #${appNumber}` : ''}</h2>
+        <h2 style="color: ${theme.accent}; margin-top: 0; font-size: 24px; font-weight: 300;">${theme.headingTitle}${safeApp ? ` &middot; #${safeApp}` : ''}</h2>
         <div style="margin: 20px 0; padding: 18px 20px; background: ${theme.softBg}; border-radius: 10px;">
-          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Hi ${clientName},</p>
-          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Thank you for submitting your ${programLabel} to <strong style="color:${theme.accent};">Pilates in Pink&trade;</strong>. We&rsquo;ve received it and a member of our team will be in touch personally within 1-2 business days.</p>
+          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Hi ${safeName},</p>
+          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Thank you for submitting your ${safeProgram} to <strong style="color:${theme.accent};">Pilates in Pink&trade;</strong>. We&rsquo;ve received it and a member of our team will be in touch personally within 1-2 business days.</p>
           <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">In the meantime, feel free to reply to this email with any questions &mdash; we read every message.</p>
           <p style="margin: 0; color: ${theme.accent}; font-style: italic; font-size: 15px;">Pretty. Powerful. Pilates.</p>
         </div>
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid ${theme.borderColor};">
-          <p style="color: ${theme.accent}; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
+          <p style="color: ${theme.accent}; margin: 0; font-size: 12px;">${safeApp ? `Reference: Application #${safeApp} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
         </div>
       </div>
     </div>
@@ -205,8 +224,8 @@ Deno.serve(async (req) => {
     }
 
     const ticket = body?.data || await base44.asServiceRole.entities[ticket_type].get(ticket_id);
-    if (!ticket?.email) {
-      return Response.json({ skipped: true, reason: 'no email' });
+    if (!ticket?.email || !isValidEmail(ticket.email)) {
+      return Response.json({ skipped: true, reason: 'no valid email' });
     }
 
     // Idempotency — skip if a welcome already exists for this ticket
