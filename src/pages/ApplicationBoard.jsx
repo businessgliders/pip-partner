@@ -281,6 +281,22 @@ export default function ApplicationBoard() {
       }}
     >
 
+      <div
+        aria-hidden="true"
+        className="pointer-events-none select-none fixed inset-0 flex items-center justify-center z-0 overflow-hidden"
+      >
+        <span
+          className="font-light tracking-[0.15em] text-white/20 drop-shadow-sm"
+          style={{
+            fontSize: "clamp(6rem, 22vw, 22rem)",
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Applications
+        </span>
+      </div>
+
       <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
         <Link to="/" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
           <HomeIcon className="w-4 h-4" />
