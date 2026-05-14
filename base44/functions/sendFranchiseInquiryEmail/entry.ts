@@ -236,20 +236,25 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { inquiryId, scheduledTime = '', ownerOnly = false } = await req.json();
 
-    // Require a real inquiry id and verify the requester can read it (RLS enforces
-    // ownership: only the anonymous creator's session or an admin will succeed).
-    // This blocks unauthenticated attackers from triggering bogus owner emails.
-    if (!inquiryId) {
-      return Response.json({ error: 'Missing inquiryId' }, { status: 400 });
+    // Auth model: this endpoint is called from the public franchise funnel
+    // where submitters are not logged in. We require an unguessable inquiryId
+    // (24-char Mongo hex) that resolves to a real FranchiseInquiry. We look it
+    // up via service role with a short retry to tolerate read-replica lag
+    // immediately after creation. The id itself acts as the bearer token —
+    // attackers cannot guess one, so this blocks bogus owner-email spam.
+    if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+      return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
     }
-    let inquiryData;
-    try {
-      inquiryData = await base44.entities.FranchiseInquiry.get(inquiryId);
-    } catch (_) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    let inquiryData = null;
+    for (let i = 0; i < 5; i++) {
+      try {
+        const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+        if (rec) { inquiryData = rec; break; }
+      } catch (_) {}
+      await new Promise((r) => setTimeout(r, 400));
     }
     if (!inquiryData) {
-      return Response.json({ error: 'Not found' }, { status: 404 });
+      return Response.json({ error: 'Inquiry not found' }, { status: 404 });
     }
 
     const fullName = `${inquiryData.first_name || ''} ${inquiryData.last_name || ''}`.trim() || 'Applicant';
