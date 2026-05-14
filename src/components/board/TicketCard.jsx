@@ -173,32 +173,41 @@ export default function TicketCard({
               </span>
             ) : null
           ) : boardKey === "influencer" ? (
-            <div className="flex items-center gap-1.5 max-w-[60%]" onClick={(e) => e.stopPropagation()}>
-              {ticket.instagram_handle && (
-                <a
-                  href={`https://instagram.com/${String(ticket.instagram_handle).replace(/^@/, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white truncate"
-                  title={ticket.instagram_handle}
-                >
-                  <Instagram className="w-3 h-3" />
-                  <span className="truncate">@{String(ticket.instagram_handle).replace(/^@/, "")}</span>
-                </a>
-              )}
-              {ticket.tiktok_handle && (
-                <a
-                  href={`https://tiktok.com/@${String(ticket.tiktok_handle).replace(/^@/, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white truncate"
-                  title={ticket.tiktok_handle}
-                >
-                  <Music2 className="w-3 h-3" />
-                  <span className="truncate">@{String(ticket.tiktok_handle).replace(/^@/, "")}</span>
-                </a>
-              )}
-            </div>
+            (() => {
+              const ig = ticket.instagram_handle ? String(ticket.instagram_handle).replace(/^@/, "") : "";
+              const tt = ticket.tiktok_handle ? String(ticket.tiktok_handle).replace(/^@/, "") : "";
+              if (ig) {
+                return (
+                  <a
+                    href={`https://instagram.com/${ig}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white truncate max-w-[60%]"
+                    title={`@${ig}`}
+                  >
+                    <Instagram className="w-3 h-3" />
+                    <span className="truncate">@{ig}</span>
+                  </a>
+                );
+              }
+              if (tt) {
+                return (
+                  <a
+                    href={`https://tiktok.com/@${tt}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-white/70 border border-white/80 text-gray-700 hover:bg-white truncate max-w-[60%]"
+                    title={`@${tt}`}
+                  >
+                    <Music2 className="w-3 h-3" />
+                    <span className="truncate">@{tt}</span>
+                  </a>
+                );
+              }
+              return null;
+            })()
           ) : (boardKey === "instructor" || boardKey === "frontadmin") ? (
             ticket.resume_url ? (
               <a
