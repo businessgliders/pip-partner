@@ -180,7 +180,7 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
     return map;
   }, [creatives]);
 
-  if (!campaign) return <Navigate to="/AdminDashboard/Marketing" replace />;
+  if (!campaign) return <Navigate to="/Settings/Marketing" replace />;
 
   const grouped = AD_FORMATS.reduce((acc, f) => {
     (acc[f.category] = acc[f.category] || []).push(f);
@@ -204,7 +204,7 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
-      <BackToHome to="/AdminDashboard/Marketing" label="Marketing" />
+      <BackToHome to="/Settings/Marketing" label="Marketing" />
 
       <div className="max-w-7xl mx-auto px-6 py-14">
         <motion.div

@@ -142,7 +142,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <BackToHome to="/AdminDashboard" label="Admin" />
+      <BackToHome to="/Settings" label="Settings" />
 
       <div className="max-w-7xl mx-auto px-6 py-10">
         <motion.div

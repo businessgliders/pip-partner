@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
-import { Archive, Search, ChevronLeft, ChevronRight, BarChart3, Settings as SettingsIcon } from "lucide-react";
+import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon } from "lucide-react";
 
 import KanbanColumn from "../components/board/KanbanColumn";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
@@ -278,10 +278,7 @@ export default function ApplicationBoard() {
       <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-pink-300/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
-        <Link to="/AdminDashboard" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
-          <BarChart3 className="w-4 h-4" />
-        </Link>
-        <Link to="/AdminDashboard/Settings" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
+        <Link to="/Settings" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
           <SettingsIcon className="w-4 h-4" />
         </Link>
       </div>
@@ -294,7 +291,7 @@ export default function ApplicationBoard() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Link
-                to="/AdminDashboard"
+                to="/Settings"
                 onClick={() => { setShowArchived(false); setSearchQuery(""); setViewMode("status"); }}
               >
                 <img src={LOGO_URL} alt="Pilates in Pink" className="h-12 md:h-16 drop-shadow-xl hover:scale-105 transition-transform" />

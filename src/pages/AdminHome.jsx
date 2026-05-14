@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Inbox, Megaphone, Settings as SettingsIcon, Kanban } from "lucide-react";
+import { Inbox, Megaphone, FileText, PenLine } from "lucide-react";
 import BackToHome from "../components/BackToHome";
 
 const TILES = [
@@ -9,25 +9,25 @@ const TILES = [
     title: "Submissions",
     description: "Franchise, influencer, instructor & front desk applications",
     icon: Inbox,
-    href: "/AdminDashboard/Submissions",
-  },
-  {
-    title: "Application Board",
-    description: "Drag-and-drop Kanban for all applications",
-    icon: Kanban,
-    href: "/ApplicationBoard",
+    href: "/Settings/Submissions",
   },
   {
     title: "Marketing",
-    description: "Coming soon",
+    description: "Campaign ad creatives",
     icon: Megaphone,
-    href: "/AdminDashboard/Marketing",
+    href: "/Settings/Marketing",
   },
   {
-    title: "Settings",
-    description: "Email templates & your signature",
-    icon: SettingsIcon,
-    href: "/AdminDashboard/Settings",
+    title: "Email Templates",
+    description: "Reusable HTML templates with variables",
+    icon: FileText,
+    href: "/Settings/Templates",
+  },
+  {
+    title: "My Signature",
+    description: "Your personal HTML signature appended to outgoing emails",
+    icon: PenLine,
+    href: "/Settings/Signature",
   },
 ];
 
@@ -54,7 +54,7 @@ export default function AdminHome() {
             className="w-16 h-16 mx-auto mb-4"
           />
           <p className="text-[11px] tracking-[0.25em] text-white/90 font-semibold mb-2">ADMIN</p>
-          <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Dashboard</h1>
+          <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Settings</h1>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

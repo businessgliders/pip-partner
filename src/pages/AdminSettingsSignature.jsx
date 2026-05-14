@@ -28,7 +28,7 @@ export default function AdminSettingsSignature() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <BackToHome to="/AdminDashboard/Settings" label="Settings" />
+      <BackToHome to="/Settings" label="Settings" />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="mb-6">
           <p className="text-[11px] tracking-[0.25em] text-slate-500 font-semibold mb-1">EMAIL</p>

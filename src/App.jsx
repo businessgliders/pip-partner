@@ -13,7 +13,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminHome from './pages/AdminHome';
 import AdminMarketing from './pages/AdminMarketing';
 import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
-import AdminSettings from './pages/AdminSettings';
 import AdminSettingsTemplates from './pages/AdminSettingsTemplates';
 import AdminSettingsSignature from './pages/AdminSettingsSignature';
 import ApplicationBoard from './pages/ApplicationBoard';
@@ -79,14 +78,14 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
-      <Route path="/AdminDashboard" element={<AdminGate><AdminHome /></AdminGate>} />
-      <Route path="/AdminDashboard/Submissions" element={<AdminGate><AdminDashboard /></AdminGate>} />
-      <Route path="/AdminDashboard/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
-      <Route path="/AdminDashboard/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
-      <Route path="/AdminDashboard/Settings" element={<AdminGate><AdminSettings /></AdminGate>} />
-      <Route path="/AdminDashboard/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
-      <Route path="/AdminDashboard/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
+      <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
+      <Route path="/Settings/Submissions" element={<AdminGate><AdminDashboard /></AdminGate>} />
+      <Route path="/Settings/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
+      <Route path="/Settings/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
+      <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
+      <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
       <Route path="/ApplicationBoard" element={<AdminGate><ApplicationBoard /></AdminGate>} />
+      <Route path="/AdminDashboard/*" element={<Navigate to="/Settings" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

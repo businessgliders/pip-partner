@@ -14,7 +14,7 @@ export default function AdminMarketing() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
-      <BackToHome to="/AdminDashboard" label="Admin" />
+      <BackToHome to="/Settings" label="Settings" />
 
       <div className="max-w-5xl mx-auto px-6 py-14">
         <motion.div
@@ -40,7 +40,7 @@ export default function AdminMarketing() {
             >
               {c.available ? (
                 <Link
-                  to={`/AdminDashboard/Marketing/${c.slug}`}
+                  to={`/Settings/Marketing/${c.slug}`}
                   className="group block bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
