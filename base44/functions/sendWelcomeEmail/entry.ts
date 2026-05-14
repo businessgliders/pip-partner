@@ -1,10 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const FROM_ALIASES = {
-  FranchiseInquiry: 'franchise@pilatesinpinkstudio.com',
+  FranchiseInquiry: 'partner@pilatesinpinkstudio.com',
   InfluencerApplication: 'partner@pilatesinpinkstudio.com',
   InstructorApplication: 'hire@pilatesinpinkstudio.com',
   FrontAdminApplication: 'hire@pilatesinpinkstudio.com',
+};
+
+// Override Reply-To for specific programs (else defaults to FROM)
+const REPLY_TO_ALIASES = {
+  FranchiseInquiry: 'franchise@pilatesinpinkstudio.com',
 };
 
 const PROGRAM_LABELS = {
@@ -220,6 +225,7 @@ Deno.serve(async (req) => {
     const bodyText = htmlToText(bodyHtml);
     const subject = `[Application #${displayNumber}] Welcome to Pilates in Pink \u2122`;
     const fromEmail = FROM_ALIASES[ticket_type];
+    const replyToEmail = REPLY_TO_ALIASES[ticket_type] || fromEmail;
     const fromHeader = `${rfc2047('Pilates in Pink \u2122')} <${fromEmail}>`;
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
@@ -228,7 +234,7 @@ Deno.serve(async (req) => {
     const headers = [
       `From: ${fromHeader}`,
       `To: ${ticket.email}`,
-      `Reply-To: ${fromEmail}`,
+      `Reply-To: ${replyToEmail}`,
       `Subject: ${rfc2047(subject)}`,
       'MIME-Version: 1.0',
       `Content-Type: multipart/alternative; boundary="${boundary}"`,

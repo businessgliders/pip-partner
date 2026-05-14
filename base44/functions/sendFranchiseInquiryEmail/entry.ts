@@ -19,7 +19,8 @@ const OWNER_EMAILS = [
   'franchise@pilatesinpinkstudio.com',
 ];
 
-const FROM_EMAIL = 'franchise@pilatesinpinkstudio.com';
+const FROM_EMAIL = 'partner@pilatesinpinkstudio.com';
+const REPLY_TO_EMAIL = 'franchise@pilatesinpinkstudio.com';
 const FROM_NAME = 'Pilates in Pink \u2122';
 
 const BRAND_PINK = '#f1889b';
@@ -159,7 +160,7 @@ async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   const headers = [
     `From: ${rfc2047(FROM_NAME)} <${FROM_EMAIL}>`,
     `To: ${recipients}`,
-    `Reply-To: ${replyTo || FROM_EMAIL}`,
+    `Reply-To: ${replyTo || REPLY_TO_EMAIL}`,
     `Subject: ${rfc2047(subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
