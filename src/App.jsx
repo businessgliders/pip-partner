@@ -9,7 +9,6 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Hire from './pages/Hire';
 import FrontAdmin from './pages/FrontAdmin';
-import AdminDashboard from './pages/AdminDashboard';
 import AdminHome from './pages/AdminHome';
 import AdminMarketing from './pages/AdminMarketing';
 import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
@@ -79,7 +78,7 @@ const AuthenticatedApp = () => {
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
       <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
-      <Route path="/Settings/Submissions" element={<AdminGate><AdminDashboard /></AdminGate>} />
+      <Route path="/Settings/Submissions" element={<Navigate to="/ApplicationBoard?view=table" replace />} />
       <Route path="/Settings/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
       <Route path="/Settings/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
       <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />

@@ -12,6 +12,9 @@ import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
 import { StatusChangeDialog, ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
 import { BOARD_TYPES, displayName } from "../components/board/boardConfig";
 import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
+import SubmissionsTable from "../components/admin/SubmissionsTable";
+import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
+import { LayoutGrid, Table2, Download } from "lucide-react";
 
 const PRIMARY = "#f1889b";
 const LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png";
@@ -63,7 +66,10 @@ export default function ApplicationBoard() {
   const [dragNoteDialog, setDragNoteDialog] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("status");
+  const [viewMode, setViewMode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("view") === "table" ? "table" : "status";
+  });
   const [hiddenColumns, setHiddenColumns] = useState([]);
   const [showCleanupPopup, setShowCleanupPopup] = useState(false);
   const [cleanupDismissed, setCleanupDismissed] = useState(false);
@@ -76,7 +82,6 @@ export default function ApplicationBoard() {
 
   useEffect(() => {
     setSearchQuery("");
-    setViewMode("status");
     setHiddenColumns([]);
     setShowArchived(false);
     setCleanupDismissed(false);
@@ -112,9 +117,14 @@ export default function ApplicationBoard() {
     return Array.from(vals).sort();
   }, [board.categoryField, tickets]);
 
-  const effectiveViewMode = board.categoryField ? viewMode : "status";
-  const columns = (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
-    .filter((c) => !hiddenColumns.includes(c));
+  // "table" is always available; "category" requires categoryField
+  const effectiveViewMode = viewMode === "table"
+    ? "table"
+    : (board.categoryField ? viewMode : "status");
+  const columns = effectiveViewMode === "table"
+    ? []
+    : (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
+        .filter((c) => !hiddenColumns.includes(c));
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -357,13 +367,54 @@ export default function ApplicationBoard() {
                 <Search className="w-4 h-4" />
               </button>
 
-              {!showArchived && board.categoryField && (
+              {!showArchived && (
+                <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
+                  <button
+                    onClick={() => setViewMode("status")}
+                    title="Board view"
+                    className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                      viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    <span className="hidden md:inline">Board</span>
+                  </button>
+                  {board.categoryField && (
+                    <button
+                      onClick={() => setViewMode("category")}
+                      title="View by category"
+                      className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                        viewMode === "category" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <span className="text-base leading-none">📂</span>
+                      <span className="hidden md:inline">Category</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setViewMode("table")}
+                    title="Table view"
+                    className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                      viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                    }`}
+                  >
+                    <Table2 className="w-4 h-4" />
+                    <span className="hidden md:inline">Table</span>
+                  </button>
+                </div>
+              )}
+
+              {!showArchived && viewMode === "table" && (
                 <button
-                  onClick={() => setViewMode((v) => (v === "status" ? "category" : "status"))}
-                  className="h-11 px-3 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg text-sm font-medium"
+                  onClick={() => {
+                    const rows = tickets.filter((t) => !t.archived && matchesSearch(t));
+                    downloadCsv(rows, activeTab);
+                  }}
+                  className="h-11 px-3 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg text-sm font-medium flex items-center gap-1.5"
+                  title="Export CSV"
                 >
-                  <span className="hidden md:inline">{viewMode === "status" ? "View by Category" : "View by Status"}</span>
-                  <span className="md:hidden text-base">{viewMode === "status" ? "📂" : "📊"}</span>
+                  <Download className="w-4 h-4" />
+                  <span className="hidden md:inline">Export</span>
                 </button>
               )}
 
@@ -408,6 +459,23 @@ export default function ApplicationBoard() {
               onView={(t) => setSelectedTicket(t)}
               onRestore={(t) => handleRestoreTicket(t.id)}
             />
+          </div>
+        ) : effectiveViewMode === "table" ? (
+          <div className="flex-1 lg:min-h-0 mt-2 overflow-auto pb-4">
+            {isLoading ? (
+              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                <div className="w-6 h-6 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin mx-auto" />
+              </div>
+            ) : (
+              <SubmissionsTable
+                rows={tickets.filter((t) => !t.archived && matchesSearch(t))}
+                columns={TABLE_COLUMN_CONFIG[board.key].columns}
+                detailFields={TABLE_COLUMN_CONFIG[board.key].detail}
+                accentColor={board.color}
+                accentBg={board.bg}
+                onRowClick={(row) => setSelectedTicket(row)}
+              />
+            )}
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>

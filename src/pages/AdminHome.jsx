@@ -9,7 +9,7 @@ const TILES = [
     title: "Submissions",
     description: "Franchise, influencer, instructor & front desk applications",
     icon: Inbox,
-    href: "/Settings/Submissions",
+    href: "/ApplicationBoard?view=table",
   },
   {
     title: "Marketing",
@@ -42,7 +42,7 @@ export default function AdminHome() {
     >
       <BackToHome />
 
-      <div className="max-w-5xl mx-auto px-6 py-14">
+      <div className="max-w-6xl mx-auto px-6 py-14">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -57,7 +57,7 @@ export default function AdminHome() {
           <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Settings</h1>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {TILES.map((tile, i) => {
             const Icon = tile.icon;
             return (
@@ -69,15 +69,15 @@ export default function AdminHome() {
               >
                 <Link
                   to={tile.href}
-                  className="group block bg-white/80 backdrop-blur-sm rounded-3xl p-10 md:p-12 text-center shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  className="group block bg-white/80 backdrop-blur-sm rounded-2xl p-5 md:p-6 text-center shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 h-full"
                 >
-                  <div className="flex justify-center mb-4">
-                    <div className="w-14 h-14 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-[#b67651]" strokeWidth={1.75} />
+                  <div className="flex justify-center mb-3">
+                    <div className="w-11 h-11 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-[#b67651]" strokeWidth={1.75} />
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-[#b67651] mb-1.5">{tile.title}</h3>
-                  <p className="text-sm text-[#b67651]/70">{tile.description}</p>
+                  <h3 className="text-sm md:text-base font-semibold text-[#b67651] mb-1">{tile.title}</h3>
+                  <p className="text-[11px] md:text-xs text-[#b67651]/70 leading-snug">{tile.description}</p>
                 </Link>
               </motion.div>
             );
