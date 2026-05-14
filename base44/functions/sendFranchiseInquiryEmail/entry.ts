@@ -194,7 +194,7 @@ async function sendGmail({ accessToken, to, subject, html, replyTo }) {
 
 // Delay (ms) before sending the submitter's discovery-call confirmation,
 // so the welcome email lands first in their inbox.
-const SUBMITTER_CONFIRMATION_DELAY_MS = 6 * 60 * 1000; // 6 minutes
+const SUBMITTER_CONFIRMATION_DELAY_MS = 2.5 * 60 * 1000; // 2.5 minutes
 
 // Wait up to ~10s for an app_number to be assigned by the entity automation.
 async function fetchRawAppNumber(base44, inquiryId) {
