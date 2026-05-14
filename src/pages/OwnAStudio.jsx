@@ -15,9 +15,10 @@ import LoadingTransition from "../components/franchise/LoadingTransition";
 import ResumeInquiryDialog from "../components/franchise/ResumeInquiryDialog";
 
 export default function OwnAStudio() {
-  const [stage, setStage] = useState("form"); // form | loading | schedule | done
+  const [stage, setStage] = useState("form"); // form | loading | schedule | done | resumed
   const [inquiryId, setInquiryId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resumedInquiry, setResumedInquiry] = useState(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -54,7 +55,16 @@ export default function OwnAStudio() {
     }));
     setInquiryId(inquiry.id);
     setResumeDialog({ open: false, email: "" });
-    setStage("schedule");
+
+    // If the applicant is past the "new" stage, they shouldn't see the booking
+    // step again. Show a friendly status view instead.
+    const alreadyProgressed = inquiry.status && inquiry.status !== "new";
+    if (alreadyProgressed) {
+      setResumedInquiry(inquiry);
+      setStage("resumed");
+    } else {
+      setStage("schedule");
+    }
   };
 
   const scrollToForm = () => {
@@ -181,6 +191,48 @@ export default function OwnAStudio() {
                 onConfirm={handleScheduleConfirm}
                 isSubmitting={isSubmitting}
               />
+            )}
+            {stage === "resumed" && resumedInquiry && (
+              <motion.div
+                key="resumed"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-12 text-center"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#f7b1bd]/30 flex items-center justify-center"
+                >
+                  <CheckCircle2 className="w-10 h-10 text-[#b67651]" />
+                </motion.div>
+                <h2 className="text-2xl font-light text-[#b67651] mb-3">
+                  Welcome back, {resumedInquiry.first_name}
+                </h2>
+                {resumedInquiry.scheduled_call_time ? (
+                  <>
+                    <p className="text-[#b67651]/70 max-w-md mx-auto leading-relaxed mb-5">
+                      Your discovery call is already booked for:
+                    </p>
+                    <div className="inline-block bg-[#fbe0e2]/60 border border-[#f1889b]/40 rounded-2xl px-6 py-4">
+                      <p className="text-xs tracking-[0.2em] text-[#b67651]/70 font-medium mb-1">
+                        YOUR CALL
+                      </p>
+                      <p className="text-lg text-[#b67651] font-medium">
+                        {resumedInquiry.scheduled_call_time}
+                      </p>
+                    </div>
+                    <p className="text-[#b67651]/60 text-sm mt-5 max-w-md mx-auto">
+                      Check your inbox for the calendar invite. We can't wait to chat.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-[#b67651]/70 max-w-md mx-auto leading-relaxed">
+                    Your application is already with our franchise team and is being reviewed. We'll be in touch by email with next steps shortly.
+                  </p>
+                )}
+              </motion.div>
             )}
             {stage === "done" && (
               <motion.div

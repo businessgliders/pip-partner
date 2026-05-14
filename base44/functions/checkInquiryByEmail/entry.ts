@@ -158,7 +158,7 @@ async function sendGmail({ accessToken, to, subject, html }) {
 
 Deno.serve(async (req) => {
   try {
-    const { email } = await req.json();
+    const { email, sendPin = false } = await req.json();
     if (!isValidEmail(email)) {
       return Response.json({ found: false, sent: false });
     }
@@ -166,20 +166,24 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const normalized = email.trim().toLowerCase();
 
-    // Find the most recent UNSCHEDULED, non-archived inquiry for this email
+    // Find the most recent non-archived inquiry for this email
     const matches = await base44.asServiceRole.entities.FranchiseInquiry.filter(
       { email: normalized },
       '-created_date',
       20
     );
 
-    const candidate = (matches || []).find(
-      (r) => !r.archived && !r.scheduled_call_time
-    );
+    const candidate = (matches || []).find((r) => !r.archived);
 
     if (!candidate) {
-      // Don't leak existence — always respond similarly
       return Response.json({ found: false, sent: false });
+    }
+
+    // If only doing a lookup (no PIN send), return found and stop here.
+    // This prevents a PIN from being emailed every time the user types/leaves
+    // the email field — we only send when they explicitly confirm "resume".
+    if (!sendPin) {
+      return Response.json({ found: true, sent: false });
     }
 
     // Generate PIN, store hash + expiry

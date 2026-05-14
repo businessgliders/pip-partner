@@ -27,7 +27,7 @@ export default function ResumeInquiryDialog({ open, email, onClose, onVerified }
     setIsSending(true);
     setError("");
     try {
-      await base44.functions.invoke("checkInquiryByEmail", { email });
+      await base44.functions.invoke("checkInquiryByEmail", { email, sendPin: true });
       setStep("verify");
     } catch (_) {
       setError("Couldn't send the code. Please try again.");

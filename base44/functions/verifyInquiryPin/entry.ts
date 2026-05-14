@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       20
     );
     const candidate = (matches || []).find(
-      (r) => !r.archived && !r.scheduled_call_time && r.resume_pin_hash
+      (r) => !r.archived && r.resume_pin_hash
     );
 
     if (!candidate) {
@@ -79,6 +79,8 @@ Deno.serve(async (req) => {
         phone: candidate.phone || '',
         preferred_location: candidate.preferred_location || '',
         available_capital: candidate.available_capital || '',
+        status: candidate.status || 'new',
+        scheduled_call_time: candidate.scheduled_call_time || '',
       },
     });
   } catch (error) {
