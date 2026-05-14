@@ -87,13 +87,13 @@ function buildHtml(applicationData, appNumber) {
   `;
 }
 
-async function sendGmail({ accessToken, to, subject, html }) {
+async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   const text = htmlToText(html);
   const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const headers = [
     `From: ${rfc2047(FROM_NAME)} <${FROM_EMAIL}>`,
     `To: ${to}`,
-    `Reply-To: ${FROM_EMAIL}`,
+    `Reply-To: ${replyTo || FROM_EMAIL}`,
     `Subject: ${rfc2047(subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -141,6 +141,7 @@ Deno.serve(async (req) => {
       to,
       subject: `${appTag}New Influencer Application: ${applicationData.full_name || ''}`,
       html,
+      replyTo: applicationData.email || undefined,
     })));
 
     const allOk = results.every((r) => r.ok);

@@ -19,8 +19,7 @@ const OWNER_EMAILS = [
   'franchise@pilatesinpinkstudio.com',
 ];
 
-const FROM_EMAIL = 'partner@pilatesinpinkstudio.com';
-const REPLY_TO_EMAIL = 'franchise@pilatesinpinkstudio.com';
+const FROM_EMAIL = 'franchise@pilatesinpinkstudio.com';
 const FROM_NAME = 'Pilates in Pink \u2122';
 
 const BRAND_PINK = '#f1889b';
@@ -153,14 +152,14 @@ function ownerEmail(inquiry, scheduledTime, appNumber) {
   return brandedShell(inner, hasSlot ? `New franchise inquiry from ${fullName} — ${scheduledTime}` : `New franchise inquiry from ${fullName}`);
 }
 
-async function sendGmail({ accessToken, to, subject, html }) {
+async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   const text = htmlToText(html);
   const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const recipients = Array.isArray(to) ? to.join(', ') : to;
   const headers = [
     `From: ${rfc2047(FROM_NAME)} <${FROM_EMAIL}>`,
     `To: ${recipients}`,
-    `Reply-To: ${REPLY_TO_EMAIL}`,
+    `Reply-To: ${replyTo || FROM_EMAIL}`,
     `Subject: ${rfc2047(subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -223,6 +222,7 @@ Deno.serve(async (req) => {
       to: OWNER_EMAILS,
       subject: ownerSubject,
       html: ownerEmail(inquiryData, scheduledTime, appNumber),
+      replyTo: inquiryData.email || undefined,
     }));
 
     const results = await Promise.all(tasks);
