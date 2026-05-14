@@ -140,15 +140,14 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
-    const results = await Promise.all(OWNER_EMAILS.map((to) => sendGmail({
+    const result = await sendGmail({
       accessToken,
-      to,
+      to: OWNER_EMAILS.join(', '),
       subject: `${appTag}New Instructor Application: ${name}`,
       html,
-    })));
+    });
 
-    const allOk = results.every((r) => r.ok);
-    return Response.json({ success: allOk, results });
+    return Response.json({ success: result.ok, results: [result] });
   } catch (error) {
     console.error('sendInstructorApplicationEmail error', error);
     return Response.json({ error: error.message }, { status: 500 });
