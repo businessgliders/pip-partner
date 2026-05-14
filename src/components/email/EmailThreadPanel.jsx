@@ -16,6 +16,50 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: "Front Desk Application",
 };
 
+function buildIntakeFull(ticket, ticketType) {
+  const rows = [];
+  const add = (label, value) => {
+    if (value === undefined || value === null || value === "") return;
+    rows.push(
+      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:#94a3b8;font-weight:600;width:140px;word-break:break-word;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:#334155;word-break:break-word;overflow-wrap:anywhere;">${value}</td></tr>`
+    );
+  };
+
+  const phone = [ticket?.phone_country, ticket?.phone].filter(Boolean).join(" ");
+  add("Email", ticket?.email);
+  add("Phone", phone);
+
+  if (ticketType === "FranchiseInquiry") {
+    add("Province", ticket?.province);
+    add("Preferred Location", ticket?.preferred_location);
+    add("Available Capital", ticket?.available_capital);
+    add("Operation Style", ticket?.operation_style);
+    add("Ready to Sign NDA", ticket?.ready_to_sign_nda);
+    add("Why Pilates in Pink", ticket?.why_pilates_in_pink);
+    add("Business Experience", ticket?.business_experience);
+    add("Discovery Call", ticket?.scheduled_call_time);
+  } else if (ticketType === "InfluencerApplication") {
+    add("Instagram", ticket?.instagram_handle ? `@${ticket.instagram_handle}` : "");
+    add("TikTok", ticket?.tiktok_handle ? `@${ticket.tiktok_handle}` : "");
+    add("Followers", ticket?.follower_count);
+    add("Content Style", ticket?.content_style);
+    add("Location", ticket?.location);
+    add("Why Partner", ticket?.why_partner);
+  } else if (ticketType === "InstructorApplication" || ticketType === "FrontAdminApplication") {
+    add("Preferred Studio", ticket?.preferred_studio);
+    add("Postal Code", ticket?.postal_code);
+    add("Province", ticket?.province);
+    if (ticket?.qualifications?.length) add("Qualifications", ticket.qualifications.join(", "));
+    if (ticket?.resume_url) add("Resume", `<a href="${ticket.resume_url}" target="_blank" rel="noopener noreferrer" style="color:#0f172a;text-decoration:underline;">View Resume</a>`);
+    add("Message", ticket?.message);
+  }
+
+  if (!rows.length) {
+    return `<p><em>${PROGRAM_LABELS[ticketType]} submitted — no additional notes.</em></p>`;
+  }
+  return `<table style="border-collapse:collapse;width:100%;">${rows.join("")}</table>`;
+}
+
 function buildIntakeSummary(ticket, ticketType) {
   const name =
     ticket?.full_name ||
@@ -115,6 +159,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     from_email: ticket?.email || "",
     subject: `${PROGRAM_LABELS[ticketType]} — Original submission`,
     body_html: buildIntakeSummary(ticket, ticketType),
+    full_body_html: buildIntakeFull(ticket, ticketType),
     sent_at: ticket?.created_date,
     send_status: "received",
     is_ai_summary: true,

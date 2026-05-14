@@ -145,7 +145,7 @@ function MessageDialog({ open, onOpenChange, message }) {
         <div
           className="prose prose-sm max-w-none break-words [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_td]:whitespace-normal [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
           dangerouslySetInnerHTML={{
-            __html: message.body_html || `<pre>${message.body_text || ""}</pre>`,
+            __html: message.full_body_html || message.body_html || `<pre>${message.body_text || ""}</pre>`,
           }}
         />
       </DialogContent>
