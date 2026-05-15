@@ -83,9 +83,9 @@ export default function SubmissionDetailModal({
             className="flex flex-col overflow-hidden border-r"
             style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf3ec 100%)" }}
           >
-            {/* Header + Contact (fixed) */}
+            {/* Header (fixed) */}
             <div className="p-6 border-b shrink-0">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[10px] tracking-[0.2em] uppercase font-semibold mb-1" style={{ color: accentColor }}>
                     Submission {row.app_number ? `#${formatAppNumber(row.app_number, tabKey)}` : ""}
@@ -99,44 +99,6 @@ export default function SubmissionDetailModal({
                 <button onClick={() => onOpenChange(false)} className="text-slate-400 hover:text-slate-700">
                   <X className="w-4 h-4" />
                 </button>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold">Contact</p>
-                {row.email && (
-                  <a
-                    href={`mailto:${row.email}`}
-                    className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    {row.email}
-                  </a>
-                )}
-                {row.phone && (
-                  <a
-                    href={`tel:${row.phone}`}
-                    className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
-                  >
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    {[row.phone_country, row.phone].filter(Boolean).join(" ")}
-                  </a>
-                )}
-                {(row.preferred_location || row.location || row.city || row.province) && (
-                  <div className="flex items-center gap-2 text-sm text-slate-700">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    {[row.preferred_location || row.location || row.city, row.province].filter(Boolean).join(" · ")}
-                  </div>
-                )}
-                {row.resume_url && (
-                  <a
-                    href={row.resume_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" /> View Resume
-                  </a>
-                )}
               </div>
             </div>
 
@@ -161,6 +123,42 @@ export default function SubmissionDetailModal({
                 <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-3">
                   Request Details
                 </p>
+                <div className="space-y-2 mb-4 pb-4 border-b border-slate-100">
+                  {row.email && (
+                    <a
+                      href={`mailto:${row.email}`}
+                      className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      {row.email}
+                    </a>
+                  )}
+                  {row.phone && (
+                    <a
+                      href={`tel:${row.phone}`}
+                      className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      {[row.phone_country, row.phone].filter(Boolean).join(" ")}
+                    </a>
+                  )}
+                  {(row.preferred_location || row.location || row.city || row.province) && (
+                    <div className="flex items-center gap-2 text-sm text-slate-700">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      {[row.preferred_location || row.location || row.city, row.province].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
+                  {row.resume_url && (
+                    <a
+                      href={row.resume_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> View Resume
+                    </a>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 gap-3">
                   {detailFields
                     .filter((f) => !REDUNDANT_KEYS.has(f.key))
