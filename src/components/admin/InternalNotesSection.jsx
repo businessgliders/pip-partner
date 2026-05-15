@@ -19,7 +19,7 @@ function formatRelativeTime(dateString) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default function InternalNotesSection({ notes = [], onAddNote, accentColor }) {
+export default function InternalNotesSection({ notes = [], onAddNote, accentColor, large = false }) {
   const [expanded, setExpanded] = useState(true);
   const [newNote, setNewNote] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -63,7 +63,7 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
         <div className="mt-3 space-y-3">
           {/* Existing notes */}
           {notes.length > 0 && (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className={`space-y-2 overflow-y-auto ${large ? "max-h-[420px]" : "max-h-48"}`}>
               {[...notes].reverse().map((note, i) => (
                 <div
                   key={i}
@@ -92,7 +92,7 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
               placeholder="Add an internal note..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              className="min-h-[60px] resize-none text-sm bg-white"
+              className={`resize-none text-sm bg-white ${large ? "min-h-[100px]" : "min-h-[60px]"}`}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
               }}
