@@ -71,6 +71,11 @@
       "type": "boolean",
       "default": false
     },
+    "is_internal": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this is an internal team-to-team email (not sent to the applicant)"
+    },
     "send_status": {
       "type": "string",
       "enum": [

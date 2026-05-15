@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { ticket_id, ticket_type, body_html, is_welcome } = await req.json();
+    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override } = await req.json();
 
     if (!ticket_id || !ticket_type || !body_html) {
       return Response.json({ error: 'Missing ticket_id, ticket_type or body_html' }, { status: 400 });
@@ -134,9 +134,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Ticket not found' }, { status: 404 });
     }
 
-    const toEmail = getTicketEmail(ticket);
-    if (!toEmail || !isValidEmail(toEmail)) {
-      return Response.json({ error: 'Ticket has no valid email address' }, { status: 400 });
+    // Determine recipient — either the applicant or an internal team member override.
+    // Internal override is allowed only if the email belongs to a staff domain.
+    let toEmail;
+    let isInternal = false;
+    if (to_email_override) {
+      if (!isValidEmail(to_email_override) || !isStaffEmail(to_email_override)) {
+        return Response.json({ error: 'Override recipient must be a valid staff email' }, { status: 400 });
+      }
+      toEmail = to_email_override;
+      isInternal = true;
+    } else {
+      toEmail = getTicketEmail(ticket);
+      if (!toEmail || !isValidEmail(toEmail)) {
+        return Response.json({ error: 'Ticket has no valid email address' }, { status: 400 });
+      }
     }
 
     // Defense-in-depth: enforce that the From alias is one of our known senders.
@@ -161,11 +173,19 @@ Deno.serve(async (req) => {
 
     const subjectTag = buildSubjectTag(ticket);
     let subject;
-    if (lastReal?.subject) {
+    if (isInternal) {
+      const inquiryWord =
+        ticket_type === 'FranchiseInquiry' ? 'Franchise Inquiry'
+          : ticket_type === 'InfluencerApplication' ? 'Influencer Application'
+          : ticket_type === 'InstructorApplication' ? 'Instructor Application'
+          : 'Front Desk Application';
+      const applicantName = getTicketName(ticket);
+      subject = safeSubjectInput(`[Internal] ${subjectTag} ${inquiryWord} — ${applicantName}`);
+    } else if (lastReal?.subject) {
       // Strip existing Re: and tag (old or new format) from previous subject, then rebuild
       let prev = lastReal.subject
         .replace(/^(Re:\s*)+/i, '')
-        .replace(/^\[(Ticket|Application) #[^\]]+\]\s*/, '')
+        .replace(/^\[(Ticket|Application|Internal) #?[^\]]*\]\s*/g, '')
         .trim();
       subject = safeSubjectInput(`Re: ${subjectTag} ${prev}`);
     } else {
@@ -210,7 +230,8 @@ Deno.serve(async (req) => {
     headers.push('MIME-Version: 1.0');
     headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
 
-    if (lastReal?.rfc_message_id) {
+    // Only thread into the applicant conversation when this is NOT an internal email
+    if (!isInternal && lastReal?.rfc_message_id) {
       headers.push(`In-Reply-To: ${lastReal.rfc_message_id}`);
       const refs = lastReal.references
         ? `${lastReal.references} ${lastReal.rfc_message_id}`
@@ -239,7 +260,7 @@ Deno.serve(async (req) => {
     const raw = base64url(rawMime);
 
     const sendPayload = { raw };
-    if (lastReal?.gmail_thread_id) {
+    if (!isInternal && lastReal?.gmail_thread_id) {
       sendPayload.threadId = lastReal.gmail_thread_id;
     }
 
@@ -271,6 +292,7 @@ Deno.serve(async (req) => {
         sent_by: user.email,
         sent_at: new Date().toISOString(),
         is_welcome: !!is_welcome,
+        is_internal: isInternal,
         send_status: 'failed',
         send_error: errText.slice(0, 1000),
         read_by: [user.email],
@@ -298,9 +320,11 @@ Deno.serve(async (req) => {
       }
     } catch (_) {}
 
-    const refsChain = lastReal?.references
-      ? `${lastReal.references} ${lastReal.rfc_message_id}`
-      : lastReal?.rfc_message_id || '';
+    const refsChain = !isInternal && lastReal
+      ? (lastReal.references
+          ? `${lastReal.references} ${lastReal.rfc_message_id}`
+          : lastReal?.rfc_message_id || '')
+      : '';
 
     const newMessage = await base44.asServiceRole.entities.EmailMessage.create({
       ticket_id,
@@ -308,7 +332,7 @@ Deno.serve(async (req) => {
       gmail_thread_id: gmailThreadId,
       gmail_message_id: gmailMessageId,
       rfc_message_id: rfcMessageId,
-      in_reply_to: lastReal?.rfc_message_id || '',
+      in_reply_to: !isInternal ? (lastReal?.rfc_message_id || '') : '',
       references: refsChain,
       direction: 'outbound',
       from_email: fromEmail,
@@ -320,6 +344,7 @@ Deno.serve(async (req) => {
       sent_by: user.email,
       sent_at: new Date().toISOString(),
       is_welcome: !!is_welcome,
+      is_internal: isInternal,
       send_status: 'sent',
       read_by: [user.email],
       read_at: [{ email: user.email, timestamp: new Date().toISOString() }],

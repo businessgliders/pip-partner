@@ -1,13 +1,21 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
-  Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays
+  Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
 import BookCallPopover from "./BookCallPopover";
+
+const STAFF_DOMAINS = ["pilatesinpinkstudio.com", "pilatesinpink.ca"];
+const isStaffEmail = (e) =>
+  !!e && STAFF_DOMAINS.some((d) => e.toLowerCase().endsWith(`@${d}`));
 
 function isEmpty(html) {
   return !(html || "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, "").trim();
@@ -28,6 +36,25 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   const [showDescribe, setShowDescribe] = useState(false);
   const [showSuggest, setShowSuggest] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null); // { start, timeZone, friendly }
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [recipientOverride, setRecipientOverride] = useState(null); // { email, name } or null
+
+  // Load team members (admin users with staff-domain email) once
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const users = await base44.entities.User.list("-created_date", 200);
+        const staff = (users || []).filter(
+          (u) => isStaffEmail(u.email) && u.email !== currentUser?.email
+        );
+        if (!cancelled) setTeamMembers(staff);
+      } catch (e) {
+        console.error("Failed to load team members", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentUser?.email]);
 
   const ticketEmail = ticket?.email || "";
   const ticketName =
@@ -69,14 +96,18 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     setSending(true);
     try {
       // 1. Send the email first. If this fails, we never book the slot.
-      await base44.functions.invoke("sendTicketEmail", {
+      const payload = {
         ticket_id: ticket.id,
         ticket_type: ticketType,
         body_html: html,
-      });
+      };
+      if (recipientOverride?.email) {
+        payload.to_email_override = recipientOverride.email;
+      }
+      await base44.functions.invoke("sendTicketEmail", payload);
 
-      // 2. Only book the Cal.com slot AFTER a successful send.
-      if (pendingBooking) {
+      // 2. Only book the Cal.com slot AFTER a successful send (skip for internal emails).
+      if (pendingBooking && !recipientOverride) {
         try {
           await base44.functions.invoke("bookCalEvent", {
             start: pendingBooking.start,
@@ -97,6 +128,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
 
       setHtml("");
       setPendingBooking(null);
+      setRecipientOverride(null);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -150,13 +182,77 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
 
   return (
     <div className="border-t bg-white p-4 space-y-3">
-      <div className="flex items-center justify-between text-xs text-gray-600">
-        <div className="space-y-0.5">
+      <div className="flex items-start justify-between text-xs text-gray-600 gap-2">
+        <div className="space-y-0.5 min-w-0 flex-1">
           <div>
             <span className="font-medium">From:</span> {FROM_ALIASES[ticketType] || "—"}
           </div>
-          <div>
-            <span className="font-medium">To:</span> {ticketEmail || "—"}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-medium">To:</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-xs hover:bg-gray-50 ${
+                    recipientOverride
+                      ? "border-amber-300 bg-amber-50 text-amber-900"
+                      : "border-gray-200 text-gray-700"
+                  }`}
+                  title="Change recipient"
+                >
+                  {recipientOverride ? (
+                    <>
+                      <Users className="w-3 h-3" />
+                      <span className="truncate max-w-[220px]">
+                        {recipientOverride.name || recipientOverride.email}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="truncate max-w-[220px]">{ticketEmail || "—"}</span>
+                  )}
+                  <span className="text-gray-400">▾</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-gray-400">
+                  Applicant
+                </DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setRecipientOverride(null)}>
+                  <span className="truncate">{ticketEmail || "—"}</span>
+                </DropdownMenuItem>
+                {teamMembers.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-gray-400">
+                      Team members (internal)
+                    </DropdownMenuLabel>
+                    {teamMembers.map((m) => (
+                      <DropdownMenuItem
+                        key={m.id || m.email}
+                        onClick={() =>
+                          setRecipientOverride({
+                            email: m.email,
+                            name: m.full_name || m.email,
+                          })
+                        }
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="truncate text-sm">{m.full_name || m.email}</span>
+                          {m.full_name && (
+                            <span className="truncate text-[10px] text-gray-500">{m.email}</span>
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {recipientOverride && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-semibold">
+                INTERNAL
+              </span>
+            )}
           </div>
         </div>
         {onCancel && (

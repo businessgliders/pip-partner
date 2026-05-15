@@ -34,6 +34,7 @@ export default function EmailMessageItem({ message, isHighlighted }) {
   const isInbound = message.direction === "inbound";
   const isFailed = message.send_status === "failed";
   const isWelcome = message.is_welcome;
+  const isInternal = message.is_internal;
 
   const cleanText = stripQuotedReply(stripHtml(message.body_html || message.body_text || ""));
   const isLong = cleanText.length > 180;
@@ -77,12 +78,24 @@ export default function EmailMessageItem({ message, isHighlighted }) {
             <span className="font-medium text-pink-700">{message.from_email}</span>
           </div>
         )}
+        {isInternal && !isInbound && (
+          <div className="text-[10px] text-amber-700 mb-1 mr-1 font-semibold tracking-wider uppercase flex items-center gap-1">
+            <span className="inline-block px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300">
+              Internal
+            </span>
+            <span className="text-gray-500 normal-case font-normal">
+              to {message.to_email}
+            </span>
+          </div>
+        )}
         <div
           className={`relative max-w-[80%] rounded-2xl px-4 py-2.5 cursor-pointer transition-all ${
             isInbound
               ? "bg-white border border-gray-200 rounded-bl-sm"
               : isFailed
               ? "bg-red-50 border border-red-300 rounded-br-sm"
+              : isInternal
+              ? "bg-amber-50 border border-amber-200 rounded-br-sm"
               : "bg-pink-100 rounded-br-sm"
           } ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
           onClick={() => setOpen(true)}

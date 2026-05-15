@@ -145,11 +145,15 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     refetchInterval: 15000,
   });
 
-  // Filter out internal outbound notifications (sent to @staff domain)
+  // Filter out legacy internal outbound notifications (sent to staff domain) that
+  // were NOT explicitly flagged as is_internal — those are system notifications,
+  // not user-authored internal emails. Keep all is_internal=true messages visible.
   const visibleReal = useMemo(
     () =>
       messages.filter(
-        (m) => !(m.direction === "outbound" && isStaff(m.to_email))
+        (m) =>
+          m.is_internal ||
+          !(m.direction === "outbound" && isStaff(m.to_email))
       ),
     [messages]
   );
