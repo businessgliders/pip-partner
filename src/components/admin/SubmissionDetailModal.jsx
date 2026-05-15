@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Mail, Phone, ExternalLink, MapPin } from "lucide-react";
+import { Mail, Phone, ExternalLink, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import EmailThreadPanel from "../email/EmailThreadPanel";
 import InternalNotesSection from "./InternalNotesSection";
@@ -96,9 +96,20 @@ export default function SubmissionDetailModal({
                     <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
                   </div>
                 </div>
-                <button onClick={() => onOpenChange(false)} className="text-slate-400 hover:text-slate-700">
-                  <X className="w-4 h-4" />
-                </button>
+                <a
+                  href="https://cal.com/pilatesinpink"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open Cal.com"
+                  className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
+                >
+                  <img
+                    src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
+                    alt="Cal.com"
+                    className="w-4 h-4 rounded-sm"
+                  />
+                  Cal.com
+                </a>
               </div>
             </div>
 
