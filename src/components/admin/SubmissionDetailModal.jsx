@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, Mail, Phone, ExternalLink, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import EmailThreadPanel from "../email/EmailThreadPanel";
+import InternalNotesSection from "./InternalNotesSection";
+import AssignTicketSection from "./AssignTicketSection";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
 import { formatAppNumber } from "@/lib/appNumberDisplay";
 
@@ -32,10 +36,32 @@ export default function SubmissionDetailModal({
   accentColor = "#0f172a",
 }) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   if (!row) return null;
 
   const ticketType = ENTITY_KEY_TO_NAME[tabKey];
+  const entityName = ticketType;
   const displayName = row.full_name || fullName(row);
+
+  const handleAddNote = async (comment) => {
+    const existing = Array.isArray(row.internal_notes) ? row.internal_notes : [];
+    const newNote = {
+      user_email: user?.email || "",
+      user_name: user?.full_name || user?.email?.split("@")[0] || "Staff",
+      comment,
+      timestamp: new Date().toISOString(),
+    };
+    const updated = [...existing, newNote];
+    await base44.entities[entityName].update(row.id, { internal_notes: updated });
+    row.internal_notes = updated;
+    queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
+  };
+
+  const handleAssign = async (email) => {
+    await base44.entities[entityName].update(row.id, { assigned_to: email });
+    row.assigned_to = email;
+    queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,6 +134,18 @@ export default function SubmissionDetailModal({
                 />
               ))}
             </div>
+
+            <AssignTicketSection
+              assignedTo={row.assigned_to}
+              onAssign={handleAssign}
+              accentColor={accentColor}
+            />
+
+            <InternalNotesSection
+              notes={row.internal_notes || []}
+              onAddNote={handleAddNote}
+              accentColor={accentColor}
+            />
           </div>
 
           {/* Right: email thread */}

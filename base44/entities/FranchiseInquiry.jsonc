@@ -130,6 +130,10 @@
       ],
       "default": "Medium"
     },
+    "assigned_to": {
+      "type": "string",
+      "description": "Email of the admin user assigned to this ticket"
+    },
     "status_history": {
       "type": "array",
       "items": {
@@ -151,6 +155,29 @@
         }
       },
       "default": []
+    },
+    "internal_notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_email": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": [],
+      "description": "Internal staff notes thread"
     },
     "archived": {
       "type": "boolean",
