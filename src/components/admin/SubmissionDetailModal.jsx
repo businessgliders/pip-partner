@@ -77,7 +77,7 @@ export default function SubmissionDetailModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 max-h-[92vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] max-h-[92vh]">
           {/* Left: Contact + Email Communications */}
           <div
             className="flex flex-col overflow-hidden border-r"
