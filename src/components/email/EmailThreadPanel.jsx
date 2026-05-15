@@ -16,6 +16,14 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: "Front Desk Application",
 };
 
+// Mirror of FROM_ALIASES in functions/sendTicketEmail.js (display only)
+const FROM_ALIASES = {
+  FranchiseInquiry: "franchise@pilatesinpinkstudio.com",
+  InfluencerApplication: "partner@pilatesinpinkstudio.com",
+  InstructorApplication: "hire@pilatesinpinkstudio.com",
+  FrontAdminApplication: "hire@pilatesinpinkstudio.com",
+};
+
 function buildIntakeFull(ticket, ticketType) {
   const rows = [];
   const add = (label, value) => {
@@ -227,16 +235,22 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
   return (
     <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
-        <div className="flex items-center gap-2">
-          <Mail className="w-4 h-4 text-pink-600" />
+        <div className="flex items-center gap-2 min-w-0">
+          <Mail className="w-4 h-4 text-pink-600 shrink-0" />
           <span className="font-semibold text-sm text-gray-800">Email Communications</span>
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
             {allMessages.length}
           </span>
         </div>
-        <span className="text-xs text-gray-500 truncate max-w-[200px]">
-          {ticket?.email || "—"}
-        </span>
+        <div className="text-right text-[11px] text-gray-600 leading-tight min-w-0">
+          <div className="truncate max-w-[240px]">
+            <span className="text-gray-400">From:</span>{" "}
+            <span className="font-medium text-pink-700">{FROM_ALIASES[ticketType] || "—"}</span>
+          </div>
+          <div className="truncate max-w-[240px]">
+            <span className="text-gray-400">To:</span> {ticket?.email || "—"}
+          </div>
+        </div>
       </div>
 
       <div
