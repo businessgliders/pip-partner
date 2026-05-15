@@ -68,9 +68,15 @@ export default function EmailMessageItem({ message, isHighlighted }) {
   return (
     <>
       <div
-        className={`flex ${isInbound ? "justify-start" : "justify-end"} mb-3`}
+        className={`flex flex-col ${isInbound ? "items-start" : "items-end"} mb-3`}
         id={`msg-${message.id}`}
       >
+        {!isInbound && message.from_email && (
+          <div className="text-[10px] text-gray-500 mb-1 mr-1">
+            <span className="text-gray-400">From:</span>{" "}
+            <span className="font-medium text-pink-700">{message.from_email}</span>
+          </div>
+        )}
         <div
           className={`relative max-w-[80%] rounded-2xl px-4 py-2.5 cursor-pointer transition-all ${
             isInbound
