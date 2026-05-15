@@ -252,6 +252,12 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
             {allMessages.length}
           </span>
+          {ticket?.email && (
+            <span className="text-[11px] text-gray-500 truncate ml-2">
+              <span className="text-gray-400">From:</span>{" "}
+              <span className="font-medium text-gray-700">{ticket.email}</span>
+            </span>
+          )}
         </div>
       </div>
 

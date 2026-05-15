@@ -106,24 +106,14 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               {!isFailed && <span>{senderName}</span>}
             </div>
           )}
-          {(message.from_email || message.to_email) && (
+          {message.to_email && (
             <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
-              {message.from_email && (
-                <div className="truncate">
-                  <span className="text-gray-400">From:</span>{" "}
-                  <span className={`font-medium ${isInbound ? "text-gray-700" : "text-pink-700"}`}>
-                    {fromDisplay}
-                  </span>
-                </div>
-              )}
-              {message.to_email && (
-                <div className="truncate">
-                  <span className="text-gray-400">To:</span>{" "}
-                  <span className={`font-medium ${isInbound ? "text-pink-700" : "text-gray-700"}`}>
-                    {toDisplay}
-                  </span>
-                </div>
-              )}
+              <div className="truncate">
+                <span className="text-gray-400">To:</span>{" "}
+                <span className={`font-medium ${isInbound ? "text-pink-700" : "text-gray-700"}`}>
+                  {toDisplay}
+                </span>
+              </div>
             </div>
           )}
           {message.is_ai_summary ? (
