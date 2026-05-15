@@ -85,8 +85,9 @@ export default function TicketCard({
   const category = ticket._category || "";
 
   const scheduledTimeLabel = (() => {
-    if (boardKey !== "franchise" || ticket.status !== "scheduled" || !ticket.scheduled_call_time) return "";
-    const d = new Date(ticket.scheduled_call_time);
+    const startIso = ticket._cal_booking?.start || ticket.scheduled_call_time;
+    if (!startIso) return "";
+    const d = new Date(startIso);
     if (isNaN(d.getTime())) return "";
     return d.toLocaleString("en-US", {
       weekday: "short",
@@ -123,6 +124,9 @@ export default function TicketCard({
                 <span className="text-gray-500 mr-1">{num}</span>{name}
               </div>
               {category && <div className="text-[10px] text-gray-600 mt-0.5">{category}</div>}
+              {scheduledTimeLabel && (
+                <div className="text-[10px] text-emerald-700 mt-0.5 font-medium truncate">📅 {scheduledTimeLabel}</div>
+              )}
             </div>
           </div>
           <DropdownMenu>
@@ -153,19 +157,17 @@ export default function TicketCard({
               <div className="text-sm font-semibold text-gray-900 truncate">
                 <span className="font-bold text-gray-500 mr-1">{num}</span>{name}
               </div>
+              {scheduledTimeLabel && (
+                <span className="inline-block mt-1 mr-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium max-w-full truncate">
+                  📅 {scheduledTimeLabel}
+                </span>
+              )}
               {boardKey === "franchise" ? (
-                <>
-                  {scheduledTimeLabel && (
-                    <span className="inline-block mt-1 mr-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium max-w-full truncate">
-                      📅 {scheduledTimeLabel}
-                    </span>
-                  )}
-                  {(ticket.preferred_location || ticket.province) && (
-                    <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
-                      📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province].filter(Boolean).join(" · ")}
-                    </span>
-                  )}
-                </>
+                (ticket.preferred_location || ticket.province) && (
+                  <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
+                    📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province].filter(Boolean).join(" · ")}
+                  </span>
+                )
               ) : (
                 category && (
                   <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700">

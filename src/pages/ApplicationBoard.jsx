@@ -96,15 +96,29 @@ export default function ApplicationBoard() {
     refetchInterval: 5000,
   });
 
+  const { data: calBookings = {} } = useQuery({
+    queryKey: ["cal-bookings"],
+    queryFn: async () => {
+      const resp = await base44.functions.invoke("getCalBookings", {});
+      return resp?.data?.bookings || {};
+    },
+    refetchInterval: 60000,
+    staleTime: 30000,
+  });
+
   const tickets = useMemo(
     () =>
-      (rawTickets || []).map((t) => ({
-        ...t,
-        _display_name: displayName(t),
-        _category: board.categoryField ? (t[board.categoryField] || "") : "",
-        _dragId: t.id,
-      })),
-    [rawTickets, board.categoryField]
+      (rawTickets || []).map((t) => {
+        const emailKey = (t.email || "").toLowerCase().trim();
+        return {
+          ...t,
+          _display_name: displayName(t),
+          _category: board.categoryField ? (t[board.categoryField] || "") : "",
+          _dragId: t.id,
+          _cal_booking: emailKey ? calBookings[emailKey] || null : null,
+        };
+      }),
+    [rawTickets, board.categoryField, calBookings]
   );
 
   const updateMutation = useMutation({
