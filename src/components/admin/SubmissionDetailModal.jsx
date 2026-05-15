@@ -19,7 +19,7 @@ const ENTITY_KEY_TO_NAME = {
 };
 
 // Field keys already shown in the contact header — hide them from the detail list
-const REDUNDANT_KEYS = new Set(["phone", "preferred_location", "location", "city", "province", "postal_code", "preferred_postal_code"]);
+const REDUNDANT_KEYS = new Set(["phone", "preferred_location", "location", "city", "province", "postal_code", "preferred_postal_code", "resume_url"]);
 
 function Field({ label, value }) {
   if (!value && value !== 0) return null;
