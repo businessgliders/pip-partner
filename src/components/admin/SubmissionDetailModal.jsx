@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle } from "lucide-react";
+import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle, Video } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -135,6 +135,8 @@ export default function SubmissionDetailModal({
                     const uid = row._cal_booking?.uid || row._cal_booking?.bookingId;
                     const rescheduleUrl = uid ? `https://cal.com/reschedule/${uid}` : null;
                     const cancelUrl = uid ? `https://cal.com/booking/${uid}?cancel=true` : null;
+                    const meetingUrlRaw = row._cal_booking?.meetingUrl || "";
+                    const meetingUrl = /^https?:\/\//i.test(meetingUrlRaw) ? meetingUrlRaw : null;
                     return (
                       <Popover>
                         <PopoverTrigger asChild>
@@ -149,6 +151,17 @@ export default function SubmissionDetailModal({
                         <PopoverContent align="end" className="w-56 p-1">
                           {uid ? (
                             <>
+                              {meetingUrl && (
+                                <a
+                                  href={meetingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                                >
+                                  <Video className="w-3.5 h-3.5 text-blue-600" />
+                                  Join meeting
+                                </a>
+                              )}
                               <a
                                 href={rescheduleUrl}
                                 target="_blank"
