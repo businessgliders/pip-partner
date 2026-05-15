@@ -70,14 +70,7 @@ export default function KanbanColumn({
                 <Sparkles className="w-3 h-3" /> Tidy Up
               </button>
             )}
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white font-medium">
-              {tickets.length}
-            </span>
-          </div>
-        </div>
-        {key === "closed" && tickets.length > 0 && (onArchiveSome || onArchiveAll) && (
-          <div className="flex gap-2 mt-2">
-            {onArchiveSome && (
+            {key === "closed" && tickets.length > 0 && onArchiveSome && (
               <button
                 onClick={onArchiveSome}
                 className="text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
@@ -85,7 +78,7 @@ export default function KanbanColumn({
                 Clean Up
               </button>
             )}
-            {onArchiveAll && (
+            {key === "closed" && tickets.length > 0 && onArchiveAll && (
               <button
                 onClick={onArchiveAll}
                 className="text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
@@ -93,8 +86,11 @@ export default function KanbanColumn({
                 Archive All
               </button>
             )}
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white font-medium">
+              {tickets.length}
+            </span>
           </div>
-        )}
+        </div>
       </div>
 
       <Droppable droppableId={String(status)}>
