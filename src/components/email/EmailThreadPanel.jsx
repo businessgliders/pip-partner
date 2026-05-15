@@ -123,8 +123,9 @@ function buildIntakeSummary(ticket, ticketType) {
     .join("");
 }
 
-export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId }) {
+export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId, markAsRead }) {
   const containerRef = useRef(null);
+  const userEmail = (currentUser?.email || "").toLowerCase().trim();
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["email-messages", ticket.id],
@@ -245,13 +246,23 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
         className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30"
         style={{ maxHeight: 480 }}
       >
-        {allMessages.map((m) => (
-          <EmailMessageItem
-            key={m.id}
-            message={m}
-            isHighlighted={highlightMessageId === m.id}
-          />
-        ))}
+        {allMessages.map((m) => {
+          const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+          const isUnread =
+            !!userEmail &&
+            m.direction === "inbound" &&
+            !String(m.id || "").startsWith("__") &&
+            !readBy.some((e) => (e || "").toLowerCase() === userEmail);
+          return (
+            <EmailMessageItem
+              key={m.id}
+              message={m}
+              isHighlighted={highlightMessageId === m.id}
+              isUnread={isUnread}
+              onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
+            />
+          );
+        })}
       </div>
 
       <EmailComposer

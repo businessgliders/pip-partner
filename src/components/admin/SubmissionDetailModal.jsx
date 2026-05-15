@@ -46,6 +46,8 @@ export default function SubmissionDetailModal({
   tabKey,
   detailFields = [],
   accentColor = "#0f172a",
+  highlightMessageId,
+  markAsRead,
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -142,6 +144,8 @@ export default function SubmissionDetailModal({
                   ticket={row}
                   ticketType={ticketType}
                   currentUser={user}
+                  highlightMessageId={highlightMessageId}
+                  markAsRead={markAsRead}
                 />
               ) : (
                 <div className="text-sm text-slate-500 p-6">Email not available for this submission.</div>

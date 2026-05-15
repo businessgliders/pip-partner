@@ -1,5 +1,5 @@
 import React from "react";
-import { MoreVertical, FileText, Instagram, Music2 } from "lucide-react";
+import { MoreVertical, FileText, Instagram, Music2, Mail } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +73,7 @@ export default function TicketCard({
   viewMode,
   statusOptions = [],
   boardKey,
+  unreadCount = 0,
 }) {
   const priority = ticket.priority || "Medium";
   const borderCls = priorityBorderColors[priority] || priorityBorderColors.Medium;
@@ -108,6 +109,15 @@ export default function TicketCard({
 
   return (
     <div className={`${baseCls} ${stateCls}`} onClick={onClick}>
+      {unreadCount > 0 && (
+        <div
+          title={`${unreadCount} unread message${unreadCount === 1 ? "" : "s"}`}
+          className="absolute top-1.5 left-1.5 z-10 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-pink-500 text-white text-[10px] font-bold shadow-md animate-pulse-soft"
+        >
+          <Mail className="w-3 h-3" />
+          <span>{unreadCount > 9 ? "9+" : unreadCount}</span>
+        </div>
+      )}
       {viewMode === "category" && (
         <div className="pointer-events-none absolute top-1 right-2 text-[10px] md:text-xs font-black uppercase tracking-wider text-gray-900/10">
           {ticket.status}
@@ -279,6 +289,11 @@ export default function TicketCard({
           75% { transform: translateX(5px); }
         }
         .animate-shake { animation: shake 0.5s ease-in-out 3; }
+        @keyframes pulse-soft {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.85; transform: scale(1.05); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
       `}</style>
     </div>
   );

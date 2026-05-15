@@ -46,6 +46,7 @@ export default function KanbanColumn({
   viewMode,
   statusOptions = [],
   boardKey,
+  unreadCountByTicket = {},
 }) {
   const key = String(status).toLowerCase();
   const isDimmed = key === "closed" || key === "declined";
@@ -130,6 +131,7 @@ export default function KanbanColumn({
                           viewMode={viewMode}
                           statusOptions={statusOptions}
                           boardKey={boardKey}
+                          unreadCount={unreadCountByTicket[ticket.id] || 0}
                         />
                       </div>
                     );

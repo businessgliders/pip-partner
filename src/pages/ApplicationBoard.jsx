@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon } from "lucide-react";
 
 import UserMenu from "../components/dashboard/UserMenu";
+import NotificationCenter from "../components/admin/NotificationCenter";
+import useUnreadMessages from "../hooks/useUnreadMessages";
+import { useAuth } from "@/lib/AuthContext";
 import KanbanColumn from "../components/board/KanbanColumn";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
@@ -61,10 +64,14 @@ const DETAIL_FIELDS = {
 
 export default function ApplicationBoard() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("franchise");
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
 
+  const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead } = useUnreadMessages(user?.email);
+
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [highlightMessageId, setHighlightMessageId] = useState(null);
   const [highlightedTicketId, setHighlightedTicketId] = useState(null);
   const [dragNoteDialog, setDragNoteDialog] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
@@ -453,6 +460,16 @@ export default function ApplicationBoard() {
               >
                 <Archive className="w-4 h-4" />
               </button>
+              <NotificationCenter
+                unreadMessages={unreadMessages}
+                totalUnread={totalUnread}
+                markAsRead={markAsRead}
+                onSelect={(ticket, messageId, tabKey) => {
+                  if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                  setHighlightMessageId(messageId);
+                  setSelectedTicket(ticket);
+                }}
+              />
               <UserMenu />
             </div>
           </div>
@@ -547,6 +564,7 @@ export default function ApplicationBoard() {
                       viewMode={effectiveViewMode}
                       statusOptions={board.statuses}
                       boardKey={board.key}
+                      unreadCountByTicket={unreadCountByTicket}
                     />
                   </div>
                 ))}
@@ -595,11 +613,18 @@ export default function ApplicationBoard() {
 
       <SubmissionDetailModal
         open={!!selectedTicket}
-        onOpenChange={(v) => { if (!v) setSelectedTicket(null); }}
+        onOpenChange={(v) => {
+          if (!v) {
+            setSelectedTicket(null);
+            setHighlightMessageId(null);
+          }
+        }}
         row={selectedTicket}
         tabKey={board.key}
         detailFields={DETAIL_FIELDS[board.key]}
         accentColor={board.color}
+        highlightMessageId={highlightMessageId}
+        markAsRead={markAsRead}
       />
     </div>
   );

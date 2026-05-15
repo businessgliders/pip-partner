@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sparkles, AlertTriangle } from "lucide-react";
+import UnreadMessageMarker from "./UnreadMessageMarker";
 
 function stripHtml(html) {
   return (html || "")
@@ -28,7 +29,7 @@ function stripQuotedReply(text) {
   return result;
 }
 
-export default function EmailMessageItem({ message, isHighlighted }) {
+export default function EmailMessageItem({ message, isHighlighted, isUnread = false, onMarkRead }) {
   const [open, setOpen] = useState(false);
 
   const isInbound = message.direction === "inbound";
@@ -66,7 +67,7 @@ export default function EmailMessageItem({ message, isHighlighted }) {
     );
   }
 
-  return (
+  const bubble = (
     <>
       <div
         className={`flex flex-col ${isInbound ? "items-start" : "items-end"} mb-3`}
@@ -159,6 +160,15 @@ export default function EmailMessageItem({ message, isHighlighted }) {
       <MessageDialog open={open} onOpenChange={setOpen} message={message} />
     </>
   );
+
+  if (isUnread && onMarkRead) {
+    return (
+      <UnreadMessageMarker enabled={isUnread} onVisible={onMarkRead}>
+        {bubble}
+      </UnreadMessageMarker>
+    );
+  }
+  return bubble;
 }
 
 function MessageDialog({ open, onOpenChange, message }) {
