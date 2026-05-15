@@ -73,7 +73,7 @@ export default function LocationMapBanner({
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(ellipse 50% 35% at 100% 0%, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,1) 80%)",
+                "radial-gradient(ellipse 75% 55% at 100% 0%, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 35%, rgba(255,255,255,0.8) 65%, rgba(255,255,255,1) 90%)",
             }}
           />
         </div>
