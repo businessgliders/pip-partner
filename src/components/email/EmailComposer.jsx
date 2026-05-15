@@ -198,6 +198,9 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     <div className="border-t bg-white p-4 space-y-3">
       <div className="flex items-start justify-between text-xs text-gray-600 gap-2">
         <div className="space-y-0.5 min-w-0 flex-1">
+          <div>
+            <span className="font-medium">From:</span> {FROM_ALIASES[ticketType] || "—"}
+          </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium">To:</span>
             {/* Recipient chips */}
