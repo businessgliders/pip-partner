@@ -146,9 +146,10 @@ export default function SubmissionDetailModal({
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Join meeting"
-                            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 border border-blue-300 text-blue-700 hover:bg-blue-200 transition"
+                            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-blue-100 border border-blue-300 text-blue-700 font-medium hover:bg-blue-200 transition"
                           >
                             <Video className="w-3 h-3" />
+                            Join meeting
                           </a>
                         )}
                       <Popover>
