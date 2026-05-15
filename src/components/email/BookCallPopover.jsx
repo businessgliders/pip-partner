@@ -45,7 +45,10 @@ export default function BookCallPopover({ ticket, onBooked }) {
         if (cancelled) return;
         setSlotsByDay(res?.data?.slots || {});
       } catch (e) {
-        if (!cancelled) setError("Couldn't load availability.");
+        console.error("getCalAvailability failed", e?.response?.data || e);
+        if (!cancelled) setError(
+          e?.response?.data?.error || e?.message || "Couldn't load availability."
+        );
       } finally {
         if (!cancelled) setLoading(false);
       }
