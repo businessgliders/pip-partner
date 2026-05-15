@@ -135,9 +135,22 @@ export default function SubmissionDetailModal({
                     const uid = row._cal_booking?.uid || row._cal_booking?.bookingId;
                     const rescheduleUrl = uid ? `https://cal.com/reschedule/${uid}` : null;
                     const cancelUrl = uid ? `https://cal.com/booking/${uid}?cancel=true` : null;
+                    const calBookingUrl = uid ? `https://cal.com/booking/${uid}` : null;
                     const meetingUrlRaw = row._cal_booking?.meetingUrl || "";
                     const meetingUrl = /^https?:\/\//i.test(meetingUrlRaw) ? meetingUrlRaw : null;
                     return (
+                      <div className="inline-flex items-center gap-1.5">
+                        {meetingUrl && (
+                          <a
+                            href={meetingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Join meeting"
+                            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 border border-blue-300 text-blue-700 hover:bg-blue-200 transition"
+                          >
+                            <Video className="w-3 h-3" />
+                          </a>
+                        )}
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
@@ -151,17 +164,15 @@ export default function SubmissionDetailModal({
                         <PopoverContent align="end" className="w-56 p-1">
                           {uid ? (
                             <>
-                              {meetingUrl && (
-                                <a
-                                  href={meetingUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                                >
-                                  <Video className="w-3.5 h-3.5 text-blue-600" />
-                                  Join meeting
-                                </a>
-                              )}
+                              <a
+                                href={calBookingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                                Open meeting in Cal.com
+                              </a>
                               <a
                                 href={rescheduleUrl}
                                 target="_blank"
@@ -197,6 +208,7 @@ export default function SubmissionDetailModal({
                           )}
                         </PopoverContent>
                       </Popover>
+                      </div>
                     );
                   })()}
                 </div>
