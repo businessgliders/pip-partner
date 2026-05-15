@@ -138,6 +138,20 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     refetchInterval: 15000,
   });
 
+  // Fetch staff users once for resolving internal email addresses to full names
+  const { data: staffUsers = [] } = useQuery({
+    queryKey: ["staff-users-for-thread"],
+    queryFn: () => base44.entities.User.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const staffNameByEmail = useMemo(() => {
+    const map = {};
+    staffUsers.forEach((u) => {
+      if (u?.email) map[u.email.toLowerCase()] = u.full_name || u.email;
+    });
+    return map;
+  }, [staffUsers]);
+
   // Filter out legacy internal outbound notifications (sent to staff domain) that
   // were NOT explicitly flagged as is_internal — those are system notifications,
   // not user-authored internal emails. Keep all is_internal=true messages visible.
@@ -260,6 +274,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               isHighlighted={highlightMessageId === m.id}
               isUnread={isUnread}
               onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
+              staffNameByEmail={staffNameByEmail}
             />
           );
         })}

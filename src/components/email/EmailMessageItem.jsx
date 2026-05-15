@@ -29,13 +29,20 @@ function stripQuotedReply(text) {
   return result;
 }
 
-export default function EmailMessageItem({ message, isHighlighted, isUnread = false, onMarkRead }) {
+export default function EmailMessageItem({ message, isHighlighted, isUnread = false, onMarkRead, staffNameByEmail = {} }) {
   const [open, setOpen] = useState(false);
 
   const isInbound = message.direction === "inbound";
   const isFailed = message.send_status === "failed";
   const isWelcome = message.is_welcome;
   const isInternal = message.is_internal;
+
+  const resolveName = (email) => {
+    if (!email) return "";
+    return staffNameByEmail[email.toLowerCase()] || email;
+  };
+  const fromDisplay = isInternal ? resolveName(message.from_email) : message.from_email;
+  const toDisplay = isInternal ? resolveName(message.to_email) : message.to_email;
 
   const cleanText = stripQuotedReply(stripHtml(message.body_html || message.body_text || ""));
   const isLong = cleanText.length > 180;
@@ -105,7 +112,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
                 <div className="truncate">
                   <span className="text-gray-400">From:</span>{" "}
                   <span className={`font-medium ${isInbound ? "text-gray-700" : "text-pink-700"}`}>
-                    {message.from_email}
+                    {fromDisplay}
                   </span>
                 </div>
               )}
@@ -113,7 +120,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
                 <div className="truncate">
                   <span className="text-gray-400">To:</span>{" "}
                   <span className={`font-medium ${isInbound ? "text-pink-700" : "text-gray-700"}`}>
-                    {message.to_email}
+                    {toDisplay}
                   </span>
                 </div>
               )}
