@@ -68,6 +68,7 @@ Deno.serve(async (req) => {
               title: b?.title || null,
               status: b?.status || null,
               bookingId: b?.id || b?.uid || null,
+              uid: b?.uid || null,
             };
           }
         }

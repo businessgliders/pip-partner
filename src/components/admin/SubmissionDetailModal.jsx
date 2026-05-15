@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Mail, Phone, ExternalLink, MapPin } from "lucide-react";
+import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAuth } from "@/lib/AuthContext";
 import EmailThreadPanel from "../email/EmailThreadPanel";
 import InternalNotesSection from "./InternalNotesSection";
@@ -127,10 +132,58 @@ export default function SubmissionDetailModal({
                       minute: "2-digit",
                       timeZone: "America/Toronto",
                     });
+                    const uid = row._cal_booking?.uid || row._cal_booking?.bookingId;
+                    const rescheduleUrl = uid ? `https://cal.com/reschedule/${uid}` : null;
+                    const cancelUrl = uid ? `https://cal.com/booking/${uid}?cancel=true` : null;
                     return (
-                      <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium">
-                        📅 {label}
-                      </span>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition"
+                            title="Manage booking"
+                          >
+                            📅 {label}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-56 p-1">
+                          {uid ? (
+                            <>
+                              <a
+                                href={rescheduleUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                              >
+                                <CalendarClock className="w-3.5 h-3.5 text-emerald-700" />
+                                Reschedule on Cal.com
+                              </a>
+                              <a
+                                href={cancelUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                              >
+                                <XCircle className="w-3.5 h-3.5 text-red-600" />
+                                Cancel booking
+                              </a>
+                            </>
+                          ) : (
+                            <div className="px-2.5 py-2 text-xs text-slate-500">
+                              No Cal.com booking linked. Open{" "}
+                              <a
+                                href="https://app.cal.com/bookings/upcoming"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline"
+                              >
+                                Cal.com bookings
+                              </a>
+                              .
+                            </div>
+                          )}
+                        </PopoverContent>
+                      </Popover>
                     );
                   })()}
                 </div>
