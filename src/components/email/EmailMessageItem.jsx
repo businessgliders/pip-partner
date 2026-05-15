@@ -122,7 +122,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               dangerouslySetInnerHTML={{ __html: message.body_html }}
             />
           ) : (
-            <div className="text-sm text-gray-800 whitespace-pre-wrap break-words line-clamp-2">
+            <div className="text-sm text-gray-800 whitespace-pre-wrap break-words line-clamp-4">
               {cleanText || "(empty)"}
             </div>
           )}
