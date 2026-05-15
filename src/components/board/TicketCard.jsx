@@ -163,9 +163,15 @@ export default function TicketCard({
                 </span>
               )}
               {boardKey === "franchise" ? (
-                (ticket.preferred_location || ticket.province) && (
+                (ticket.preferred_location || ticket.province || ticket.preferred_postal_code) && (
                   <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
-                    📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province].filter(Boolean).join(" · ")}
+                    📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province, ticket.preferred_postal_code].filter(Boolean).join(" · ")}
+                  </span>
+                )
+              ) : (boardKey === "instructor" || boardKey === "frontadmin") ? (
+                (ticket.preferred_studio || ticket.province || ticket.postal_code) && (
+                  <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
+                    📍 {[toSentenceCase(ticket.preferred_studio || ""), ticket.province, ticket.postal_code].filter(Boolean).join(" · ")}
                   </span>
                 )
               ) : (
