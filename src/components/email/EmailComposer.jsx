@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
-  Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2
+  Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays
 } from "lucide-react";
 import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
@@ -27,6 +27,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   const [polishing, setPolishing] = useState(false);
   const [showDescribe, setShowDescribe] = useState(false);
   const [showSuggest, setShowSuggest] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(null); // { start, timeZone, friendly }
 
   const ticketEmail = ticket?.email || "";
   const ticketName =
@@ -67,12 +68,35 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     if (isEmpty(html) || sending) return;
     setSending(true);
     try {
+      // 1. Send the email first. If this fails, we never book the slot.
       await base44.functions.invoke("sendTicketEmail", {
         ticket_id: ticket.id,
         ticket_type: ticketType,
         body_html: html,
       });
+
+      // 2. Only book the Cal.com slot AFTER a successful send.
+      if (pendingBooking) {
+        try {
+          await base44.functions.invoke("bookCalEvent", {
+            start: pendingBooking.start,
+            timeZone: pendingBooking.timeZone,
+            name: ticketName,
+            email: ticketEmail,
+            phone: ticket?.phone || "",
+            notes: `Booked by staff from admin board (ticket ${ticket?.id || ""})`,
+            inquiryId: ticket?.id,
+          });
+        } catch (bookErr) {
+          console.error("bookCalEvent failed after send", bookErr);
+          alert(
+            "Email was sent, but the meeting could not be booked — that slot may have just been taken. Please book another time manually."
+          );
+        }
+      }
+
       setHtml("");
+      setPendingBooking(null);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -110,17 +134,14 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     setShowSuggest(false);
   };
 
-  const handleBooked = ({ friendly, meetingUrl }) => {
+  const handleSlotSelected = ({ start, timeZone, friendly }) => {
+    setPendingBooking({ start, timeZone, friendly });
     const greetingName = firstName || ticketName || "there";
-    const linkLine = meetingUrl
-      ? `<p style="margin:0 0 12px;">You can join the call here: <a href="${meetingUrl}" style="color:#b67651;">${meetingUrl}</a></p>`
-      : "";
     const block = `
 <p style="margin:0 0 12px;">Hi ${greetingName},</p>
-<p style="margin:0 0 12px;">Great news — I've booked your discovery call with our Franchise Team for:</p>
-<p style="margin:0 0 12px;"><strong style="color:#b67651;">${friendly} (America/Toronto)</strong></p>
-${linkLine}
-<p style="margin:0 0 12px;">You'll receive a full calendar invite via Cal.com shortly with all the details.</p>
+<p style="margin:0 0 12px;">Booked a meeting for you on:</p>
+<p style="margin:0 0 12px;"><strong>${friendly} (America/Toronto)</strong></p>
+<p style="margin:0 0 12px;">You'll receive a calendar invite shortly with all the details.</p>
 <p style="margin:0 0 12px;">Looking forward to chatting!</p>
 `.trim();
     const current = getHtml();
@@ -166,9 +187,28 @@ ${linkLine}
         </Button>
         <TemplatePicker vars={vars} onSelect={handleTemplate} />
         {ticketType === "FranchiseInquiry" && (
-          <BookCallPopover ticket={ticket} onBooked={handleBooked} />
+          <BookCallPopover onSelect={handleSlotSelected} />
         )}
       </div>
+
+      {pendingBooking && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
+          <div className="flex items-center gap-2 text-xs text-amber-900">
+            <CalendarDays className="w-3.5 h-3.5" />
+            <span>
+              Meeting will be booked for <strong>{pendingBooking.friendly}</strong> when you send this email.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPendingBooking(null)}
+            className="text-amber-700 hover:text-amber-900"
+            title="Cancel pending booking"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       <AiAssistBar
         ticketId={ticket.id}

@@ -25,14 +25,13 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function BookCallPopover({ ticket, onBooked }) {
+export default function BookCallPopover({ onSelect }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [slotsByDay, setSlotsByDay] = useState({});
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [booking, setBooking] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -69,45 +68,14 @@ export default function BookCallPopover({ ticket, onBooked }) {
     return (slotsByDay[selectedDay] || []).slice(0, 10);
   }, [selectedDay, slotsByDay]);
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!selectedDay || !selectedSlot) return;
-    setBooking(true);
-    try {
-      const day = days.find((d) => d.iso === selectedDay);
-      const friendly = `${day?.label}, ${day?.date} at ${formatTimeLabel(selectedSlot.start)}`;
-      const name =
-        ticket?.full_name ||
-        `${ticket?.first_name || ""} ${ticket?.last_name || ""}`.trim() ||
-        ticket?.email;
-
-      const res = await base44.functions.invoke("bookCalEvent", {
-        start: selectedSlot.start,
-        timeZone: TZ,
-        name,
-        email: ticket?.email,
-        phone: ticket?.phone || "",
-        notes: `Booked by staff from admin board (ticket ${ticket?.id || ""})`,
-        inquiryId: ticket?.id,
-      });
-
-      const booking = res?.data?.booking || {};
-      // Try to surface a public meeting/booking link
-      const meetingUrl =
-        booking?.meetingUrl ||
-        booking?.location ||
-        booking?.references?.[0]?.meetingUrl ||
-        (booking?.uid ? `https://app.cal.com/booking/${booking.uid}` : "");
-
-      onBooked?.({ friendly, start: selectedSlot.start, meetingUrl });
-      setOpen(false);
-      setSelectedDay(null);
-      setSelectedSlot(null);
-    } catch (e) {
-      console.error(e);
-      alert("Couldn't book that slot — it may have just been taken. Please pick another time.");
-    } finally {
-      setBooking(false);
-    }
+    const day = days.find((d) => d.iso === selectedDay);
+    const friendly = `${day?.label}, ${day?.date} at ${formatTimeLabel(selectedSlot.start)}`;
+    onSelect?.({ start: selectedSlot.start, timeZone: TZ, friendly });
+    setOpen(false);
+    setSelectedDay(null);
+    setSelectedSlot(null);
   };
 
   return (
@@ -119,13 +87,15 @@ export default function BookCallPopover({ ticket, onBooked }) {
           className="text-pink-700 border-pink-200 hover:bg-pink-50"
         >
           <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
-          Book Discovery Call
+          Book a Meeting
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[420px] p-0" align="start">
         <div className="p-4 border-b">
-          <h4 className="text-sm font-semibold text-slate-900">Book Discovery Call</h4>
-          <p className="text-xs text-slate-500 mt-0.5">Live Cal.com availability · 30 min</p>
+          <h4 className="text-sm font-semibold text-slate-900">Book a Meeting</h4>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Pick a slot — it will be reserved only when you send the email.
+          </p>
         </div>
 
         <div className="p-4 max-h-[420px] overflow-y-auto">
@@ -195,15 +165,11 @@ export default function BookCallPopover({ ticket, onBooked }) {
 
               <Button
                 onClick={handleConfirm}
-                disabled={!selectedDay || !selectedSlot || booking}
+                disabled={!selectedDay || !selectedSlot}
                 className="w-full bg-pink-600 hover:bg-pink-700 text-white"
                 size="sm"
               >
-                {booking ? (
-                  <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Booking...</>
-                ) : (
-                  <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Book & Insert Into Email</>
-                )}
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Add to Email
               </Button>
             </div>
           )}
