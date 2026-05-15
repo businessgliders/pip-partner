@@ -9,6 +9,7 @@ import InternalNotesSection from "./InternalNotesSection";
 import AssignTicketSection from "./AssignTicketSection";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
 import { formatAppNumber } from "@/lib/appNumberDisplay";
+import LocationMapBanner from "./LocationMapBanner";
 
 const ENTITY_KEY_TO_NAME = {
   franchise: "FranchiseInquiry",
@@ -155,6 +156,12 @@ export default function SubmissionDetailModal({
                 <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-3">
                   Request Details
                 </p>
+                <LocationMapBanner
+                  postalCode={row.preferred_postal_code || row.postal_code}
+                  city={row.preferred_location || row.location || row.city}
+                  province={row.province}
+                  label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
+                />
                 <div className="space-y-2 mb-4 pb-4 border-b border-slate-100">
                   {row.email && (
                     <a
