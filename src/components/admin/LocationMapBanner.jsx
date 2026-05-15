@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { MapPin, ExternalLink } from "lucide-react";
+import { ExternalLink, MapPin } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 /**
- * Subtle map banner background.
- * Uses postal code if available, otherwise city/province.
- * Click opens Google Maps in a new tab.
+ * Renders a full-area map as an absolutely-positioned background behind
+ * its parent (parent must be `relative`). Uses postal code if available,
+ * otherwise falls back to city/province. Click opens Google Maps.
  */
 export default function LocationMapBanner({
   postalCode,
@@ -16,7 +16,6 @@ export default function LocationMapBanner({
   const [mapSrc, setMapSrc] = useState(null);
   const [failed, setFailed] = useState(false);
 
-  // Prefer postal code, fall back to city/province
   const query = [postalCode, city, province, "Canada"].filter(Boolean).join(", ");
   const hasQuery = !!(postalCode || city || province);
 
@@ -30,7 +29,7 @@ export default function LocationMapBanner({
       try {
         const res = await base44.functions.invoke("getStaticMap", {
           method: "GET",
-          params: { q: query, w: 700, h: 160, z: postalCode ? 13 : 10 },
+          params: { q: query, w: 800, h: 1200, z: postalCode ? 13 : 10 },
           responseType: "blob",
         });
         if (cancelled) return;
@@ -47,7 +46,6 @@ export default function LocationMapBanner({
     };
   }, [query, hasQuery, postalCode]);
 
-  // Cleanup blob URL
   useEffect(() => {
     return () => {
       if (mapSrc) URL.revokeObjectURL(mapSrc);
@@ -59,39 +57,33 @@ export default function LocationMapBanner({
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 
   return (
-    <a
-      href={googleMapsUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative block w-full h-[110px] rounded-lg overflow-hidden border border-slate-200 hover:border-pink-300 transition-all mb-3"
-      title="Open in Google Maps"
-    >
-      {/* Map image background */}
-      {mapSrc && !failed ? (
-        <img
-          src={mapSrc}
-          alt={label || query}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200" />
-      )}
-
-      {/* Gradient wash overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-pink-50/40 to-amber-50/60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-
-      {/* Label */}
-      <div className="relative h-full flex items-end justify-between p-3">
-        <div className="flex items-center gap-1.5 text-sm font-medium text-slate-800 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
-          <MapPin className="w-3.5 h-3.5 text-pink-600" />
-          <span className="truncate">{label || query}</span>
-        </div>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-white/90 px-2 py-1 rounded-md shadow-sm">
-          <ExternalLink className="w-3 h-3" />
-          Google Maps
-        </div>
+    <>
+      {/* Map image fixed as background of parent */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {mapSrc && !failed ? (
+          <img
+            src={mapSrc}
+            alt={label || query}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : null}
+        {/* Strong gradient wash to keep details readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/92 to-white/98" />
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-50/40 via-white/50 to-amber-50/40" />
       </div>
-    </a>
+
+      {/* Clickable "View in Google Maps" pill — floats above */}
+      <a
+        href={googleMapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open in Google Maps"
+        className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-700 bg-white/90 hover:bg-white border border-slate-200 hover:border-pink-300 px-2.5 py-1.5 rounded-full shadow-sm transition-all"
+      >
+        <MapPin className="w-3 h-3 text-pink-600" />
+        <span>View on Google Maps</span>
+        <ExternalLink className="w-3 h-3" />
+      </a>
+    </>
   );
 }
