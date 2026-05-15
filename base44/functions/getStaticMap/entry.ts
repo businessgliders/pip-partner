@@ -8,11 +8,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const url = new URL(req.url);
-    const q = url.searchParams.get('q');
-    const width = url.searchParams.get('w') || '640';
-    const height = url.searchParams.get('h') || '180';
-    const zoom = url.searchParams.get('z') || '12';
+    // Read params from JSON body (how base44.functions.invoke sends them)
+    let body = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    const q = body.q;
+    const width = String(body.w || 640);
+    const height = String(body.h || 180);
+    const zoom = String(body.z || 12);
 
     if (!q) {
       return Response.json({ error: 'Missing q' }, { status: 400 });
@@ -42,13 +49,12 @@ Deno.serve(async (req) => {
     }
 
     const buf = await resp.arrayBuffer();
-    return new Response(buf, {
-      status: 200,
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=86400',
-      },
-    });
+    // Return as base64 data URL so frontend can render directly without blob handling
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    const base64 = btoa(binary);
+    return Response.json({ dataUrl: `data:image/png;base64,${base64}` });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
