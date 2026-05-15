@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override } = await req.json();
+    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override } = await req.json();
 
     if (!ticket_id || !ticket_type || !body_html) {
       return Response.json({ error: 'Missing ticket_id, ticket_type or body_html' }, { status: 400 });
@@ -134,18 +134,50 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Ticket not found' }, { status: 404 });
     }
 
-    // Determine recipient — either the applicant or an internal team member override.
-    // Internal override is allowed only if the email belongs to a staff domain.
+    // Determine recipients — applicant, internal team members, or a mix.
+    // Multi-recipient via `to_emails_override` (array). Falls back to legacy `to_email_override` (string).
+    // Rules:
+    //  - All recipients must be valid emails
+    //  - If any override is provided, every NON-applicant recipient MUST be a staff email
+    //  - "Internal" mode (no threading to applicant) = ALL recipients are staff (applicant not included)
+    let recipientList = [];
+    if (Array.isArray(to_emails_override) && to_emails_override.length > 0) {
+      recipientList = to_emails_override;
+    } else if (to_email_override) {
+      recipientList = [to_email_override];
+    }
+
     let toEmail;
+    let ccEmails = [];
     let isInternal = false;
-    if (to_email_override) {
-      if (!isValidEmail(to_email_override) || !isStaffEmail(to_email_override)) {
-        return Response.json({ error: 'Override recipient must be a valid staff email' }, { status: 400 });
+    const applicantEmail = getTicketEmail(ticket);
+
+    if (recipientList.length > 0) {
+      // Dedupe + validate
+      const seen = new Set();
+      const clean = [];
+      for (const raw of recipientList) {
+        const e = String(raw || '').trim().toLowerCase();
+        if (!e || seen.has(e)) continue;
+        if (!isValidEmail(e)) {
+          return Response.json({ error: `Invalid recipient email: ${raw}` }, { status: 400 });
+        }
+        // Allow the applicant email OR any staff email
+        if (e !== (applicantEmail || '').toLowerCase() && !isStaffEmail(e)) {
+          return Response.json({ error: `Recipient must be the applicant or a staff email: ${raw}` }, { status: 400 });
+        }
+        seen.add(e);
+        clean.push(e);
       }
-      toEmail = to_email_override;
-      isInternal = true;
+      if (clean.length === 0) {
+        return Response.json({ error: 'No valid recipients provided' }, { status: 400 });
+      }
+      // Internal when applicant is NOT included
+      isInternal = !clean.includes((applicantEmail || '').toLowerCase());
+      toEmail = clean[0];
+      ccEmails = clean.slice(1);
     } else {
-      toEmail = getTicketEmail(ticket);
+      toEmail = applicantEmail;
       if (!toEmail || !isValidEmail(toEmail)) {
         return Response.json({ error: 'Ticket has no valid email address' }, { status: 400 });
       }
@@ -226,6 +258,9 @@ Deno.serve(async (req) => {
     const headers = [];
     headers.push(`From: ${fromHeader}`);
     headers.push(`To: ${toEmail}`);
+    if (ccEmails.length > 0) {
+      headers.push(`Cc: ${ccEmails.join(', ')}`);
+    }
     headers.push(`Subject: ${rfc2047(subject)}`);
     headers.push('MIME-Version: 1.0');
     headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
@@ -285,7 +320,7 @@ Deno.serve(async (req) => {
         direction: 'outbound',
         from_email: fromEmail,
         from_name: `${BUSINESS_NAME} \u2122`,
-        to_email: toEmail,
+        to_email: ccEmails.length > 0 ? `${toEmail}, ${ccEmails.join(', ')}` : toEmail,
         subject,
         body_html: finalBodyHtml,
         body_text: bodyText,
@@ -337,7 +372,7 @@ Deno.serve(async (req) => {
       direction: 'outbound',
       from_email: fromEmail,
       from_name: `${BUSINESS_NAME} \u2122`,
-      to_email: toEmail,
+      to_email: ccEmails.length > 0 ? `${toEmail}, ${ccEmails.join(', ')}` : toEmail,
       subject,
       body_html: finalBodyHtml,
       body_text: bodyText,

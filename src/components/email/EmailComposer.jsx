@@ -6,9 +6,9 @@ import {
   Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users
 } from "lucide-react";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
+  Popover, PopoverTrigger, PopoverContent
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
 import BookCallPopover from "./BookCallPopover";
@@ -37,7 +37,10 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   const [showSuggest, setShowSuggest] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null); // { start, timeZone, friendly }
   const [teamMembers, setTeamMembers] = useState([]);
-  const [recipientOverride, setRecipientOverride] = useState(null); // { email, name } or null
+  // Selected team-member emails (in addition to the applicant). Empty = applicant only.
+  // If applicant is excluded (toggled off), the message becomes "internal".
+  const [selectedTeam, setSelectedTeam] = useState([]); // array of emails
+  const [includeApplicant, setIncludeApplicant] = useState(true);
 
   // Load team members (admin users with staff-domain email) once
   useEffect(() => {
@@ -90,9 +93,17 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     if (url) exec("createLink", url);
   };
 
+  // Build the actual recipient list to send
+  const recipientEmails = [
+    ...(includeApplicant && ticketEmail ? [ticketEmail] : []),
+    ...selectedTeam,
+  ];
+  const isInternalSend = recipientEmails.length > 0 && !includeApplicant;
+  const canSend = recipientEmails.length > 0;
+
   const handleSend = async () => {
     const html = getHtml();
-    if (isEmpty(html) || sending) return;
+    if (isEmpty(html) || sending || !canSend) return;
     setSending(true);
     try {
       // 1. Send the email first. If this fails, we never book the slot.
@@ -101,13 +112,15 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         ticket_type: ticketType,
         body_html: html,
       };
-      if (recipientOverride?.email) {
-        payload.to_email_override = recipientOverride.email;
+      // Only pass overrides when the recipient set differs from "just the applicant"
+      const isDefaultRecipientSet = includeApplicant && selectedTeam.length === 0;
+      if (!isDefaultRecipientSet) {
+        payload.to_emails_override = recipientEmails;
       }
       await base44.functions.invoke("sendTicketEmail", payload);
 
       // 2. Only book the Cal.com slot AFTER a successful send (skip for internal emails).
-      if (pendingBooking && !recipientOverride) {
+      if (pendingBooking && !isInternalSend) {
         try {
           await base44.functions.invoke("bookCalEvent", {
             start: pendingBooking.start,
@@ -128,7 +141,8 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
 
       setHtml("");
       setPendingBooking(null);
-      setRecipientOverride(null);
+      setSelectedTeam([]);
+      setIncludeApplicant(true);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -189,66 +203,106 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium">To:</span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* Recipient chips */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {includeApplicant && ticketEmail && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-gray-200 bg-white text-xs text-gray-700">
+                  <span className="truncate max-w-[200px]">{ticketEmail}</span>
+                  {selectedTeam.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setIncludeApplicant(false)}
+                      className="text-gray-400 hover:text-gray-700"
+                      title="Remove applicant"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </span>
+              )}
+              {selectedTeam.map((email) => {
+                const member = teamMembers.find((m) => m.email === email);
+                const label = member?.full_name || email;
+                return (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-amber-300 bg-amber-50 text-xs text-amber-900"
+                  >
+                    <Users className="w-3 h-3" />
+                    <span className="truncate max-w-[180px]">{label}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTeam((cur) => cur.filter((e) => e !== email))}
+                      className="text-amber-600 hover:text-amber-900"
+                      title="Remove recipient"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+            {/* Add picker */}
+            <Popover>
+              <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-xs hover:bg-gray-50 ${
-                    recipientOverride
-                      ? "border-amber-300 bg-amber-50 text-amber-900"
-                      : "border-gray-200 text-gray-700"
-                  }`}
-                  title="Change recipient"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-dashed border-gray-300 text-xs text-gray-600 hover:bg-gray-50"
+                  title="Add recipient"
                 >
-                  {recipientOverride ? (
-                    <>
-                      <Users className="w-3 h-3" />
-                      <span className="truncate max-w-[220px]">
-                        {recipientOverride.name || recipientOverride.email}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="truncate max-w-[220px]">{ticketEmail || "—"}</span>
-                  )}
-                  <span className="text-gray-400">▾</span>
+                  + Add
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-gray-400">
-                  Applicant
-                </DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setRecipientOverride(null)}>
-                  <span className="truncate">{ticketEmail || "—"}</span>
-                </DropdownMenuItem>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72 p-0 max-h-80 overflow-y-auto">
+                <div className="p-2 border-b">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
+                    Applicant
+                  </p>
+                  <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                    <Checkbox
+                      checked={includeApplicant}
+                      onCheckedChange={(v) => setIncludeApplicant(!!v)}
+                      disabled={!ticketEmail}
+                    />
+                    <span className="truncate text-sm">{ticketEmail || "—"}</span>
+                  </label>
+                </div>
                 {teamMembers.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-gray-400">
-                      Team members (internal)
-                    </DropdownMenuLabel>
-                    {teamMembers.map((m) => (
-                      <DropdownMenuItem
-                        key={m.id || m.email}
-                        onClick={() =>
-                          setRecipientOverride({
-                            email: m.email,
-                            name: m.full_name || m.email,
-                          })
-                        }
-                      >
-                        <div className="flex flex-col min-w-0">
-                          <span className="truncate text-sm">{m.full_name || m.email}</span>
-                          {m.full_name && (
-                            <span className="truncate text-[10px] text-gray-500">{m.email}</span>
-                          )}
-                        </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </>
+                  <div className="p-2">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
+                      Team members
+                    </p>
+                    {teamMembers.map((m) => {
+                      const checked = selectedTeam.includes(m.email);
+                      return (
+                        <label
+                          key={m.id || m.email}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              if (v) {
+                                setSelectedTeam((cur) => Array.from(new Set([...cur, m.email])));
+                              } else {
+                                setSelectedTeam((cur) => cur.filter((e) => e !== m.email));
+                              }
+                            }}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="truncate text-sm">{m.full_name || m.email}</span>
+                            {m.full_name && (
+                              <span className="truncate text-[10px] text-gray-500">{m.email}</span>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
                 )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {recipientOverride && (
+              </PopoverContent>
+            </Popover>
+            {isInternalSend && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-semibold">
                 INTERNAL
               </span>
@@ -349,7 +403,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
             Clear
           </Button>
         </div>
-        <Button size="sm" onClick={handleSend} disabled={sending} className="bg-pink-600 hover:bg-pink-700 text-white">
+        <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className="bg-pink-600 hover:bg-pink-700 text-white">
           {sending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-1.5" />}
           Send Reply
         </Button>
