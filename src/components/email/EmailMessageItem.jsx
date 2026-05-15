@@ -87,11 +87,13 @@ export default function EmailMessageItem({ message, isHighlighted }) {
           } ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
           onClick={() => setOpen(true)}
         >
-          <div className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-            {isFailed && <AlertTriangle className="w-3 h-3 text-red-600" />}
-            {isFailed && <span className="text-red-700">⚠️ FAILED TO SEND</span>}
-            {!isFailed && <span>{senderName}</span>}
-          </div>
+          {(isInbound || isFailed) && (
+            <div className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+              {isFailed && <AlertTriangle className="w-3 h-3 text-red-600" />}
+              {isFailed && <span className="text-red-700">⚠️ FAILED TO SEND</span>}
+              {!isFailed && <span>{senderName}</span>}
+            </div>
+          )}
           {message.is_ai_summary ? (
             <div
               className="text-sm text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
