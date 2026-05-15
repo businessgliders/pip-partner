@@ -44,10 +44,17 @@ const isValidPhone = (raw) => {
 };
 
 const CAPITAL_RANGES = [
-  "$150K - $200K",
+  "$100K - $200K",
   "$200K - $300K",
   "$300K+",
 ];
+
+// Canadian postal code format: A1A 1A1 (space optional)
+const isValidPostalCode = (raw) => {
+  if (!raw) return false;
+  const cleaned = raw.replace(/\s+/g, "").toUpperCase();
+  return /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/.test(cleaned);
+};
 
 const OPERATION_STYLES = [
   "Owner-Operator (hands-on daily)",
@@ -98,7 +105,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
 
   const canProceed = () => {
     if (step === 1) return formData.first_name && formData.last_name && formData.email && isValidPhone(formData.phone);
-    if (step === 2) return formData.available_capital && formData.province && formData.preferred_location;
+    if (step === 2) return formData.available_capital && formData.province && formData.preferred_location && isValidPostalCode(formData.preferred_postal_code);
     if (step === 3) return formData.operation_style && formData.ready_to_sign_nda;
     if (step === 4) return (formData.why_pilates_in_pink || "").length > 0 && (formData.business_experience || "").trim().length >= 100;
     return false;
@@ -229,7 +236,7 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
           {step === 2 && (
             <>
               <div className="space-y-2">
-                <Label className={labelClass}>Available Capital? *</Label>
+                <Label className={labelClass}>Available Liquid Capital? *</Label>
                 <p className={hintClass}>Local Currency (CAD)</p>
                 <Select
                   value={formData.available_capital || ""}
@@ -263,15 +270,31 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label className={labelClass}>City in your Province *</Label>
-                <p className={hintClass}>Please enter the Town/City</p>
-                <CityInput
-                  value={formData.preferred_location}
-                  onChange={(v) => onChange("preferred_location", v)}
-                  province={formData.province}
-                  className={inputClass}
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className={labelClass}>City in your Province *</Label>
+                  <p className={hintClass}>Please enter the Town/City</p>
+                  <CityInput
+                    value={formData.preferred_location}
+                    onChange={(v) => onChange("preferred_location", v)}
+                    province={formData.province}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className={labelClass}>Preferred Postal Code *</Label>
+                  <p className={hintClass}>If unsure, please provide your own postal code</p>
+                  <Input
+                    placeholder="A1A 1A1"
+                    value={formData.preferred_postal_code || ""}
+                    onChange={(e) => onChange("preferred_postal_code", e.target.value.toUpperCase())}
+                    maxLength={7}
+                    className={inputClass}
+                  />
+                  {formData.preferred_postal_code && !isValidPostalCode(formData.preferred_postal_code) && (
+                    <p className="text-xs text-red-500">Please enter a valid Canadian postal code.</p>
+                  )}
+                </div>
               </div>
             </>
           )}
