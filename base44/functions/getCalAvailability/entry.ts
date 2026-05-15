@@ -20,24 +20,34 @@ Deno.serve(async (req) => {
     let body = {};
     try { body = await req.json(); } catch (_) { body = {}; }
 
-    // Auth: this is called from the public franchise funnel where applicants
-    // are not logged in. Instead of a user session, we require the caller to
-    // present an unguessable inquiryId (24-char Mongo-style hex) that resolves
-    // to a real FranchiseInquiry record. We use service role + a short retry
-    // to tolerate read-replica lag right after the inquiry was just created.
-    const { inquiryId } = body || {};
-    if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
-      return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
+    // Auth: two paths supported.
+    // 1) Public franchise funnel — applicants aren't logged in, so we require
+    //    an unguessable inquiryId (24-char Mongo-style hex) that resolves to a
+    //    real FranchiseInquiry. Service role + short retry handles read-replica
+    //    lag right after creation.
+    // 2) Authenticated admin — staff booking on behalf of a ticket from the
+    //    admin board. We skip the inquiryId check entirely.
+    let isAdmin = false;
+    try {
+      const me = await base44.auth.me();
+      isAdmin = me?.role === 'admin';
+    } catch (_) {}
+
+    if (!isAdmin) {
+      const { inquiryId } = body || {};
+      if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+        return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
+      }
+      let found = false;
+      for (let i = 0; i < 5; i++) {
+        try {
+          const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+          if (rec) { found = true; break; }
+        } catch (_) {}
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
     }
-    let found = false;
-    for (let i = 0; i < 5; i++) {
-      try {
-        const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
-        if (rec) { found = true; break; }
-      } catch (_) {}
-      await new Promise((r) => setTimeout(r, 400));
-    }
-    if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
 
     const timeZone = body.timeZone || 'America/Toronto';
 

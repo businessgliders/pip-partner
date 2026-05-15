@@ -29,21 +29,29 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: start, name, email' }, { status: 400 });
     }
 
-    // Auth: same model as getCalAvailability — require an unguessable inquiryId
-    // (24-char hex) that resolves to a real FranchiseInquiry. Service role +
-    // short retry handles read-replica lag right after creation.
-    if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
-      return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
+    // Auth: same model as getCalAvailability.
+    // 1) Public franchise funnel — requires an unguessable inquiryId (24-char hex).
+    // 2) Authenticated admin — staff booking on behalf of a ticket, bypasses inquiryId.
+    let isAdmin = false;
+    try {
+      const me = await base44.auth.me();
+      isAdmin = me?.role === 'admin';
+    } catch (_) {}
+
+    if (!isAdmin) {
+      if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+        return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
+      }
+      let found = false;
+      for (let i = 0; i < 5; i++) {
+        try {
+          const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+          if (rec) { found = true; break; }
+        } catch (_) {}
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
     }
-    let found = false;
-    for (let i = 0; i < 5; i++) {
-      try {
-        const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
-        if (rec) { found = true; break; }
-      } catch (_) {}
-      await new Promise((r) => setTimeout(r, 400));
-    }
-    if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
 
     const payload = {
       start,

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
+import BookCallPopover from "./BookCallPopover";
 
 function isEmpty(html) {
   return !(html || "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, "").trim();
@@ -109,6 +110,23 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     setShowSuggest(false);
   };
 
+  const handleBooked = ({ friendly, meetingUrl }) => {
+    const greetingName = firstName || ticketName || "there";
+    const linkLine = meetingUrl
+      ? `<p style="margin:0 0 12px;">You can join the call here: <a href="${meetingUrl}" style="color:#b67651;">${meetingUrl}</a></p>`
+      : "";
+    const block = `
+<p style="margin:0 0 12px;">Hi ${greetingName},</p>
+<p style="margin:0 0 12px;">Great news — I've booked your discovery call with our Franchise Team for:</p>
+<p style="margin:0 0 12px;"><strong style="color:#b67651;">${friendly} (America/Toronto)</strong></p>
+${linkLine}
+<p style="margin:0 0 12px;">You'll receive a full calendar invite via Cal.com shortly with all the details.</p>
+<p style="margin:0 0 12px;">Looking forward to chatting!</p>
+`.trim();
+    const current = getHtml();
+    setHtml(current ? `${block}<br/>${current}` : block);
+  };
+
   return (
     <div className="border-t bg-white p-4 space-y-3">
       <div className="flex items-center justify-between text-xs text-gray-600">
@@ -147,6 +165,9 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           Suggest Replies
         </Button>
         <TemplatePicker vars={vars} onSelect={handleTemplate} />
+        {ticketType === "FranchiseInquiry" && (
+          <BookCallPopover ticket={ticket} onBooked={handleBooked} />
+        )}
       </div>
 
       <AiAssistBar
