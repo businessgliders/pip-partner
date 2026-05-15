@@ -390,17 +390,28 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           className="prose prose-sm max-w-none p-3 min-h-32 max-h-80 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
           suppressContentEditableWarning
         />
+        {currentUser?.signature_html && (
+          <div className="border-t bg-gray-50/60 px-3 py-2">
+            <div className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
+              Your signature
+            </div>
+            <div
+              className="prose prose-sm max-w-none text-gray-700 [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
+              dangerouslySetInnerHTML={{ __html: currentUser.signature_html }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing}>
-            {polishing ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 mr-1.5" />}
-            Polish
-          </Button>
           <Button size="sm" variant="outline" onClick={handleClear}>
             <Trash2 className="w-3.5 h-3.5 mr-1.5" />
             Clear
+          </Button>
+          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing}>
+            {polishing ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 mr-1.5" />}
+            Polish
           </Button>
         </div>
         <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className="bg-pink-600 hover:bg-pink-700 text-white">
