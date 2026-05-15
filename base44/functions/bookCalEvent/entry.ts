@@ -88,6 +88,18 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Persist scheduled time on the franchise inquiry so it appears on the board card.
+    if (inquiryId && /^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+      try {
+        await base44.asServiceRole.entities.FranchiseInquiry.update(inquiryId, {
+          scheduled_call_time: start,
+          status: 'scheduled',
+        });
+      } catch (e) {
+        console.warn('Could not update inquiry with scheduled time', e?.message);
+      }
+    }
+
     return Response.json({ success: true, booking: data?.data || data });
   } catch (error) {
     console.error('bookCalEvent error', error);

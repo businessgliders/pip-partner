@@ -84,6 +84,20 @@ export default function TicketCard({
   const initials = initialsFor(name, ticket.email);
   const category = ticket._category || "";
 
+  const scheduledTimeLabel = (() => {
+    if (boardKey !== "franchise" || ticket.status !== "scheduled" || !ticket.scheduled_call_time) return "";
+    const d = new Date(ticket.scheduled_call_time);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Toronto",
+    });
+  })();
+
   const baseCls = `relative overflow-hidden backdrop-blur-md bg-white/70 border-2 ${borderCls} rounded-xl p-2 md:p-4 group`;
   const stateCls = isDragging
     ? "shadow-2xl bg-white/95 cursor-grabbing ring-4 ring-white/60"
@@ -140,11 +154,18 @@ export default function TicketCard({
                 <span className="font-bold text-gray-500 mr-1">{num}</span>{name}
               </div>
               {boardKey === "franchise" ? (
-                (ticket.preferred_location || ticket.province) && (
-                  <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
-                    📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province].filter(Boolean).join(" · ")}
-                  </span>
-                )
+                <>
+                  {scheduledTimeLabel && (
+                    <span className="inline-block mt-1 mr-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium max-w-full truncate">
+                      📅 {scheduledTimeLabel}
+                    </span>
+                  )}
+                  {(ticket.preferred_location || ticket.province) && (
+                    <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
+                      📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
+                </>
               ) : (
                 category && (
                   <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700">
