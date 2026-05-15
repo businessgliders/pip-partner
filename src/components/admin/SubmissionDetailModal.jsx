@@ -240,12 +240,12 @@ export default function SubmissionDetailModal({
               province={row.province}
               label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
             />
-            <div className="relative z-10 p-6 space-y-6">
+            <div className="relative z-10 p-5 space-y-4">
               <div>
-                <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-3">
+                <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-2">
                   Request Details
                 </p>
-                <div className="space-y-2 mb-4 pb-4 border-b border-slate-200/70">
+                <div className="space-y-1.5 mb-3 pb-3 border-b border-slate-200/70">
                   {row.email && (
                     <a
                       href={`mailto:${row.email}`}

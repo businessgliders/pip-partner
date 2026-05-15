@@ -65,7 +65,7 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
         <div className="mt-3 space-y-3">
           {/* Existing notes */}
           {notes.length > 0 && (
-            <div className={`space-y-2 overflow-y-auto ${large ? "max-h-[420px]" : "max-h-48"}`}>
+            <div className={`space-y-2 overflow-y-auto ${large ? "max-h-[260px]" : "max-h-48"}`}>
               {[...notes].reverse().map((note, i) => (
                 <div
                   key={i}
@@ -96,7 +96,7 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
               placeholder="Add an internal note..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              className={`resize-none text-sm bg-white ${large ? "min-h-[100px]" : "min-h-[60px]"}`}
+              className={`resize-none text-sm bg-white ${large ? "min-h-[70px]" : "min-h-[60px]"}`}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
               }}
