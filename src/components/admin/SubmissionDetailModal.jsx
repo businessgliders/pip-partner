@@ -96,20 +96,41 @@ export default function SubmissionDetailModal({
                     <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
                   </div>
                 </div>
-                <a
-                  href="https://cal.com/pilatesinpink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Open Cal.com"
-                  className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
-                >
-                  <img
-                    src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
-                    alt="Cal.com"
-                    className="w-4 h-4 rounded-sm"
-                  />
-                  Cal.com
-                </a>
+                <div className="shrink-0 flex flex-col items-end gap-1">
+                  <a
+                    href="https://cal.com/pilatesinpink"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open Cal.com"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
+                  >
+                    <img
+                      src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
+                      alt="Cal.com"
+                      className="w-4 h-4 rounded-sm"
+                    />
+                    Cal.com
+                  </a>
+                  {(() => {
+                    const startIso = row._cal_booking?.start || row.scheduled_call_time;
+                    if (!startIso) return null;
+                    const d = new Date(startIso);
+                    if (isNaN(d.getTime())) return null;
+                    const label = d.toLocaleString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      timeZone: "America/Toronto",
+                    });
+                    return (
+                      <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium">
+                        📅 {label}
+                      </span>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
 
