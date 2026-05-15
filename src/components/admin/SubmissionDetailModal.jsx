@@ -17,12 +17,23 @@ const ENTITY_KEY_TO_NAME = {
   frontadmin: "FrontAdminApplication",
 };
 
+// Field keys already shown in the contact header — hide them from the detail list
+const REDUNDANT_KEYS = new Set(["phone", "preferred_location", "location", "city", "province"]);
+
 function Field({ label, value }) {
   if (!value && value !== 0) return null;
+  const str = String(value);
+  const isLong = str.length > 200;
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold">{label}</span>
-      <span className="text-sm text-slate-700 break-words">{String(value)}</span>
+      {isLong ? (
+        <div className="text-sm text-slate-700 whitespace-pre-wrap break-words max-h-32 overflow-y-auto pr-2 bg-white/60 rounded-md border border-slate-100 p-2">
+          {str}
+        </div>
+      ) : (
+        <span className="text-sm text-slate-700 break-words">{str}</span>
+      )}
     </div>
   );
 }
@@ -126,13 +137,15 @@ export default function SubmissionDetailModal({
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-              {detailFields.map((f) => (
-                <Field
-                  key={f.key}
-                  label={f.label}
-                  value={typeof f.get === "function" ? f.get(row) : row[f.key]}
-                />
-              ))}
+              {detailFields
+                .filter((f) => !REDUNDANT_KEYS.has(f.key))
+                .map((f) => (
+                  <Field
+                    key={f.key}
+                    label={f.label}
+                    value={typeof f.get === "function" ? f.get(row) : row[f.key]}
+                  />
+                ))}
             </div>
 
             <AssignTicketSection
