@@ -68,9 +68,22 @@ export default function LocationMapBanner({
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-pink-50 to-amber-50" />
           )}
-          {/* Gradient wash to keep details readable */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/88 to-white/96" />
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-50/30 via-transparent to-amber-50/30" />
+          {/* Radial gradient: opaque white in center (behind text), transparent at edges (map visible) */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 55% 70% at 50% 45%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 35%, rgba(255,255,255,0.7) 60%, rgba(255,255,255,0.25) 85%, rgba(255,255,255,0) 100%)",
+            }}
+          />
+          {/* Subtle warm tint only at edges */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 80% at 50% 50%, transparent 60%, rgba(253,242,248,0.35) 100%)",
+            }}
+          />
         </div>
       </div>
 
