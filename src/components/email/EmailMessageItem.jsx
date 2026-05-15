@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sparkles, AlertTriangle } from "lucide-react";
+import { Sparkles, AlertTriangle, Maximize2 } from "lucide-react";
 import UnreadMessageMarker from "./UnreadMessageMarker";
 
 function stripHtml(html) {
@@ -136,11 +136,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               {cleanText || "(empty)"}
             </div>
           )}
-          {isLong && !message.is_ai_summary && (
-            <div className="text-xs text-gray-500 mt-1 italic">Tap to view full message</div>
-          )}
-          <div className="text-[10px] text-gray-500 mt-1">
-            {time ? format(new Date(time), "MMM d, h:mm a") : ""}
+          <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+            <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>
+            {isLong && !message.is_ai_summary && (
+              <Maximize2 className="w-3 h-3 text-gray-400" title="Tap to view full message" />
+            )}
           </div>
           {message.is_ai_summary && (
             <div
