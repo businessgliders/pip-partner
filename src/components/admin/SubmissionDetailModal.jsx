@@ -18,7 +18,7 @@ const ENTITY_KEY_TO_NAME = {
 };
 
 // Field keys already shown in the contact header — hide them from the detail list
-const REDUNDANT_KEYS = new Set(["phone", "preferred_location", "location", "city", "province"]);
+const REDUNDANT_KEYS = new Set(["phone", "preferred_location", "location", "city", "province", "postal_code", "preferred_postal_code"]);
 
 function Field({ label, value }) {
   if (!value && value !== 0) return null;
@@ -174,10 +174,10 @@ export default function SubmissionDetailModal({
                       {[row.phone_country, row.phone].filter(Boolean).join(" ")}
                     </a>
                   )}
-                  {(row.preferred_location || row.location || row.city || row.province) && (
+                  {(row.preferred_location || row.location || row.city || row.province || row.postal_code || row.preferred_postal_code) && (
                     <div className="flex items-center gap-2 text-sm text-slate-700">
                       <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      {[row.preferred_location || row.location || row.city, row.province].filter(Boolean).join(" · ")}
+                      {[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
                     </div>
                   )}
                   {row.resume_url && (
