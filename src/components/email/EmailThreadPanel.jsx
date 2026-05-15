@@ -16,6 +16,14 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: "Front Desk Application",
 };
 
+// Must mirror FROM_ALIASES in EmailComposer / functions/sendTicketEmail
+const FROM_ALIASES = {
+  FranchiseInquiry: "franchise@pilatesinpinkstudio.com",
+  InfluencerApplication: "partner@pilatesinpinkstudio.com",
+  InstructorApplication: "hire@pilatesinpinkstudio.com",
+  FrontAdminApplication: "hire@pilatesinpinkstudio.com",
+};
+
 function buildIntakeFull(ticket, ticketType) {
   const rows = [];
   const add = (label, value) => {
@@ -253,10 +261,10 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
             {allMessages.length}
           </span>
         </div>
-        {currentUser?.email && (
+        {FROM_ALIASES[ticketType] && (
           <span className="text-[11px] text-gray-500 truncate ml-2 shrink-0">
             <span className="text-gray-400">From:</span>{" "}
-            <span className="font-medium text-gray-700">{currentUser.email}</span>
+            <span className="font-medium text-gray-700">{FROM_ALIASES[ticketType]}</span>
           </span>
         )}
       </div>
