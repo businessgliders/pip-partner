@@ -12,6 +12,14 @@ function isEmpty(html) {
   return !(html || "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, "").trim();
 }
 
+// Mirror of FROM_ALIASES in functions/sendTicketEmail.js — kept in sync for display only
+const FROM_ALIASES = {
+  FranchiseInquiry: "franchise@pilatesinpinkstudio.com",
+  InfluencerApplication: "partner@pilatesinpinkstudio.com",
+  InstructorApplication: "hire@pilatesinpinkstudio.com",
+  FrontAdminApplication: "hire@pilatesinpinkstudio.com",
+};
+
 export default function EmailComposer({ ticket, ticketType, currentUser, onSent, onCancel }) {
   const editorRef = useRef(null);
   const [sending, setSending] = useState(false);
@@ -104,8 +112,13 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   return (
     <div className="border-t bg-white p-4 space-y-3">
       <div className="flex items-center justify-between text-xs text-gray-600">
-        <div>
-          <span className="font-medium">To:</span> {ticketEmail || "—"}
+        <div className="space-y-0.5">
+          <div>
+            <span className="font-medium">From:</span> {FROM_ALIASES[ticketType] || "—"}
+          </div>
+          <div>
+            <span className="font-medium">To:</span> {ticketEmail || "—"}
+          </div>
         </div>
         {onCancel && (
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-700">
