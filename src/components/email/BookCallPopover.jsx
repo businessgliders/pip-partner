@@ -92,10 +92,28 @@ export default function BookCallPopover({ onSelect }) {
       </PopoverTrigger>
       <PopoverContent className="w-[420px] p-0" align="start">
         <div className="p-4 border-b">
-          <h4 className="text-sm font-semibold text-slate-900">Book a Meeting</h4>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Pick a slot — it will be reserved only when you send the email.
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900">Book a Meeting</h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pick a slot — it will be reserved only when you send the email.
+              </p>
+            </div>
+            <a
+              href="https://cal.com/pilatesinpink"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open Cal.com"
+              className="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-slate-200 hover:bg-slate-50 text-[11px] text-slate-700"
+            >
+              <img
+                src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
+                alt="Cal.com"
+                className="w-4 h-4 rounded-sm"
+              />
+              Open
+            </a>
+          </div>
         </div>
 
         <div className="p-4 max-h-[420px] overflow-y-auto">
