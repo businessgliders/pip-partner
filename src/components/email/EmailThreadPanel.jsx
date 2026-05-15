@@ -16,14 +16,6 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: "Front Desk Application",
 };
 
-// Mirror of FROM_ALIASES in functions/sendTicketEmail.js (display only)
-const FROM_ALIASES = {
-  FranchiseInquiry: "franchise@pilatesinpinkstudio.com",
-  InfluencerApplication: "partner@pilatesinpinkstudio.com",
-  InstructorApplication: "hire@pilatesinpinkstudio.com",
-  FrontAdminApplication: "hire@pilatesinpinkstudio.com",
-};
-
 function buildIntakeFull(ticket, ticketType) {
   const rows = [];
   const add = (label, value) => {
@@ -245,15 +237,6 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
             {allMessages.length}
           </span>
-        </div>
-        <div className="text-right text-[11px] text-gray-600 leading-tight min-w-0">
-          <div className="truncate max-w-[240px]">
-            <span className="text-gray-400">From:</span>{" "}
-            <span className="font-medium text-pink-700">{FROM_ALIASES[ticketType] || "—"}</span>
-          </div>
-          <div className="truncate max-w-[240px]">
-            <span className="text-gray-400">To:</span> {ticket?.email || "—"}
-          </div>
         </div>
       </div>
 

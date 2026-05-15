@@ -72,19 +72,42 @@ export default function EmailMessageItem({ message, isHighlighted }) {
         className={`flex flex-col ${isInbound ? "items-start" : "items-end"} mb-3`}
         id={`msg-${message.id}`}
       >
-        {!isInbound && message.from_email && (
-          <div className="text-[10px] text-gray-500 mb-1 mr-1">
-            <span className="text-gray-400">From:</span>{" "}
-            <span className="font-medium text-pink-700">{message.from_email}</span>
+        {!isInbound && (message.from_email || message.to_email) && (
+          <div className={`text-[10px] text-gray-500 mb-1 leading-tight ${isInbound ? "ml-1 text-left" : "mr-1 text-right"}`}>
+            {message.from_email && (
+              <div>
+                <span className="text-gray-400">From:</span>{" "}
+                <span className="font-medium text-pink-700">{message.from_email}</span>
+              </div>
+            )}
+            {message.to_email && (
+              <div>
+                <span className="text-gray-400">To:</span>{" "}
+                <span className="font-medium text-gray-700">{message.to_email}</span>
+              </div>
+            )}
+          </div>
+        )}
+        {isInbound && (message.from_email || message.to_email) && (
+          <div className="text-[10px] text-gray-500 mb-1 ml-1 leading-tight text-left">
+            {message.from_email && (
+              <div>
+                <span className="text-gray-400">From:</span>{" "}
+                <span className="font-medium text-gray-700">{message.from_email}</span>
+              </div>
+            )}
+            {message.to_email && (
+              <div>
+                <span className="text-gray-400">To:</span>{" "}
+                <span className="font-medium text-pink-700">{message.to_email}</span>
+              </div>
+            )}
           </div>
         )}
         {isInternal && !isInbound && (
-          <div className="text-[10px] text-amber-700 mb-1 mr-1 font-semibold tracking-wider uppercase flex items-center gap-1">
+          <div className="text-[10px] text-amber-700 mb-1 mr-1 font-semibold tracking-wider uppercase">
             <span className="inline-block px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300">
               Internal
-            </span>
-            <span className="text-gray-500 normal-case font-normal">
-              to {message.to_email}
             </span>
           </div>
         )}
