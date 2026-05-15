@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MessageSquare, Send, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
 
 function formatRelativeTime(dateString) {
   const date = new Date(dateString);
@@ -23,6 +24,7 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
   const [expanded, setExpanded] = useState(true);
   const [newNote, setNewNote] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [openNote, setOpenNote] = useState(null);
 
   const handleSubmit = async () => {
     if (!newNote.trim()) return;
@@ -67,9 +69,10 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
               {[...notes].reverse().map((note, i) => (
                 <div
                   key={i}
-                  className="bg-slate-50 rounded-lg p-3 border border-slate-100"
+                  className="bg-slate-50 rounded-lg p-3 border border-slate-100 cursor-pointer hover:bg-slate-100 transition"
+                  onClick={() => setOpenNote(note)}
                 >
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed line-clamp-3">
                     {note.comment}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
@@ -77,8 +80,9 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
                       {note.user_name || note.user_email?.split("@")[0] || "Staff"}
                     </span>
                     <span className="text-[10px] text-slate-400">•</span>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1">
                       {note.timestamp ? formatRelativeTime(note.timestamp) : ""}
+                      <Maximize2 className="w-3 h-3 text-slate-400" />
                     </span>
                   </div>
                 </div>
@@ -110,6 +114,27 @@ export default function InternalNotesSection({ notes = [], onAddNote, accentColo
           <p className="text-[10px] text-slate-400">Press ⌘+Enter to submit</p>
         </div>
       )}
+
+      <Dialog open={!!openNote} onOpenChange={(o) => !o && setOpenNote(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base">Internal Note</DialogTitle>
+          </DialogHeader>
+          {openNote && (
+            <>
+              <div className="text-xs text-slate-500 border-b pb-3">
+                <strong>{openNote.user_name || openNote.user_email?.split("@")[0] || "Staff"}</strong>
+                {openNote.timestamp && (
+                  <> · {new Date(openNote.timestamp).toLocaleString()}</>
+                )}
+              </div>
+              <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed max-h-[60vh] overflow-y-auto">
+                {openNote.comment}
+              </p>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
