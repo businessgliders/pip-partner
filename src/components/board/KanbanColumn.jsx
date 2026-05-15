@@ -61,9 +61,19 @@ export default function KanbanColumn({
       <div className={`backdrop-blur-md ${headCls} border-b px-3 md:px-4 py-3 md:py-4 flex-shrink-0`}>
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-white font-semibold capitalize text-sm md:text-base">{status}</h3>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white font-medium">
-            {tickets.length}
-          </span>
+          <div className="flex items-center gap-2">
+            {(key === "qualified" || key === "approved" || key === "reviewed") && onTidyUp && tickets.length > 0 && (
+              <button
+                onClick={onTidyUp}
+                className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
+              >
+                <Sparkles className="w-3 h-3" /> Tidy Up
+              </button>
+            )}
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white font-medium">
+              {tickets.length}
+            </span>
+          </div>
         </div>
         {key === "closed" && tickets.length > 0 && (onArchiveSome || onArchiveAll) && (
           <div className="flex gap-2 mt-2">
@@ -84,14 +94,6 @@ export default function KanbanColumn({
               </button>
             )}
           </div>
-        )}
-        {(key === "qualified" || key === "approved" || key === "reviewed") && onTidyUp && tickets.length > 0 && (
-          <button
-            onClick={onTidyUp}
-            className="mt-2 inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
-          >
-            <Sparkles className="w-3 h-3" /> Tidy Up
-          </button>
         )}
       </div>
 
