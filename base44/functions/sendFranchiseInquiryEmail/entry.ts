@@ -298,8 +298,9 @@ Deno.serve(async (req) => {
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
     // 1) Send the owner notification immediately
+    const timeForSubject = scheduledTime ? scheduledTime.replace(/ \(.*?\)$/, '') : '';
     const ownerSubject = scheduledTime
-      ? `${appTag}New franchise inquiry: ${fullName} \u2014 ${scheduledTime}`
+      ? `${appTag}New franchise inquiry: ${fullName} - ${timeForSubject}`
       : `${appTag}New franchise inquiry (no slot yet): ${fullName}`;
 
     const safeReplyTo = isValidEmail(inquiryData.email) ? inquiryData.email : undefined;
