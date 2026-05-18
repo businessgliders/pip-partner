@@ -126,6 +126,12 @@ function submitterEmail(inquiry, scheduledTime, appNumber) {
   return brandedShell(inner, `Your Pilates in Pink discovery call is confirmed for ${safeTime}`);
 }
 
+function buildViewButton(inquiryId) {
+  const baseUrl = (Deno.env.get('APP_BASE_URL') || 'https://pilatesinpinkstudio.com').replace(/\/$/, '');
+  const boardUrl = `${baseUrl}/ApplicationBoard?ticket=${inquiryId}`;
+  return `<a href="${escapeHtml(boardUrl)}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:${BRAND_ROSE};color:white;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View in Application Board</a>`;
+}
+
 function ownerEmail(inquiry, scheduledTime, appNumber) {
   const fullName = `${inquiry.first_name || ''} ${inquiry.last_name || ''}`.trim() || 'New applicant';
   const safeFullName = escapeHtml(fullName);
@@ -171,6 +177,7 @@ function ownerEmail(inquiry, scheduledTime, appNumber) {
       ${row('WHY PILATES IN PINK', escapeHtml(inquiry.why_pilates_in_pink))}
       ${row('BUSINESS EXPERIENCE', inquiry.business_experience ? escapeHtml(inquiry.business_experience).replace(/\n/g, '<br/>') : '')}
     </table>
+    ${buildViewButton(inquiry.id)}
   `;
   return brandedShell(inner, hasSlot ? `New franchise inquiry from ${fullName} — ${scheduledTime}` : `New franchise inquiry from ${fullName}`);
 }

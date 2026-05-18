@@ -79,6 +79,12 @@ function isValidUrl(url) {
   } catch { return false; }
 }
 
+function buildViewButton(applicationId) {
+  const baseUrl = (Deno.env.get('APP_BASE_URL') || 'https://pilatesinpinkstudio.com').replace(/\/$/, '');
+  const boardUrl = `${baseUrl}/ApplicationBoard?ticket=${applicationId}`;
+  return `<a href="${escapeHtml(boardUrl)}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#4a7c7c;color:white;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View in Application Board</a>`;
+}
+
 function buildHtml(applicationData, appNumber) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #7b9e9e 0%, #a8c5c5 30%, #d6eaea 60%, #eef6f6 100%); padding: 40px 20px;">
@@ -105,6 +111,9 @@ function buildHtml(applicationData, appNumber) {
           <h3 style="color: #4a7c7c; margin: 0 0 15px 0; font-size: 16px;">Resume</h3>
           <a href="${escapeHtml(applicationData.resume_url)}" style="color: #4a7c7c;">View Attached Resume</a>
         </div>` : ''}
+        <div style="text-align: center; margin-top: 20px;">
+          ${buildViewButton(applicationData.id)}
+        </div>
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #a8c5c5;">
           <p style="color: #4a7c7c; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
         </div>

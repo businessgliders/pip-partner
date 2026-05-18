@@ -79,6 +79,12 @@ function isValidUrl(url) {
   } catch { return false; }
 }
 
+function buildViewButton(applicationId) {
+  const baseUrl = (Deno.env.get('APP_BASE_URL') || 'https://pilatesinpinkstudio.com').replace(/\/$/, '');
+  const boardUrl = `${baseUrl}/ApplicationBoard?ticket=${applicationId}`;
+  return `<a href="${escapeHtml(boardUrl)}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#b67651;color:white;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View in Application Board</a>`;
+}
+
 function buildHtml(applicationData, appNumber) {
   const qualList = (applicationData.qualifications || []).map((q) => `<li style="color:#666; margin:4px 0;">${escapeHtml(q)}</li>`).join('');
   return `
@@ -111,6 +117,9 @@ function buildHtml(applicationData, appNumber) {
           <h3 style="color: #b67651; margin: 0 0 15px 0; font-size: 16px;">Resume</h3>
           <a href="${escapeHtml(applicationData.resume_url)}" style="color: #b67651;">View Attached Resume</a>
         </div>` : ''}
+        <div style="text-align: center; margin-top: 20px;">
+          ${buildViewButton(applicationData.id)}
+        </div>
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #d4a088;">
           <p style="color: #b67651; margin: 0; font-size: 12px;">${appNumber ? `Reference: Application #${appNumber} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
         </div>
