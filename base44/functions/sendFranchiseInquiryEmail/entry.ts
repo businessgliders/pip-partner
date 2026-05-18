@@ -271,7 +271,7 @@ async function fetchRawAppNumber(base44, inquiryId) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { inquiryId, scheduledTime = '', ownerOnly = false } = await req.json();
+    const { inquiryId, scheduledTime = '', ownerOnly = false, testRecipient } = await req.json();
 
     // Auth model: this endpoint is called from the public franchise funnel
     // where submitters are not logged in. We require an unguessable inquiryId
@@ -312,26 +312,41 @@ Deno.serve(async (req) => {
 
     const safeReplyTo = isValidEmail(inquiryData.email) ? inquiryData.email : undefined;
 
+    // Allow admin-triggered test sends to a single staff recipient
+    let ownerRecipients = OWNER_EMAILS;
+    let finalOwnerSubject = ownerSubject;
+    let isTestSend = false;
+    if (testRecipient && isValidEmail(testRecipient)) {
+      const me = await base44.auth.me().catch(() => null);
+      if (me?.role === 'admin') {
+        ownerRecipients = [testRecipient];
+        finalOwnerSubject = `[TEST] ${ownerSubject}`;
+        isTestSend = true;
+      }
+    }
+
     const ownerHtml = ownerEmail(inquiryData, scheduledTime, appNumber);
     const ownerResult = await sendGmail({
       accessToken,
-      to: OWNER_EMAILS,
-      subject: ownerSubject,
+      to: ownerRecipients,
+      subject: finalOwnerSubject,
       html: ownerHtml,
       replyTo: safeReplyTo,
     });
-    await logEmailMessage(base44, {
-      inquiryId,
-      to: OWNER_EMAILS,
-      subject: ownerSubject,
-      html: ownerHtml,
-      gmailResult: ownerResult,
-      isInternal: true,
-    });
+    if (!isTestSend) {
+      await logEmailMessage(base44, {
+        inquiryId,
+        to: ownerRecipients,
+        subject: finalOwnerSubject,
+        html: ownerHtml,
+        gmailResult: ownerResult,
+        isInternal: true,
+      });
+    }
 
     // 2) Schedule the submitter's discovery-call confirmation after a delay,
     //    so it arrives after the welcome email. Runs in the background.
-    if (!ownerOnly && scheduledTime && inquiryData.email) {
+    if (!isTestSend && !ownerOnly && scheduledTime && inquiryData.email) {
       (async () => {
         try {
           await new Promise((r) => setTimeout(r, SUBMITTER_CONFIRMATION_DELAY_MS));

@@ -169,7 +169,7 @@ async function sendGmail({ accessToken, to, subject, html, replyTo }) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { applicationId } = await req.json();
+    const { applicationId, testRecipient } = await req.json();
 
     // Require a real application id and verify the requester can read it (RLS
     // enforces ownership: only the anonymous creator's session or an admin
@@ -198,10 +198,21 @@ Deno.serve(async (req) => {
     const safeReplyTo = isValidEmail(applicationData.email) ? applicationData.email : undefined;
     const safeName = escapeHtml(name).slice(0, 200);
 
+    // Allow admin-triggered test sends to a single staff recipient
+    let recipients = OWNER_EMAILS.join(', ');
+    let subjectPrefix = appTag;
+    if (testRecipient && isValidEmail(testRecipient)) {
+      const me = await base44.auth.me().catch(() => null);
+      if (me?.role === 'admin') {
+        recipients = testRecipient;
+        subjectPrefix = `[TEST] ${appTag}`;
+      }
+    }
+
     const result = await sendGmail({
       accessToken,
-      to: OWNER_EMAILS.join(', '),
-      subject: `${appTag}New Instructor Application: ${safeName}`,
+      to: recipients,
+      subject: `${subjectPrefix}New Instructor Application: ${safeName}`,
       html,
       replyTo: safeReplyTo,
     });
