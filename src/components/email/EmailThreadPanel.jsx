@@ -160,16 +160,19 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     return map;
   }, [staffUsers]);
 
-  // Filter out legacy internal outbound notifications (sent to staff domain) that
-  // were NOT explicitly flagged as is_internal — those are system notifications,
-  // not user-authored internal emails. Keep all is_internal=true messages visible.
+  // Filter out:
+  // 1. Legacy system notifications (outbound to staff domain, not explicitly is_internal)
+  // 2. Assignment emails (owner notifications about booked discovery calls)
+  // Show: applicant-facing emails (inbound, outbound to applicant) and user-authored internal emails
   const visibleReal = useMemo(
     () =>
-      messages.filter(
-        (m) =>
-          m.is_internal ||
-          !(m.direction === "outbound" && isStaff(m.to_email))
-      ),
+      messages.filter((m) => {
+        // Hide outbound staff emails unless explicitly marked as user-authored internal
+        if (m.direction === "outbound" && isStaff(m.to_email) && !m.is_internal) return false;
+        // Hide owner assignment emails (they contain "New franchise inquiry" and go to staff)
+        if (m.is_internal && m.direction === "outbound" && m.subject?.includes("New franchise inquiry")) return false;
+        return true;
+      }),
     [messages]
   );
 
