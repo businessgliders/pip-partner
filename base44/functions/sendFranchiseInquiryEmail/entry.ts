@@ -175,6 +175,36 @@ function ownerEmail(inquiry, scheduledTime, appNumber) {
   return brandedShell(inner, hasSlot ? `New franchise inquiry from ${fullName} — ${scheduledTime}` : `New franchise inquiry from ${fullName}`);
 }
 
+// Logs a sent (or failed) email as an EmailMessage so it appears in the
+// ApplicationBoard email thread for the inquiry.
+async function logEmailMessage(base44, { inquiryId, to, subject, html, gmailResult, isInternal }) {
+  if (!inquiryId) return;
+  try {
+    const recipients = Array.isArray(to) ? to.join(', ') : to;
+    await base44.asServiceRole.entities.EmailMessage.create({
+      ticket_id: inquiryId,
+      ticket_type: 'FranchiseInquiry',
+      direction: 'outbound',
+      from_email: FROM_EMAIL,
+      from_name: FROM_NAME,
+      to_email: recipients,
+      subject,
+      body_html: html,
+      body_text: htmlToText(html),
+      snippet: htmlToText(html).slice(0, 160),
+      sent_by: 'system',
+      sent_at: new Date().toISOString(),
+      is_internal: !!isInternal,
+      send_status: gmailResult?.ok ? 'sent' : 'failed',
+      send_error: gmailResult?.ok ? undefined : (gmailResult?.error || 'Unknown error'),
+      gmail_message_id: gmailResult?.data?.id,
+      gmail_thread_id: gmailResult?.data?.threadId,
+    });
+  } catch (err) {
+    console.error('Failed to log EmailMessage:', err);
+  }
+}
+
 async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   const text = htmlToText(html);
   const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -274,12 +304,21 @@ Deno.serve(async (req) => {
 
     const safeReplyTo = isValidEmail(inquiryData.email) ? inquiryData.email : undefined;
 
+    const ownerHtml = ownerEmail(inquiryData, scheduledTime, appNumber);
     const ownerResult = await sendGmail({
       accessToken,
       to: OWNER_EMAILS,
       subject: ownerSubject,
-      html: ownerEmail(inquiryData, scheduledTime, appNumber),
+      html: ownerHtml,
       replyTo: safeReplyTo,
+    });
+    await logEmailMessage(base44, {
+      inquiryId,
+      to: OWNER_EMAILS,
+      subject: ownerSubject,
+      html: ownerHtml,
+      gmailResult: ownerResult,
+      isInternal: true,
     });
 
     // 2) Schedule the submitter's discovery-call confirmation after a delay,
@@ -293,11 +332,21 @@ Deno.serve(async (req) => {
           const freshRaw = (await fetchRawAppNumber(base44, inquiryId)) || rawNumber || '';
           const freshApp = freshRaw ? formatAppNumber(freshRaw) : '';
           const freshTag = freshApp ? `[Application #${freshApp}] ` : '';
+          const submitterSubject = `${freshTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`;
+          const submitterHtml = submitterEmail(inquiryData, scheduledTime, freshApp);
           const res = await sendGmail({
             accessToken: freshToken,
             to: inquiryData.email,
-            subject: `${freshTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`,
-            html: submitterEmail(inquiryData, scheduledTime, freshApp),
+            subject: submitterSubject,
+            html: submitterHtml,
+          });
+          await logEmailMessage(base44, {
+            inquiryId,
+            to: inquiryData.email,
+            subject: submitterSubject,
+            html: submitterHtml,
+            gmailResult: res,
+            isInternal: false,
           });
           if (!res.ok) console.error('Delayed submitter confirmation failed:', res.error);
         } catch (err) {
