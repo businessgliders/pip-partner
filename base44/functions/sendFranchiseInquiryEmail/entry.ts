@@ -127,8 +127,7 @@ function submitterEmail(inquiry, scheduledTime, appNumber) {
 }
 
 function buildViewButton(inquiryId) {
-  const baseUrl = (Deno.env.get('APP_BASE_URL') || 'https://pilatesinpinkstudio.com').replace(/\/$/, '');
-  const boardUrl = `${baseUrl}/ApplicationBoard?ticket=${inquiryId}`;
+  const boardUrl = `https://partner.pilatesinpinkstudio.com/ApplicationBoard?ticket=${inquiryId}`;
   return `<a href="${escapeHtml(boardUrl)}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:${BRAND_ROSE};color:white;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View in Application Board</a>`;
 }
 
