@@ -65,7 +65,11 @@ const DETAIL_FIELDS = {
 export default function ApplicationBoard() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("franchise");
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    return tabParam && BOARD_TYPES.find((b) => b.key === tabParam) ? tabParam : "franchise";
+  });
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
 
   const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead } = useUnreadMessages(user?.email);
@@ -162,7 +166,7 @@ export default function ApplicationBoard() {
         window.history.replaceState({}, "", window.location.pathname);
       }
     }
-  }, [tickets]);
+  }, [tickets, activeTab]);
 
   const matchesSearch = (t) => {
     if (!searchQuery.trim()) return true;
