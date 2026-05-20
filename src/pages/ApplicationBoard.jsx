@@ -186,13 +186,19 @@ export default function ApplicationBoard() {
       return inCol && matchesSearch(t);
     });
     
-    // Sort "scheduled" status by scheduled_call_time (most recent first)
+    // Sort "scheduled" status by call time (soonest upcoming first).
+    // Prefer the Cal.com booking start; fall back to scheduled_call_time.
     if (effectiveViewMode === "status" && column === "scheduled") {
-      return filtered.sort((a, b) => {
-        const timeA = a.scheduled_call_time ? new Date(a.scheduled_call_time).getTime() : 0;
-        const timeB = b.scheduled_call_time ? new Date(b.scheduled_call_time).getTime() : 0;
-        return timeB - timeA;
-      });
+      const getTime = (t) => {
+        const calStart = t?._cal_booking?.start;
+        if (calStart) return new Date(calStart).getTime();
+        if (t?.scheduled_call_time) {
+          const parsed = new Date(t.scheduled_call_time).getTime();
+          if (!isNaN(parsed)) return parsed;
+        }
+        return Infinity; // no time → push to bottom
+      };
+      return filtered.sort((a, b) => getTime(a) - getTime(b));
     }
     
     return filtered;
