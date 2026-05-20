@@ -148,44 +148,55 @@ export default function AttachmentsSection({
         <p className="text-xs text-slate-400 italic">No attachments yet</p>
       ) : (
         <ul className="space-y-1.5">
-          {attachments.map((a, idx) => (
-            <li
-              key={idx}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-slate-200 bg-white group"
-            >
-              {a.type === "link" ? (
-                <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              ) : (
-                <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              )}
-              <a
-                href={a.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-slate-700 truncate flex-1 hover:underline"
-                title={a.url}
+          {attachments.map((a, idx) => {
+            let favicon = null;
+            if (a.type === "link" && /^https?:\/\//i.test(a.url)) {
+              try {
+                const domain = new URL(a.url).hostname;
+                favicon = `https://www.google.com/s2/favicons?sz=16&domain=${encodeURIComponent(domain)}`;
+              } catch (_) {}
+            }
+            return (
+              <li
+                key={idx}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-slate-200 bg-white group"
               >
-                {a.label}
-              </a>
-              <a
-                href={a.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-slate-700"
-                title="Open"
-              >
-                <ExternalLink className="w-3 h-3" />
-              </a>
-              <button
-                type="button"
-                onClick={() => handleRemove(idx)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600"
-                title="Remove"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </li>
-          ))}
+                {favicon ? (
+                  <img src={favicon} alt="" className="w-3.5 h-3.5 rounded shrink-0" />
+                ) : a.type === "link" ? (
+                  <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                ) : (
+                  <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                )}
+                <a
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-slate-700 truncate flex-1 hover:underline"
+                  title={a.url}
+                >
+                  {a.label}
+                </a>
+                <a
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-slate-700"
+                  title="Open"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(idx)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600"
+                  title="Remove"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
