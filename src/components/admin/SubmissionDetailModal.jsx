@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/AuthContext";
 import EmailThreadPanel from "../email/EmailThreadPanel";
 import InternalNotesSection from "./InternalNotesSection";
 import AssignTicketSection from "./AssignTicketSection";
+import AttachmentsSection from "./AttachmentsSection";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
 import { formatAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
@@ -79,6 +80,12 @@ export default function SubmissionDetailModal({
   const handleAssign = async (email) => {
     await base44.entities[entityName].update(row.id, { assigned_to: email });
     row.assigned_to = email;
+    queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
+  };
+
+  const handleAttachmentsChange = async (next) => {
+    await base44.entities[entityName].update(row.id, { attachments: next });
+    row.attachments = next;
     queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
   };
 
@@ -298,6 +305,13 @@ export default function SubmissionDetailModal({
                 assignedTo={row.assigned_to}
                 onAssign={handleAssign}
                 accentColor={accentColor}
+              />
+
+              <AttachmentsSection
+                attachments={row.attachments || []}
+                onChange={handleAttachmentsChange}
+                accentColor={accentColor}
+                currentUserEmail={user?.email}
               />
 
               <InternalNotesSection

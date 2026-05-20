@@ -120,6 +120,36 @@
       "default": [],
       "description": "Internal staff notes thread"
     },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "file",
+              "link"
+            ]
+          },
+          "uploaded_by": {
+            "type": "string"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": [],
+      "description": "Files and Google Docs/Drive links attached to this ticket"
+    },
     "archived": {
       "type": "boolean",
       "default": false

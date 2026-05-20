@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
-  Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users
+  Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users,
+  Paperclip, FileText, Link2
 } from "lucide-react";
 import {
   Popover, PopoverTrigger, PopoverContent
@@ -41,6 +42,10 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   // If applicant is excluded (toggled off), the message becomes "internal".
   const [selectedTeam, setSelectedTeam] = useState([]); // array of emails
   const [includeApplicant, setIncludeApplicant] = useState(true);
+  // Indices into ticket.attachments[] that should be appended to the outgoing email
+  const [selectedAttachmentIdxs, setSelectedAttachmentIdxs] = useState([]);
+
+  const ticketAttachments = Array.isArray(ticket?.attachments) ? ticket.attachments : [];
 
   // Load team members (admin users with staff-domain email) once
   useEffect(() => {
@@ -117,6 +122,12 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       if (!isDefaultRecipientSet) {
         payload.to_emails_override = recipientEmails;
       }
+      if (selectedAttachmentIdxs.length > 0) {
+        payload.attachments = selectedAttachmentIdxs
+          .map((i) => ticketAttachments[i])
+          .filter((a) => a && a.url)
+          .map((a) => ({ label: a.label || a.url, url: a.url, type: a.type || "link" }));
+      }
       await base44.functions.invoke("sendTicketEmail", payload);
 
       // 2. Only book the Cal.com slot AFTER a successful send (skip for internal emails).
@@ -143,6 +154,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       setPendingBooking(null);
       setSelectedTeam([]);
       setIncludeApplicant(true);
+      setSelectedAttachmentIdxs([]);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -339,7 +351,85 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         {ticketType === "FranchiseInquiry" && (
           <BookCallPopover onSelect={handleSlotSelected} />
         )}
+        {ticketAttachments.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-slate-700 border-slate-200 hover:bg-slate-50"
+              >
+                <Paperclip className="w-3.5 h-3.5 mr-1.5" />
+                Attach
+                {selectedAttachmentIdxs.length > 0 && (
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
+                    {selectedAttachmentIdxs.length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-72 p-2 max-h-72 overflow-y-auto">
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
+                Attach from ticket
+              </p>
+              {ticketAttachments.map((a, idx) => {
+                const checked = selectedAttachmentIdxs.includes(idx);
+                return (
+                  <label
+                    key={idx}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={(v) => {
+                        setSelectedAttachmentIdxs((cur) =>
+                          v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
+                        );
+                      }}
+                    />
+                    {a.type === "link" ? (
+                      <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    )}
+                    <span className="truncate text-sm flex-1">{a.label || a.url}</span>
+                  </label>
+                );
+              })}
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
+
+      {selectedAttachmentIdxs.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200">
+          <Paperclip className="w-3.5 h-3.5 text-slate-500" />
+          <span className="text-xs text-slate-600 font-medium">Attached:</span>
+          {selectedAttachmentIdxs.map((idx) => {
+            const a = ticketAttachments[idx];
+            if (!a) return null;
+            return (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-slate-300 bg-white text-xs text-slate-700"
+              >
+                {a.type === "link" ? <Link2 className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                <span className="truncate max-w-[160px]">{a.label || a.url}</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedAttachmentIdxs((cur) => cur.filter((i) => i !== idx))
+                  }
+                  className="text-slate-400 hover:text-slate-700"
+                  title="Remove"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
 
       {pendingBooking && (
         <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">

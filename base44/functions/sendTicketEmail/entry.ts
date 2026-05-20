@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override } = await req.json();
+    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override, attachments } = await req.json();
 
     if (!ticket_id || !ticket_type || !body_html) {
       return Response.json({ error: 'Missing ticket_id, ticket_type or body_html' }, { status: 400 });
@@ -229,8 +229,31 @@ Deno.serve(async (req) => {
       subject = safeSubjectInput(`${subjectTag} Your ${inquiryWord}`);
     }
 
+    // Build an Attachments block (links to files/Google Docs) if provided
+    let attachmentsHtml = '';
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      const escapeHtml = (s) => String(s || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const items = attachments
+        .filter((a) => a && typeof a.url === 'string' && /^https?:\/\//i.test(a.url))
+        .map((a) => {
+          const label = escapeHtml(a.label || a.url);
+          const url = escapeHtml(a.url);
+          return `<li style="margin:4px 0;"><a href="${url}" style="color:#b67651;text-decoration:underline;">${label}</a></li>`;
+        })
+        .join('');
+      if (items) {
+        attachmentsHtml = `
+<div style="margin-top:16px;padding:12px 14px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;">
+  <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#475569;letter-spacing:0.5px;text-transform:uppercase;">Attachments</p>
+  <ul style="margin:0;padding-left:18px;font-size:14px;color:#334155;">${items}</ul>
+</div>`;
+      }
+    }
+
     // Auto-append signature unless welcome
-    let finalBodyHtml = body_html;
+    let finalBodyHtml = body_html + attachmentsHtml;
     if (!is_welcome) {
       let signature = user.signature_html;
       if (!signature) {
@@ -240,7 +263,7 @@ Deno.serve(async (req) => {
         } catch (_) {}
       }
       if (signature) {
-        finalBodyHtml = `${body_html}<br/><br/>${signature}`;
+        finalBodyHtml = `${finalBodyHtml}<br/><br/>${signature}`;
       }
     }
 
