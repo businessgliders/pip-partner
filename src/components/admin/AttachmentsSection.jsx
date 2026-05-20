@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Paperclip, Link2, FileText, Trash2, ExternalLink, Loader2, Upload, Plus } from "lucide-react";
+import DrivePickerDialog from "./DrivePickerDialog";
 
 // Reusable attachments section for ticket detail modal.
 // Persists attachments on the entity (FranchiseInquiry / InfluencerApplication / etc.).
@@ -16,6 +17,19 @@ export default function AttachmentsSection({
   const [showLinkForm, setShowLinkForm] = useState(false);
   const [linkLabel, setLinkLabel] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
+  const [driveOpen, setDriveOpen] = useState(false);
+
+  const handleDrivePick = async (picked) => {
+    if (!picked?.length) return;
+    const additions = picked.map((p) => ({
+      label: p.label,
+      url: p.url,
+      type: "link",
+      uploaded_by: currentUserEmail,
+      uploaded_at: new Date().toISOString(),
+    }));
+    await onChange([...(attachments || []), ...additions]);
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -90,10 +104,24 @@ export default function AttachmentsSection({
           </button>
           <button
             type="button"
+            onClick={() => setDriveOpen(true)}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border bg-white"
+            style={{ color: accentColor, borderColor: accentColor }}
+            title="Browse Google Drive"
+          >
+            <img
+              src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
+              alt=""
+              className="w-3 h-3"
+            />
+            Drive
+          </button>
+          <button
+            type="button"
             onClick={() => setShowLinkForm((v) => !v)}
             className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border"
             style={{ color: accentColor, borderColor: accentColor }}
-            title="Add a Google Docs / Drive URL"
+            title="Add a URL"
           >
             <Link2 className="w-3 h-3" />
             Link
@@ -199,6 +227,13 @@ export default function AttachmentsSection({
           })}
         </ul>
       )}
+
+      <DrivePickerDialog
+        open={driveOpen}
+        onOpenChange={setDriveOpen}
+        onPick={handleDrivePick}
+        multiple
+      />
     </div>
   );
 }

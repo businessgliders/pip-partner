@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
 import BookCallPopover from "./BookCallPopover";
+import DrivePickerDialog from "../admin/DrivePickerDialog";
 
 const STAFF_DOMAINS = ["pilatesinpinkstudio.com", "pilatesinpink.ca"];
 const isStaffEmail = (e) =>
@@ -44,6 +45,9 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   const [includeApplicant, setIncludeApplicant] = useState(true);
   // Indices into ticket.attachments[] that should be appended to the outgoing email
   const [selectedAttachmentIdxs, setSelectedAttachmentIdxs] = useState([]);
+  // Ad-hoc Drive files picked just for this email (not persisted on ticket)
+  const [driveAttachments, setDriveAttachments] = useState([]); // [{label, url, type:'link'}]
+  const [driveOpen, setDriveOpen] = useState(false);
 
   const ticketAttachments = Array.isArray(ticket?.attachments) ? ticket.attachments : [];
 
@@ -122,11 +126,15 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       if (!isDefaultRecipientSet) {
         payload.to_emails_override = recipientEmails;
       }
-      if (selectedAttachmentIdxs.length > 0) {
-        payload.attachments = selectedAttachmentIdxs
+      const combinedAttachments = [
+        ...selectedAttachmentIdxs
           .map((i) => ticketAttachments[i])
           .filter((a) => a && a.url)
-          .map((a) => ({ label: a.label || a.url, url: a.url, type: a.type || "link" }));
+          .map((a) => ({ label: a.label || a.url, url: a.url, type: a.type || "link" })),
+        ...driveAttachments.map((a) => ({ label: a.label || a.url, url: a.url, type: "link" })),
+      ];
+      if (combinedAttachments.length > 0) {
+        payload.attachments = combinedAttachments;
       }
       await base44.functions.invoke("sendTicketEmail", payload);
 
@@ -155,6 +163,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       setSelectedTeam([]);
       setIncludeApplicant(true);
       setSelectedAttachmentIdxs([]);
+      setDriveAttachments([]);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -351,6 +360,24 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         {ticketType === "FranchiseInquiry" && (
           <BookCallPopover onSelect={handleSlotSelected} />
         )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-slate-700 border-slate-200 hover:bg-slate-50"
+          onClick={() => setDriveOpen(true)}
+        >
+          <img
+            src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
+            alt=""
+            className="w-3.5 h-3.5 mr-1.5"
+          />
+          Drive
+          {driveAttachments.length > 0 && (
+            <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
+              {driveAttachments.length}
+            </span>
+          )}
+        </Button>
         {ticketAttachments.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
@@ -401,7 +428,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         )}
       </div>
 
-      {selectedAttachmentIdxs.length > 0 && (
+      {(selectedAttachmentIdxs.length > 0 || driveAttachments.length > 0) && (
         <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200">
           <Paperclip className="w-3.5 h-3.5 text-slate-500" />
           <span className="text-xs text-slate-600 font-medium">Attached:</span>
@@ -410,7 +437,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
             if (!a) return null;
             return (
               <span
-                key={idx}
+                key={`t-${idx}`}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-slate-300 bg-white text-xs text-slate-700"
               >
                 {a.type === "link" ? <Link2 className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
@@ -428,6 +455,29 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
               </span>
             );
           })}
+          {driveAttachments.map((a, i) => (
+            <span
+              key={`d-${i}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-slate-300 bg-white text-xs text-slate-700"
+            >
+              <img
+                src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
+                alt=""
+                className="w-3 h-3"
+              />
+              <span className="truncate max-w-[160px]">{a.label || a.url}</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setDriveAttachments((cur) => cur.filter((_, j) => j !== i))
+                }
+                className="text-slate-400 hover:text-slate-700"
+                title="Remove"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
         </div>
       )}
 
@@ -456,6 +506,18 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         onApply={handleApply}
         showDescribe={showDescribe}
         showSuggest={showSuggest}
+      />
+
+      <DrivePickerDialog
+        open={driveOpen}
+        onOpenChange={setDriveOpen}
+        onPick={(picked) => {
+          setDriveAttachments((cur) => {
+            const seen = new Set(cur.map((c) => c.url));
+            return [...cur, ...picked.filter((p) => !seen.has(p.url))];
+          });
+        }}
+        multiple
       />
 
       <div className="border rounded-lg overflow-hidden">
