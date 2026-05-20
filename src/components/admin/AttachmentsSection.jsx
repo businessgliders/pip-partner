@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Paperclip, Link2, FileText, Trash2, ExternalLink, Loader2, Upload, Plus } from "lucide-react";
 import DrivePickerDialog from "./DrivePickerDialog";
@@ -11,6 +11,9 @@ export default function AttachmentsSection({
   onChange,
   accentColor = "#0f172a",
   currentUserEmail = "",
+  ticket = null,
+  ticketType = "",
+  onFolderCreated = null,
 }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -18,6 +21,31 @@ export default function AttachmentsSection({
   const [linkLabel, setLinkLabel] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [driveOpen, setDriveOpen] = useState(false);
+  const [creatingFolder, setCreatingFolder] = useState(false);
+
+  // Auto-create lead folder on mount
+  React.useEffect(() => {
+    if (!ticket?.id || !ticketType || ticket.drive_folder_id) return; // Already created
+    const clientName = ticket?.full_name || `${ticket?.first_name || ''} ${ticket?.last_name || ''}`.trim() || ticket?.email || 'Lead';
+    createLeadFolder(clientName);
+  }, [ticket?.id, ticketType]);
+
+  const createLeadFolder = async (clientName) => {
+    if (!ticket?.id) return;
+    setCreatingFolder(true);
+    try {
+      const res = await base44.functions.invoke('manageLeadDriveFolder', {
+        ticket_id: ticket.id,
+        ticket_type: ticketType,
+        client_name: clientName,
+      });
+      onFolderCreated?.(res.data.folder_id, res.data.folder_url);
+    } catch (err) {
+      console.error('Failed to create lead folder', err);
+    } finally {
+      setCreatingFolder(false);
+    }
+  };
 
   const handleDrivePick = async (picked) => {
     if (!picked?.length) return;
@@ -87,6 +115,12 @@ export default function AttachmentsSection({
           Attachments & Links
         </p>
         <div className="flex items-center gap-1">
+          {creatingFolder && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-slate-500">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Creating folder...
+            </span>
+          )}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}

@@ -89,6 +89,12 @@ export default function SubmissionDetailModal({
     queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
   };
 
+  const handleFolderCreated = async (folderId, folderUrl) => {
+    await base44.entities[entityName].update(row.id, { drive_folder_id: folderId, drive_folder_url: folderUrl });
+    row.drive_folder_id = folderId;
+    row.drive_folder_url = folderUrl;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0">
@@ -312,6 +318,9 @@ export default function SubmissionDetailModal({
                 onChange={handleAttachmentsChange}
                 accentColor={accentColor}
                 currentUserEmail={user?.email}
+                ticket={row}
+                ticketType={ticketType}
+                onFolderCreated={handleFolderCreated}
               />
 
               <InternalNotesSection

@@ -213,6 +213,14 @@
       "default": [],
       "description": "Files and Google Docs/Drive links attached to this ticket"
     },
+    "drive_folder_id": {
+      "type": "string",
+      "description": "Google Drive folder ID for this lead"
+    },
+    "drive_folder_url": {
+      "type": "string",
+      "description": "Google Drive folder URL for this lead"
+    },
     "archived": {
       "type": "boolean",
       "default": false
