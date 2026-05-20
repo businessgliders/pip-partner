@@ -178,13 +178,24 @@ export default function ApplicationBoard() {
   };
 
   const getTicketsByColumn = (column) => {
-    return tickets.filter((t) => {
+    const filtered = tickets.filter((t) => {
       if (t.archived) return false;
       const inCol = effectiveViewMode === "status"
         ? t.status === column
         : (board.categoryField && t[board.categoryField] === column);
       return inCol && matchesSearch(t);
     });
+    
+    // Sort "scheduled" status by scheduled_call_time (most recent first)
+    if (effectiveViewMode === "status" && column === "scheduled") {
+      return filtered.sort((a, b) => {
+        const timeA = a.scheduled_call_time ? new Date(a.scheduled_call_time).getTime() : 0;
+        const timeB = b.scheduled_call_time ? new Date(b.scheduled_call_time).getTime() : 0;
+        return timeB - timeA;
+      });
+    }
+    
+    return filtered;
   };
 
   const archivedTickets = useMemo(
