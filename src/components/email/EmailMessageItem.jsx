@@ -117,14 +117,14 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
             </div>
           )}
           {message.is_ai_summary ? (
-            <div
-              className="text-sm text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
-              dangerouslySetInnerHTML={{ __html: message.body_html }}
-            />
+           <div
+             className="text-sm text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
+             dangerouslySetInnerHTML={{ __html: message.body_html }}
+           />
           ) : (
-            <div className="text-sm text-gray-800 whitespace-pre-wrap break-words line-clamp-4">
-              {cleanText || "(empty)"}
-            </div>
+           <div className={`text-sm text-gray-800 truncate ${!isInbound ? "line-clamp-1" : "whitespace-pre-wrap break-words line-clamp-4"}`}>
+             {cleanText || "(empty)"}
+           </div>
           )}
           <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
             <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>
