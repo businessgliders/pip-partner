@@ -97,7 +97,7 @@ export default function SubmissionDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0">
+      <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0 scale-90 lg:scale-100 origin-top-left lg:origin-center">
         <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] max-h-[92vh]">
           {/* Left: Contact + Email Communications */}
           <div
@@ -137,14 +137,23 @@ export default function SubmissionDetailModal({
                     if (!startIso) return null;
                     const d = new Date(startIso);
                     if (isNaN(d.getTime())) return null;
-                    const label = d.toLocaleString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                      timeZone: "America/Toronto",
-                    });
+                    const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+                    const label = isMobile 
+                      ? d.toLocaleString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          timeZone: "America/Toronto",
+                        })
+                      : d.toLocaleString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          timeZone: "America/Toronto",
+                        });
                     const uid = row._cal_booking?.uid || row._cal_booking?.bookingId;
                     const rescheduleUrl = uid ? `https://cal.com/reschedule/${uid}` : null;
                     const cancelUrl = uid ? `https://cal.com/booking/${uid}?cancel=true` : null;
@@ -159,10 +168,10 @@ export default function SubmissionDetailModal({
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Join meeting"
-                            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-blue-100 border border-blue-300 text-blue-700 font-medium hover:bg-blue-200 transition"
+                            className="inline-flex items-center justify-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-blue-100 border border-blue-300 text-blue-700 font-medium hover:bg-blue-200 transition lg:gap-1"
                           >
                             <Video className="w-3 h-3" />
-                            Join meeting
+                            <span className="hidden lg:inline">Join meeting</span>
                           </a>
                         )}
                       <Popover>
