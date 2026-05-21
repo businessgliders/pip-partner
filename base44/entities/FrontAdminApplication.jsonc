@@ -2,6 +2,10 @@
   "name": "FrontAdminApplication",
   "type": "object",
   "properties": {
+    "display_ticket_number": {
+      "type": "integer",
+      "description": "Obfuscated public ticket number shown in UI (derived from app_number)"
+    },
     "first_name": {
       "type": "string",
       "description": "First name"
@@ -161,10 +165,6 @@
     "app_number": {
       "type": "integer",
       "description": "Auto-incremented application number (raw sequential)"
-    },
-    "display_ticket_number": {
-      "type": "integer",
-      "description": "Obfuscated public ticket number shown in UI (derived from app_number)"
     },
     "ai_suggestions": {
       "type": "array",

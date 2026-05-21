@@ -2,6 +2,10 @@
   "name": "InfluencerApplication",
   "type": "object",
   "properties": {
+    "display_ticket_number": {
+      "type": "integer",
+      "description": "Obfuscated public ticket number shown in UI (derived from app_number)"
+    },
     "full_name": {
       "type": "string",
       "description": "Applicant's full name"
@@ -160,10 +164,6 @@
     "app_number": {
       "type": "integer",
       "description": "Auto-incremented application number (raw sequential)"
-    },
-    "display_ticket_number": {
-      "type": "integer",
-      "description": "Obfuscated public ticket number shown in UI (derived from app_number)"
     },
     "ai_suggestions": {
       "type": "array",
