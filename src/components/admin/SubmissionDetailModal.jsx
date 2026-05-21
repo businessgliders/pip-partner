@@ -125,7 +125,7 @@ export default function SubmissionDetailModal({
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Open Cal.com"
-                    className="inline-flex items-center gap-1.5 lg:px-2.5 px-2 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
+                    className="hidden lg:inline-flex items-center gap-1.5 lg:px-2.5 px-2 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
                   >
                     <img
                       src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
@@ -165,6 +165,19 @@ export default function SubmissionDetailModal({
                     return (
                       <div className="flex flex-col-reverse lg:flex-row items-start lg:items-center gap-2 lg:gap-1">
                         <div className="flex flex-row items-center gap-1">
+                          <a
+                            href="https://cal.com/pilatesinpink"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Open Cal.com"
+                            className="lg:hidden inline-flex items-center justify-center p-1.5 rounded-md border border-slate-200 hover:bg-slate-50"
+                          >
+                            <img
+                              src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
+                              alt="Cal.com"
+                              className="w-4 h-4 rounded-sm"
+                            />
+                          </a>
                           <Popover>
                             <PopoverTrigger asChild>
                               <button
