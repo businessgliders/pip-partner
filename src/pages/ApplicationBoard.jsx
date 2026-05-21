@@ -407,16 +407,7 @@ export default function ApplicationBoard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <NotificationCenter
-                unreadMessages={unreadMessages}
-                totalUnread={totalUnread}
-                markAsRead={markAsRead}
-                onSelect={(ticket, messageId, tabKey) => {
-                  if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                  setHighlightMessageId(messageId);
-                  setSelectedTicket(ticket);
-                }}
-              />
+              {/* Search */}
               <div className="hidden md:block">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -435,6 +426,7 @@ export default function ApplicationBoard() {
                 <Search className="w-4 h-4" />
               </button>
 
+              {/* View Filter */}
               {!showArchived && (
                 <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
                   <button
@@ -474,6 +466,7 @@ export default function ApplicationBoard() {
                 </button>
               )}
 
+              {/* Archive */}
               <button
                 onClick={() => setShowArchived((v) => !v)}
                 className={`h-11 w-11 rounded-xl border shadow-lg flex items-center justify-center backdrop-blur-md ${
@@ -484,6 +477,23 @@ export default function ApplicationBoard() {
               >
                 <Archive className="w-4 h-4" />
               </button>
+
+              {/* Spacer to push right items */}
+              <div className="flex-1" />
+
+              {/* Notification Bell */}
+              <NotificationCenter
+                unreadMessages={unreadMessages}
+                totalUnread={totalUnread}
+                markAsRead={markAsRead}
+                onSelect={(ticket, messageId, tabKey) => {
+                  if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                  setHighlightMessageId(messageId);
+                  setSelectedTicket(ticket);
+                }}
+              />
+
+              {/* User Switcher */}
               <UserMenu />
             </div>
           </div>
