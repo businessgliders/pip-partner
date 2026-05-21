@@ -162,7 +162,64 @@ export default function SubmissionDetailModal({
                     const meetingUrlRaw = row._cal_booking?.meetingUrl || "";
                     const meetingUrl = /^https?:\/\//i.test(meetingUrlRaw) ? meetingUrlRaw : null;
                     return (
-                      <div className="inline-flex items-center gap-1.5">
+                      <div className="flex flex-col lg:flex-row items-center lg:items-center gap-1.5">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition"
+                              title="Manage booking"
+                            >
+                              📅 <span className="hidden lg:inline">{label}</span>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-56 p-1">
+                            {uid ? (
+                              <>
+                                <a
+                                  href={calBookingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                                  Open meeting in Cal.com
+                                </a>
+                                <a
+                                  href={rescheduleUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                                >
+                                  <CalendarClock className="w-3.5 h-3.5 text-emerald-700" />
+                                  Reschedule on Cal.com
+                                </a>
+                                <a
+                                  href={cancelUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
+                                >
+                                  <XCircle className="w-3.5 h-3.5 text-red-600" />
+                                  Cancel booking
+                                </a>
+                              </>
+                            ) : (
+                              <div className="px-2.5 py-2 text-xs text-slate-500">
+                                No Cal.com booking linked. Open{" "}
+                                <a
+                                  href="https://app.cal.com/bookings/upcoming"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline"
+                                >
+                                  Cal.com bookings
+                                </a>
+                                .
+                              </div>
+                            )}
+                          </PopoverContent>
+                        </Popover>
                         {meetingUrl && (
                           <a
                             href={meetingUrl}
@@ -175,63 +232,6 @@ export default function SubmissionDetailModal({
                             <span className="hidden lg:inline">Join meeting</span>
                           </a>
                         )}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition"
-                            title="Manage booking"
-                          >
-                            📅 {label}
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="w-56 p-1">
-                          {uid ? (
-                            <>
-                              <a
-                                href={calBookingUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
-                                Open meeting in Cal.com
-                              </a>
-                              <a
-                                href={rescheduleUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                              >
-                                <CalendarClock className="w-3.5 h-3.5 text-emerald-700" />
-                                Reschedule on Cal.com
-                              </a>
-                              <a
-                                href={cancelUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                              >
-                                <XCircle className="w-3.5 h-3.5 text-red-600" />
-                                Cancel booking
-                              </a>
-                            </>
-                          ) : (
-                            <div className="px-2.5 py-2 text-xs text-slate-500">
-                              No Cal.com booking linked. Open{" "}
-                              <a
-                                href="https://app.cal.com/bookings/upcoming"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline"
-                              >
-                                Cal.com bookings
-                              </a>
-                              .
-                            </div>
-                          )}
-                        </PopoverContent>
-                      </Popover>
                       </div>
                     );
                   })()}
