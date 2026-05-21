@@ -119,7 +119,7 @@ export default function SubmissionDetailModal({
                     <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
                   </div>
                 </div>
-                <div className="shrink-0 flex flex-col items-end gap-1">
+                <div className="shrink-0 flex flex-col items-end gap-1 mt-6">
                   <a
                     href="https://cal.com/pilatesinpink"
                     target="_blank"
