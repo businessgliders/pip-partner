@@ -162,15 +162,15 @@ export default function SubmissionDetailModal({
                     const meetingUrlRaw = row._cal_booking?.meetingUrl || "";
                     const meetingUrl = /^https?:\/\//i.test(meetingUrlRaw) ? meetingUrlRaw : null;
                     return (
-                      <div className="flex flex-col lg:flex-row items-center lg:items-center gap-1.5">
+                      <div className="flex flex-row items-center gap-1">
                         <Popover>
                           <PopoverTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition"
+                              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition whitespace-nowrap"
                               title="Manage booking"
                             >
-                              📅 <span className="hidden lg:inline">{label}</span>
+                              📅 {label}
                             </button>
                           </PopoverTrigger>
                           <PopoverContent align="end" className="w-56 p-1">
