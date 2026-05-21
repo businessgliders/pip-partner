@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle, Video } from "lucide-react";
+import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle, Video, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -57,6 +57,7 @@ export default function SubmissionDetailModal({
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [detailsOpen, setDetailsOpen] = useState(false);
   if (!row) return null;
 
   const ticketType = ENTITY_KEY_TO_NAME[tabKey];
@@ -97,11 +98,11 @@ export default function SubmissionDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0 scale-90 lg:scale-100 origin-top-left lg:origin-center">
+      <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0">
         <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] max-h-[92vh]">
           {/* Left: Contact + Email Communications */}
           <div
-            className="flex flex-col overflow-hidden border-r"
+            className="flex flex-col overflow-hidden border-r order-1 lg:order-none min-h-0 max-h-[92vh]"
             style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf3ec 100%)" }}
           >
             {/* Header (fixed) */}
@@ -255,7 +256,19 @@ export default function SubmissionDetailModal({
           </div>
 
           {/* Right: Request Details + Assign To + Internal Notes */}
-          <div className="relative overflow-y-auto bg-white">
+          <div className="relative overflow-y-auto bg-white order-2 lg:order-none">
+            {/* Mobile/Tablet collapse toggle */}
+            <button
+              type="button"
+              onClick={() => setDetailsOpen((v) => !v)}
+              className="lg:hidden w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white sticky top-0 z-20"
+            >
+              <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
+                Request Details & Notes
+              </span>
+              {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+            </button>
+            <div className={`${detailsOpen ? "block" : "hidden"} lg:block`}>
             <LocationMapBanner
               postalCode={row.preferred_postal_code || row.postal_code}
               city={row.preferred_location || row.location || row.city}
@@ -338,6 +351,7 @@ export default function SubmissionDetailModal({
                 accentColor={accentColor}
                 large
               />
+            </div>
             </div>
           </div>
         </div>

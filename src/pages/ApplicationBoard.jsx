@@ -338,7 +338,7 @@ export default function ApplicationBoard() {
 
   return (
     <div
-      className="min-h-screen lg:h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-hidden"
+      className="h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-hidden"
       style={{
         backgroundImage: "linear-gradient(to bottom, #2b1a1f, #5a3a42)",
         backgroundSize: "cover",
@@ -387,8 +387,8 @@ export default function ApplicationBoard() {
 
       <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full lg:min-h-0" style={{ zIndex: 2 }}>
-        <div className="mb-4 lg:mb-6 pb-3 lg:pb-0">
+      <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full min-h-0" style={{ zIndex: 2 }}>
+        <div className="mb-2 lg:mb-6 pb-1 lg:pb-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Link
@@ -499,7 +499,7 @@ export default function ApplicationBoard() {
           </div>
 
           {/* Mobile-only horizontal pill switcher */}
-          <div className="flex flex-wrap gap-2 mt-3 mb-3 -mx-2 px-2 lg:hidden">
+          <div className="flex flex-wrap gap-2 mt-2 mb-1 -mx-2 px-2 lg:hidden">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
               return (
@@ -547,7 +547,7 @@ export default function ApplicationBoard() {
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="relative flex-1 lg:min-h-0 mt-2">
+            <div className="relative flex-1 min-h-0 mt-1 lg:mt-2">
               {canScrollLeft && (
                 <button
                   onClick={() => scrollSwimlanes("left")}
@@ -567,7 +567,7 @@ export default function ApplicationBoard() {
 
               <div
                 ref={swimlaneScrollRef}
-                className="flex overflow-x-auto -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:grid lg:grid-cols-4 lg:gap-6 lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-visible"
+                className="flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:grid lg:grid-cols-4 lg:gap-6 lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-visible lg:h-auto"
               >
                 {columns.map((col) => (
                   <div

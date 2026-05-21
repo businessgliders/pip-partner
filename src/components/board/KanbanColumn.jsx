@@ -55,7 +55,7 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col max-h-[70vh] lg:max-h-none lg:h-[calc(100vh-220px)] ${
+      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col h-full md:h-[calc(100vh-200px)] lg:max-h-none lg:h-[calc(100vh-220px)] ${
         isDimmed ? "opacity-60 hover:opacity-100 transition-opacity" : ""
       }`}
     >
