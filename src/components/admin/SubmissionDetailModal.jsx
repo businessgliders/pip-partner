@@ -13,6 +13,7 @@ import EmailThreadPanel from "../email/EmailThreadPanel";
 import InternalNotesSection from "./InternalNotesSection";
 import AssignTicketSection from "./AssignTicketSection";
 import AttachmentsSection from "./AttachmentsSection";
+import ResendBookingEmailsButton from "./ResendBookingEmailsButton";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
 import { formatAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
@@ -231,6 +232,13 @@ export default function SubmissionDetailModal({
                             <Video className="w-3 h-3" />
                             <span className="hidden lg:inline">Join meeting</span>
                           </a>
+                        )}
+                        {tabKey === "franchise" && (
+                          <ResendBookingEmailsButton
+                            inquiryId={row.id}
+                            scheduledTime={row.scheduled_call_time}
+                            recipientEmail={row.email}
+                          />
                         )}
                       </div>
                     );

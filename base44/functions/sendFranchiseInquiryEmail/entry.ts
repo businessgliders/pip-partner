@@ -270,7 +270,7 @@ async function fetchRawAppNumber(base44, inquiryId) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { inquiryId, scheduledTime = '', ownerOnly = false, testRecipient } = await req.json();
+    const { inquiryId, scheduledTime = '', ownerOnly = false, submitterOnly = false, testRecipient } = await req.json();
 
     // Auth model: this endpoint is called from the public franchise funnel
     // where submitters are not logged in. We require an unguessable inquiryId
@@ -324,31 +324,36 @@ Deno.serve(async (req) => {
       }
     }
 
-    const ownerHtml = ownerEmail(inquiryData, scheduledTime, appNumber);
-    const ownerResult = await sendGmail({
-      accessToken,
-      to: ownerRecipients,
-      subject: finalOwnerSubject,
-      html: ownerHtml,
-      replyTo: safeReplyTo,
-    });
-    if (!isTestSend) {
-      await logEmailMessage(base44, {
-        inquiryId,
+    let ownerResult = { ok: true, skipped: true };
+    if (!submitterOnly) {
+      const ownerHtml = ownerEmail(inquiryData, scheduledTime, appNumber);
+      ownerResult = await sendGmail({
+        accessToken,
         to: ownerRecipients,
         subject: finalOwnerSubject,
         html: ownerHtml,
-        gmailResult: ownerResult,
-        isInternal: true,
+        replyTo: safeReplyTo,
       });
+      if (!isTestSend) {
+        await logEmailMessage(base44, {
+          inquiryId,
+          to: ownerRecipients,
+          subject: finalOwnerSubject,
+          html: ownerHtml,
+          gmailResult: ownerResult,
+          isInternal: true,
+        });
+      }
     }
 
     // 2) Schedule the submitter's discovery-call confirmation after a delay,
     //    so it arrives after the welcome email. Runs in the background.
+    //    If submitterOnly is true, send immediately (no need to wait for welcome).
     if (!isTestSend && !ownerOnly && scheduledTime && inquiryData.email) {
+      const delayMs = submitterOnly ? 0 : SUBMITTER_CONFIRMATION_DELAY_MS;
       (async () => {
         try {
-          await new Promise((r) => setTimeout(r, SUBMITTER_CONFIRMATION_DELAY_MS));
+          await new Promise((r) => setTimeout(r, delayMs));
           // Refresh access token + app_number in case they changed during the wait
           const { accessToken: freshToken } = await base44.asServiceRole.connectors.getConnection('gmail');
           const freshRaw = (await fetchRawAppNumber(base44, inquiryId)) || rawNumber || '';
