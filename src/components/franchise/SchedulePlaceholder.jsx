@@ -26,7 +26,7 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId }) {
+export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId, bookingError, onClearBookingError }) {
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [slotsByDay, setSlotsByDay] = useState({});
@@ -69,6 +69,7 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
 
   const handleConfirm = () => {
     if (!canConfirm) return;
+    if (onClearBookingError) onClearBookingError();
     const day = days.find((d) => d.iso === selectedDay);
     const friendly = `${day?.label}, ${day?.date} at ${formatTimeLabel(selectedSlot.start)}`;
     onConfirm({ start: selectedSlot.start, friendly, timeZone: TZ });
@@ -166,14 +167,35 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
             )}
           </div>
 
+          {bookingError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {bookingError}
+            </div>
+          )}
+
           <Button
             onClick={handleConfirm}
             disabled={!canConfirm || isSubmitting}
             className="w-full h-14 rounded-xl text-white font-medium text-base transition-all duration-300 hover:opacity-90 hover:shadow-lg disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, #b67651 0%, #c4896b 100%)" }}
           >
-            {isSubmitting ? "Confirming..." : "Finish & Confirm Call"}
+            {isSubmitting ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Confirming…
+              </span>
+            ) : bookingError ? (
+              "Try Again"
+            ) : (
+              "Finish & Confirm Call"
+            )}
           </Button>
+          <p className="text-center text-xs text-[#b67651]/60">
+            Having trouble? Email{" "}
+            <a href="mailto:franchise@pilatesinpinkstudio.com" className="underline">
+              franchise@pilatesinpinkstudio.com
+            </a>
+          </p>
         </div>
       )}
     </motion.div>

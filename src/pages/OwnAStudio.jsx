@@ -14,10 +14,22 @@ import SchedulePlaceholder from "../components/franchise/SchedulePlaceholder";
 import LoadingTransition from "../components/franchise/LoadingTransition";
 import ResumeInquiryDialog from "../components/franchise/ResumeInquiryDialog";
 
+// Wraps a promise so the UI never hangs forever if the network/backend stalls.
+function withTimeout(promise, ms, message = "Request timed out") {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); }
+    );
+  });
+}
+
 export default function OwnAStudio() {
   const [stage, setStage] = useState("form"); // form | loading | schedule | done | resumed
   const [inquiryId, setInquiryId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
   const [resumedInquiry, setResumedInquiry] = useState(null);
   const [formData, setFormData] = useState({
     first_name: "",
@@ -95,43 +107,50 @@ export default function OwnAStudio() {
   const handleScheduleConfirm = async (slot) => {
     // slot = { start: ISO, friendly: "Mon, Apr 22 at 10:00 AM", timeZone }
     setIsSubmitting(true);
+    setBookingError(null);
 
-    // 1) Book on Cal.com — SDK throws on non-2xx, so wrap in try/catch
     try {
-      await base44.functions.invoke("bookCalEvent", {
-        start: slot.start,
-        timeZone: slot.timeZone,
-        name: `${formData.first_name} ${formData.last_name}`.trim(),
-        email: formData.email,
-        phone: formData.phone,
-        notes: `Franchise inquiry — ${formData.preferred_location || ""} (${formData.available_capital || ""})`,
-        inquiryId,
+      // 1) Book on Cal.com with a hard 25s timeout so the UI can never
+      //    hang on "Confirming…" if the request stalls.
+      await withTimeout(
+        base44.functions.invoke("bookCalEvent", {
+          start: slot.start,
+          timeZone: slot.timeZone,
+          name: `${formData.first_name} ${formData.last_name}`.trim(),
+          email: formData.email,
+          phone: formData.phone,
+          notes: `Franchise inquiry — ${formData.preferred_location || ""} (${formData.available_capital || ""})`,
+          inquiryId,
+        }),
+        25000,
+        "Booking is taking longer than expected"
+      );
+
+      // 2) Update inquiry record
+      if (inquiryId) {
+        await base44.entities.FranchiseInquiry.update(inquiryId, {
+          scheduled_call_time: slot.friendly,
+          status: "scheduled",
+        });
+      }
+
+      // 3) Send branded confirmation emails (fire-and-forget — backend delays
+      //    submitter confirmation so it lands after the welcome email)
+      base44.functions.invoke("sendFranchiseInquiryEmail", {
+        inquiryId: inquiryId,
+        inquiryData: formData,
+        scheduledTime: slot.friendly,
       });
+
+      setStage("done");
     } catch (err) {
       console.error("bookCalEvent failed", err);
+      setBookingError(
+        "We couldn't book that slot. It may have just been taken, or the connection was interrupted. Please pick another time or try again."
+      );
+    } finally {
       setIsSubmitting(false);
-      alert("We couldn't book that slot — it may have just been taken. Please pick another time.");
-      return;
     }
-
-    // 2) Update inquiry record
-    if (inquiryId) {
-      await base44.entities.FranchiseInquiry.update(inquiryId, {
-        scheduled_call_time: slot.friendly,
-        status: "scheduled",
-      });
-    }
-
-    // 3) Send branded confirmation emails (fire-and-forget — backend delays
-    //    submitter confirmation so it lands after the welcome email)
-    base44.functions.invoke("sendFranchiseInquiryEmail", {
-      inquiryId: inquiryId,
-      inquiryData: formData,
-      scheduledTime: slot.friendly,
-    });
-
-    setIsSubmitting(false);
-    setStage("done");
   };
 
   return (
@@ -189,6 +208,8 @@ export default function OwnAStudio() {
                 inquiryId={inquiryId}
                 onConfirm={handleScheduleConfirm}
                 isSubmitting={isSubmitting}
+                bookingError={bookingError}
+                onClearBookingError={() => setBookingError(null)}
               />
             )}
             {stage === "resumed" && resumedInquiry && (
