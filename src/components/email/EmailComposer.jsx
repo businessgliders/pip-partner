@@ -337,24 +337,26 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 lg:gap-2">
         <Button
           size="sm"
           variant={showDescribe ? "default" : "outline"}
-          className={showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}
+          className={`lg:px-3 px-2 ${showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
           onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
+          title="Describe in simple words"
         >
-          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-          Describe in simple words
+          <Sparkles className="w-3.5 h-3.5 lg:mr-1.5" />
+          <span className="hidden lg:inline">Describe</span>
         </Button>
         <Button
           size="sm"
           variant={showSuggest ? "default" : "outline"}
-          className={showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}
+          className={`lg:px-3 px-2 ${showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
           onClick={() => { setShowSuggest((v) => !v); setShowDescribe(false); }}
+          title="Suggest replies"
         >
-          <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
-          Suggest Replies
+          <Lightbulb className="w-3.5 h-3.5 lg:mr-1.5" />
+          <span className="hidden lg:inline">Suggest</span>
         </Button>
         <TemplatePicker vars={vars} onSelect={handleTemplate} />
         {ticketType === "FranchiseInquiry" && (
@@ -363,15 +365,16 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         <Button
           size="sm"
           variant="outline"
-          className="text-slate-700 border-slate-200 hover:bg-slate-50"
+          className="text-slate-700 border-slate-200 hover:bg-slate-50 lg:px-3 px-2"
           onClick={() => setDriveOpen(true)}
+          title="Attach from Google Drive"
         >
           <img
             src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
             alt=""
-            className="w-3.5 h-3.5 mr-1.5"
+            className="w-3.5 h-3.5 lg:mr-1.5"
           />
-          Drive
+          <span className="hidden lg:inline">Drive</span>
           {driveAttachments.length > 0 && (
             <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
               {driveAttachments.length}
@@ -384,10 +387,11 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
               <Button
                 size="sm"
                 variant="outline"
-                className="text-slate-700 border-slate-200 hover:bg-slate-50"
+                className="text-slate-700 border-slate-200 hover:bg-slate-50 lg:px-3 px-2"
+                title="Attach ticket files"
               >
-                <Paperclip className="w-3.5 h-3.5 mr-1.5" />
-                Attach
+                <Paperclip className="w-3.5 h-3.5 lg:mr-1.5" />
+                <span className="hidden lg:inline">Attach</span>
                 {selectedAttachmentIdxs.length > 0 && (
                   <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
                     {selectedAttachmentIdxs.length}
@@ -556,19 +560,20 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={handleClear}>
-            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-            Clear
+        <div className="flex gap-1.5">
+          <Button size="sm" variant="outline" onClick={handleClear} title="Clear draft" className="lg:px-3 px-2">
+            <Trash2 className="w-3.5 h-3.5 lg:mr-1.5" />
+            <span className="hidden lg:inline">Clear</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing}>
-            {polishing ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 mr-1.5" />}
-            Polish
+          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing} title="Polish with AI" className="lg:px-3 px-2">
+            {polishing ? <Loader2 className="w-3.5 h-3.5 lg:mr-1.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 lg:mr-1.5" />}
+            <span className="hidden lg:inline">Polish</span>
           </Button>
         </div>
-        <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className="bg-pink-600 hover:bg-pink-700 text-white">
-          {sending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-1.5" />}
-          Send Reply
+        <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className="bg-pink-600 hover:bg-pink-700 text-white lg:px-3 px-2">
+          {sending ? <Loader2 className="w-3.5 h-3.5 lg:mr-1.5 animate-spin" /> : <Send className="w-3.5 h-3.5 lg:mr-1.5" />}
+          <span className="hidden lg:inline">Send Reply</span>
+          <span className="lg:hidden">Send</span>
         </Button>
       </div>
     </div>

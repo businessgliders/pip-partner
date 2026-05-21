@@ -259,13 +259,16 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
       <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
         <div className="flex items-center gap-2 min-w-0">
           <Mail className="w-4 h-4 text-pink-600 shrink-0" />
-          <span className="font-semibold text-sm text-gray-800">Email Communications</span>
+          <span className="font-semibold text-sm lg:text-sm text-gray-800">
+            <span className="lg:hidden">Emails</span>
+            <span className="hidden lg:inline">Email Communications</span>
+          </span>
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
             {allMessages.length}
           </span>
         </div>
         {FROM_ALIASES[ticketType] && (
-          <span className="text-[11px] text-gray-500 truncate ml-2 shrink-0">
+          <span className="hidden lg:block text-[11px] text-gray-500 truncate ml-2 shrink-0">
             <span className="text-gray-400">From:</span>{" "}
             <span className="font-medium text-gray-700">{FROM_ALIASES[ticketType]}</span>
           </span>
@@ -274,8 +277,8 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
 
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30"
-        style={{ maxHeight: 480 }}
+        className="flex-1 overflow-y-auto p-3 lg:p-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30"
+        style={{ maxHeight: "auto" }}
       >
         {allMessages.map((m) => {
           const readBy = Array.isArray(m.read_by) ? m.read_by : [];

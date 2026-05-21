@@ -124,14 +124,14 @@ export default function SubmissionDetailModal({
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Open Cal.com"
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
+                    className="inline-flex items-center gap-1.5 lg:px-2.5 px-2 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
                   >
                     <img
                       src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
                       alt="Cal.com"
                       className="w-4 h-4 rounded-sm"
                     />
-                    Cal.com
+                    <span className="hidden lg:inline">Cal.com</span>
                   </a>
                   {(() => {
                     const startIso = row._cal_booking?.start || row.scheduled_call_time;

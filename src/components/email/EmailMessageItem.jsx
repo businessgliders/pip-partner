@@ -100,10 +100,10 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           onClick={() => setOpen(true)}
         >
           {(isInbound || isFailed) && (
-            <div className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+            <div className="lg:text-xs text-[10px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
               {isFailed && <AlertTriangle className="w-3 h-3 text-red-600" />}
               {isFailed && <span className="text-red-700">⚠️ FAILED TO SEND</span>}
-              {!isFailed && <span>{senderName}</span>}
+              {!isFailed && <span className="hidden lg:inline">{senderName}</span>}
             </div>
           )}
           {message.to_email && (
@@ -118,11 +118,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           )}
           {message.is_ai_summary ? (
            <div
-             className="text-sm text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
+             className="lg:text-sm text-xs text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
              dangerouslySetInnerHTML={{ __html: message.body_html }}
            />
           ) : (
-           <div className={`text-sm text-gray-800 truncate ${!isInbound ? "line-clamp-1" : "whitespace-pre-wrap break-words line-clamp-4"}`}>
+           <div className={`lg:text-sm text-xs text-gray-800 truncate ${!isInbound ? "line-clamp-1" : "whitespace-pre-wrap break-words line-clamp-3 lg:line-clamp-4"}`}>
              {cleanText || "(empty)"}
            </div>
           )}
