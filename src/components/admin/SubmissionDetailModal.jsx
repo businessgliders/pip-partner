@@ -163,7 +163,7 @@ export default function SubmissionDetailModal({
                     const meetingUrlRaw = row._cal_booking?.meetingUrl || "";
                     const meetingUrl = /^https?:\/\//i.test(meetingUrlRaw) ? meetingUrlRaw : null;
                     return (
-                      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-1">
+                      <div className="flex flex-col-reverse lg:flex-row items-start lg:items-center gap-2 lg:gap-1">
                         <div className="flex flex-row items-center gap-1">
                           <Popover>
                             <PopoverTrigger asChild>
@@ -172,7 +172,7 @@ export default function SubmissionDetailModal({
                                 className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition whitespace-nowrap"
                                 title="Manage booking"
                               >
-                                📅 {label}
+                                📅 <span className="hidden lg:inline">{label}</span>
                               </button>
                             </PopoverTrigger>
                             <PopoverContent align="end" className="w-56 p-1">
@@ -242,6 +242,13 @@ export default function SubmissionDetailModal({
                             />
                           )}
                         </div>
+                        <button
+                          type="button"
+                          className="w-full lg:w-auto text-left lg:text-center inline-flex lg:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition whitespace-nowrap lg:hidden"
+                          title="Call time"
+                        >
+                          📅 {label}
+                        </button>
                       </div>
                     );
                   })()}
