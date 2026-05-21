@@ -489,14 +489,14 @@ export default function ApplicationBoard() {
           </div>
 
           {/* Mobile-only horizontal pill switcher */}
-          <div className="flex gap-2 mt-3 overflow-x-auto -mx-2 px-2 lg:hidden">
+          <div className="flex flex-wrap gap-2 mt-3 -mx-2 px-2 lg:hidden">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
               return (
                 <button
                   key={t.key}
                   onClick={() => setActiveTab(t.key)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all ${
+                  className={`flex-1 min-w-max px-2 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     isActive
                       ? "bg-white text-gray-900 border-white shadow"
                       : "bg-white/20 text-white border-white/40 hover:bg-white/30"
