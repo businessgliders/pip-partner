@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Mail } from "lucide-react";
+import { Mail, ChevronDown, ChevronUp } from "lucide-react";
 import EmailMessageItem from "./EmailMessageItem";
 import EmailComposer from "./EmailComposer";
 import { buildWelcomeHtml } from "./welcomeEmailHtml";
@@ -134,6 +134,7 @@ function buildIntakeSummary(ticket, ticketType) {
 export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId, markAsRead }) {
   const containerRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
+  const [composerOpen, setComposerOpen] = useState(false);
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["email-messages", ticket.id],
@@ -300,12 +301,24 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
         })}
       </div>
 
-      <EmailComposer
-        ticket={ticket}
-        ticketType={ticketType}
-        currentUser={currentUser}
-        onSent={handleSent}
-      />
+      <div className="border-t bg-white">
+        <button
+          type="button"
+          onClick={() => setComposerOpen((v) => !v)}
+          className="lg:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+        >
+          <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">Reply</span>
+          {composerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+        </button>
+        <div className={`${composerOpen ? "block" : "hidden"} lg:block`}>
+          <EmailComposer
+            ticket={ticket}
+            ticketType={ticketType}
+            currentUser={currentUser}
+            onSent={handleSent}
+          />
+        </div>
+      </div>
     </div>
   );
 }
