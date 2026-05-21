@@ -7,6 +7,17 @@ const ENTITY_NAMES = [
   'FrontAdminApplication',
 ];
 
+// Domains we own — any "From" address in these domains is an outbound message
+// (sent from Gmail directly or via our send function) that's being looped back
+// by Gmail (alias delivery, group forwarding, etc.). Never treat as inbound.
+const STAFF_DOMAINS = ['pilatesinpinkstudio.com', 'pilatesinpink.ca'];
+
+function isStaffEmail(email) {
+  if (!email) return false;
+  const lower = String(email).toLowerCase();
+  return STAFF_DOMAINS.some((d) => lower.endsWith(`@${d}`));
+}
+
 function base64urlDecode(str) {
   if (!str) return '';
   const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -50,7 +61,7 @@ function parseFrom(value) {
 }
 
 async function processMessageId(base44, accessToken, messageId) {
-  // Idempotency
+  // Idempotency by Gmail message id
   const existing = await base44.asServiceRole.entities.EmailMessage.filter(
     { gmail_message_id: messageId },
     '-created_date',
@@ -92,6 +103,27 @@ async function processMessageId(base44, accessToken, messageId) {
   const inReplyTo = getHeader(headers, 'In-Reply-To');
   const references = getHeader(headers, 'References');
 
+  const fromParsed = parseFrom(fromHeader);
+
+  // Skip our own outbound emails being looped back (alias delivery / group forwarding).
+  // Any message whose "From" is on our staff domains is one we sent — never inbound.
+  if (isStaffEmail(fromParsed.email)) {
+    return { messageId, status: 'skipped_own_outbound' };
+  }
+
+  // Defense-in-depth: dedupe by RFC Message-ID too (same logical email can arrive
+  // multiple times across alias/forward delivery, each with a different gmail_message_id).
+  if (rfcMessageId) {
+    const byRfc = await base44.asServiceRole.entities.EmailMessage.filter(
+      { rfc_message_id: rfcMessageId },
+      '-created_date',
+      1
+    );
+    if (byRfc.length > 0) {
+      return { messageId, status: 'duplicate_rfc' };
+    }
+  }
+
   // Find parent record
   let parentId = null;
   let parentType = null;
@@ -131,7 +163,7 @@ async function processMessageId(base44, accessToken, messageId) {
   }
 
   const { html, text } = walkParts(msg.payload);
-  const from = parseFrom(fromHeader);
+  const from = fromParsed;
   let sentAt;
   try {
     sentAt = dateHeader ? new Date(dateHeader).toISOString() : new Date().toISOString();
