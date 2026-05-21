@@ -383,14 +383,7 @@ export default function ApplicationBoard() {
         </div>
       </div>
 
-      <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
-        <Link to="/" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
-          <HomeIcon className="w-4 h-4" />
-        </Link>
-        <Link to="/Settings" className="backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white rounded-full w-10 h-10 shadow-lg flex items-center justify-center">
-          <SettingsIcon className="w-4 h-4" />
-        </Link>
-      </div>
+
 
       <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} />
 
