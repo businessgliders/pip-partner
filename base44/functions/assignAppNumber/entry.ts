@@ -1,6 +1,7 @@
-// Assigns an auto-incrementing `app_number` to a newly created application record.
-// Triggered by entity automations on create for: FranchiseInquiry, InfluencerApplication,
-// InstructorApplication, FrontAdminApplication.
+// Assigns an auto-incrementing `app_number` (raw sequential) AND a
+// `display_ticket_number` (obfuscated public number) to a newly created
+// application record. Triggered by entity automations on create for:
+// FranchiseInquiry, InfluencerApplication, InstructorApplication, FrontAdminApplication.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -10,6 +11,20 @@ const VALID_ENTITIES = new Set([
   'InstructorApplication',
   'FrontAdminApplication',
 ]);
+
+// Must match lib/appNumberDisplay.js on the frontend.
+const PROGRAM_CONFIG = {
+  FranchiseInquiry:      { base: 4720, stride: 17 },
+  InfluencerApplication: { base: 2380, stride: 23 },
+  InstructorApplication: { base: 6150, stride: 19 },
+  FrontAdminApplication: { base: 3840, stride: 29 },
+};
+
+function computeDisplayNumber(entityName, rawNumber) {
+  const cfg = PROGRAM_CONFIG[entityName];
+  if (!cfg) return null;
+  return cfg.base + Number(rawNumber) * cfg.stride;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -29,6 +44,13 @@ Deno.serve(async (req) => {
 
     const current = await base44.asServiceRole.entities[entityName].get(entityId);
     if (current?.app_number) {
+      // Backfill display_ticket_number if it's missing on an already-numbered record.
+      if (!current.display_ticket_number) {
+        const display = computeDisplayNumber(entityName, current.app_number);
+        if (display) {
+          await base44.asServiceRole.entities[entityName].update(entityId, { display_ticket_number: display });
+        }
+      }
       return Response.json({ skipped: true, reason: 'already numbered', app_number: current.app_number });
     }
 
@@ -36,9 +58,13 @@ Deno.serve(async (req) => {
     const recent = await base44.asServiceRole.entities[entityName].list('-app_number', 1);
     const maxNumber = recent?.[0]?.app_number || 0;
     const nextNumber = maxNumber + 1;
+    const displayNumber = computeDisplayNumber(entityName, nextNumber);
 
-    await base44.asServiceRole.entities[entityName].update(entityId, { app_number: nextNumber });
-    return Response.json({ success: true, app_number: nextNumber });
+    await base44.asServiceRole.entities[entityName].update(entityId, {
+      app_number: nextNumber,
+      display_ticket_number: displayNumber,
+    });
+    return Response.json({ success: true, app_number: nextNumber, display_ticket_number: displayNumber });
   } catch (error) {
     console.error('assignAppNumber error', error);
     return Response.json({ error: error.message }, { status: 500 });

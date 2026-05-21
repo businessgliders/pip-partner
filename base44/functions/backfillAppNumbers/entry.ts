@@ -1,6 +1,8 @@
-// One-time admin utility — assigns sequential `app_number` to any record
-// missing one across all 4 application entities. Orders by created_date ASC
-// so older submissions get lower numbers. Existing app_numbers are preserved.
+// One-time admin utility — assigns sequential `app_number` AND
+// `display_ticket_number` to any record missing them across all 4 application
+// entities. Orders by created_date ASC so older submissions get lower numbers.
+// Existing app_numbers are preserved; display_ticket_number is computed from
+// the (possibly pre-existing) app_number.
 //
 // Usage (admin only):
 //   await base44.functions.invoke('backfillAppNumbers', {})
@@ -15,6 +17,20 @@ const ENTITIES = [
   'FrontAdminApplication',
 ];
 
+// Must match lib/appNumberDisplay.js on the frontend.
+const PROGRAM_CONFIG = {
+  FranchiseInquiry:      { base: 4720, stride: 17 },
+  InfluencerApplication: { base: 2380, stride: 23 },
+  InstructorApplication: { base: 6150, stride: 19 },
+  FrontAdminApplication: { base: 3840, stride: 29 },
+};
+
+function computeDisplayNumber(entityName, rawNumber) {
+  const cfg = PROGRAM_CONFIG[entityName];
+  if (!cfg) return null;
+  return cfg.base + Number(rawNumber) * cfg.stride;
+}
+
 async function backfillEntity(base44, entityName) {
   const all = await base44.asServiceRole.entities[entityName].list('created_date', 5000);
   let maxNumber = 0;
@@ -24,15 +40,36 @@ async function backfillEntity(base44, entityName) {
     }
   }
 
-  const missing = all.filter((r) => !r.app_number);
-  let assigned = 0;
-  for (const record of missing) {
-    maxNumber += 1;
-    await base44.asServiceRole.entities[entityName].update(record.id, { app_number: maxNumber });
-    assigned += 1;
+  let assignedApp = 0;
+  let assignedDisplay = 0;
+
+  for (const record of all) {
+    const update = {};
+
+    // Assign app_number if missing
+    let appNum = record.app_number;
+    if (!appNum) {
+      maxNumber += 1;
+      appNum = maxNumber;
+      update.app_number = appNum;
+      assignedApp += 1;
+    }
+
+    // Compute display_ticket_number if missing
+    if (!record.display_ticket_number) {
+      const display = computeDisplayNumber(entityName, appNum);
+      if (display) {
+        update.display_ticket_number = display;
+        assignedDisplay += 1;
+      }
+    }
+
+    if (Object.keys(update).length > 0) {
+      await base44.asServiceRole.entities[entityName].update(record.id, update);
+    }
   }
 
-  return { entity: entityName, total: all.length, assigned, highest: maxNumber };
+  return { entity: entityName, total: all.length, assigned_app: assignedApp, assigned_display: assignedDisplay, highest: maxNumber };
 }
 
 Deno.serve(async (req) => {

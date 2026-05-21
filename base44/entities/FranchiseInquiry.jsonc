@@ -231,7 +231,11 @@
     },
     "app_number": {
       "type": "integer",
-      "description": "Auto-incremented application number"
+      "description": "Auto-incremented application number (raw sequential)"
+    },
+    "display_ticket_number": {
+      "type": "integer",
+      "description": "Obfuscated public ticket number shown in UI (derived from app_number)"
     },
     "ai_suggestions": {
       "type": "array",
