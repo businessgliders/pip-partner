@@ -381,7 +381,7 @@ export default function SubmissionDetailModal({
             )}
 
             {/* Always-visible admin sections */}
-            <div className="relative z-10 p-5 space-y-4">
+            <div className="relative z-10 p-5 pb-2 space-y-4">
               <AssignTicketSection
                 assignedTo={row.assigned_to}
                 onAssign={handleAssign}
