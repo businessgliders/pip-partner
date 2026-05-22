@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Loader2, ChevronDown, ChevronRight } from "lucide-react";
-import * as turf from "@turf/turf";
+import { getCanadaLand, clipCircleToLand } from "./landMask";
 
 // Status → swimlane color (matches KanbanColumn palette)
 const STATUS_COLORS = {
@@ -13,7 +13,7 @@ const STATUS_COLORS = {
   contacted: { hex: "#a855f7", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
   approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
   invited: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  qualified: { hex: "#22c55e", bg: "bg-green-50", border: "border-green-300", text: "text-green-700", dot: "bg-green-500" },
+  qualified: { hex: "#f9a8c4", bg: "bg-pink-50", border: "border-pink-200", text: "text-pink-600", dot: "bg-pink-300" },
   closed: { hex: "#64748b", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-500" },
   declined: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
@@ -75,6 +75,14 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const [geocoded, setGeocoded] = useState({}); // { query: {lat,lng} | null }
   const [geocoding, setGeocoding] = useState(false);
   const [selectedSidebarTicket, setSelectedSidebarTicket] = useState(null);
+  const [landReady, setLandReady] = useState(false);
+
+  // Load the Canada land mask once
+  useEffect(() => {
+    let mounted = true;
+    getCanadaLand().then(() => { if (mounted) setLandReady(true); });
+    return () => { mounted = false; };
+  }, []);
 
   // Tickets with a usable location query (exclude closed)
   const ticketsWithQuery = useMemo(
@@ -185,13 +193,11 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       .finally(() => setGeocoding(false));
   }, [ticketsWithQuery, geocoded, loading, error]);
 
-  // Helper: build a visible polygon (hexagon-like) using turf
+  // Helper: clip a circle to the Canada land mass. Returns an array of paths
+  // (one per polygon piece) — Google Maps Polygon accepts an array of paths.
   const createCirclePolygonPaths = (center, radiusKm) => {
     try {
-      const poly = turf.circle([center.lng, center.lat], radiusKm, { units: "kilometers", steps: 6 });
-      const ring = poly?.geometry?.coordinates?.[0];
-      if (!ring) return null;
-      return ring.map(([lng, lat]) => ({ lat, lng }));
+      return clipCircleToLand(center.lng, center.lat, radiusKm);
     } catch {
       return null;
     }
@@ -208,9 +214,9 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
     const bounds = new window.google.maps.LatLngBounds();
     if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
 
-    // Add HQ radius polygon
+    // Add HQ radius polygon (clipped to land — can be one or multiple pieces)
     const hqPaths = createCirclePolygonPaths({ lat: HQ.lat, lng: HQ.lng }, radiusKm);
-    if (hqPaths) {
+    if (hqPaths && hqPaths.length) {
       const hqPoly = new window.google.maps.Polygon({
         map: mapInstance.current,
         paths: hqPaths,
@@ -245,9 +251,9 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
         },
       });
 
-      // Radius polygon for each ticket
+      // Radius polygon for each ticket (clipped to land)
       const ticketPaths = createCirclePolygonPaths(position, radiusKm);
-      if (ticketPaths) {
+      if (ticketPaths && ticketPaths.length) {
         const poly = new window.google.maps.Polygon({
           map: mapInstance.current,
           paths: ticketPaths,
@@ -295,7 +301,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       // cleanup listener if effect re-runs
       return () => window.google.maps.event.removeListener(listener);
     }
-  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick]);
+  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady]);
 
   const mappedCount = ticketsWithQuery.filter((x) => geocoded[x.query]).length;
   const missingCount = ticketsWithQuery.length - mappedCount;
