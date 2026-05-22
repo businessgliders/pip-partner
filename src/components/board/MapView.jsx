@@ -96,6 +96,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
       center: ONTARIO_CENTER,
       zoom: 6,
+      scrollwheel: true,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
