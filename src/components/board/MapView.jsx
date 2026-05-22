@@ -13,7 +13,7 @@ const STATUS_COLORS = {
   contacted: { hex: "#a855f7", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
   approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
   invited: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  qualified: { hex: "#f9a8c4", bg: "bg-pink-50", border: "border-pink-200", text: "text-pink-600", dot: "bg-pink-300" },
+  qualified: { hex: "#ec4899", bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", dot: "bg-pink-500" },
   closed: { hex: "#64748b", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-500" },
   declined: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
