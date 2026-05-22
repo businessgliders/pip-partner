@@ -313,61 +313,60 @@ export default function SubmissionDetailModal({
               province={row.province}
               label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
             />
-            {/* Collapse toggle for contact/request details */}
+            {/* Always-visible basic contact info */}
+            <div className="relative z-10 p-5 space-y-1.5 border-b border-slate-200/70">
+              {row.email && (
+                <a
+                  href={`mailto:${row.email}`}
+                  className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+                >
+                  <Mail className="w-3.5 h-3.5 text-slate-400" />
+                  {row.email}
+                </a>
+              )}
+              {row.phone && (
+                <a
+                  href={`tel:${row.phone}`}
+                  className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+                >
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  {[row.phone_country, row.phone].filter(Boolean).join(" ")}
+                </a>
+              )}
+              {(row.preferred_location || row.location || row.city || row.province || row.postal_code || row.preferred_postal_code) && (
+                <div className="flex items-center gap-2 text-sm text-slate-700">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  {[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
+                </div>
+              )}
+              {row.resume_url && (
+                <a
+                  href={row.resume_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> View Resume
+                </a>
+              )}
+            </div>
+
+            {/* Toggle for additional request details */}
             <button
               type="button"
               onClick={() => setDetailsOpen((v) => !v)}
               className="relative z-30 w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white/95 backdrop-blur-sm hover:bg-white transition"
             >
               <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
-                Request Details
+                {detailsOpen ? "Hide" : "Show"} Additional Details
               </span>
               {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
             </button>
 
-            {/* Collapsible details section */}
-            <div className={`${detailsOpen ? "block" : "hidden"} relative z-10`}>
+            {/* Collapsible additional form fields */}
+            {detailsOpen && (
               <div className="relative z-10 p-5 space-y-4 border-b border-slate-200/70">
-                {/* Contact info (always shown in this section) */}
-                <div className="space-y-1.5">
-                  {row.email && (
-                    <a
-                      href={`mailto:${row.email}`}
-                      className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-slate-400" />
-                      {row.email}
-                    </a>
-                  )}
-                  {row.phone && (
-                    <a
-                      href={`tel:${row.phone}`}
-                      className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
-                    >
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      {[row.phone_country, row.phone].filter(Boolean).join(" ")}
-                    </a>
-                  )}
-                  {(row.preferred_location || row.location || row.city || row.province || row.postal_code || row.preferred_postal_code) && (
-                    <div className="flex items-center gap-2 text-sm text-slate-700">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      {[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
-                    </div>
-                  )}
-                  {row.resume_url && (
-                    <a
-                      href={row.resume_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> View Resume
-                    </a>
-                  )}
-                </div>
-
-                {/* Additional form fields */}
-                <div className="grid grid-cols-1 gap-3 pt-3">
+                <div className="grid grid-cols-1 gap-3">
                   {detailFields
                     .filter((f) => !REDUNDANT_KEYS.has(f.key))
                     .map((f) => (
@@ -379,7 +378,7 @@ export default function SubmissionDetailModal({
                     ))}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Always-visible admin sections */}
             <div className="relative z-10 p-5 space-y-4">
