@@ -54,7 +54,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
   const [apiKey, setApiKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [radiusKm, setRadiusKm] = useState(30);
+  const [radiusKm, setRadiusKm] = useState(15);
   const [geocoded, setGeocoded] = useState({}); // { query: {lat,lng} | null }
   const [geocoding, setGeocoding] = useState(false);
 
@@ -123,20 +123,6 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       zIndex: 9999,
     });
 
-    // HQ radius circle
-    const hqCircle = new window.google.maps.Circle({
-      map: mapInstance.current,
-      center: { lat: HQ.lat, lng: HQ.lng },
-      radius: radiusKm * 1000,
-      strokeColor: "#ec4899",
-      strokeOpacity: 0,
-      strokeWeight: 0,
-      fillColor: "#ec4899",
-      fillOpacity: 0.15,
-      clickable: false,
-    });
-    overlaysRef.current.push(hqCircle);
-
     const hqInfo = new window.google.maps.InfoWindow({
       content: `<div style="font-family:sans-serif;font-size:12px;max-width:220px"><div style="font-weight:700;margin-bottom:4px">${HQ.name}</div><div style="color:#475569">${HQ.address}</div></div>`,
     });
@@ -191,6 +177,20 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
 
     const bounds = new window.google.maps.LatLngBounds();
     if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
+
+    // Add HQ radius circle
+    const hqCircle = new window.google.maps.Circle({
+      map: mapInstance.current,
+      center: { lat: HQ.lat, lng: HQ.lng },
+      radius: radiusKm * 1000,
+      strokeColor: "#ec4899",
+      strokeOpacity: 0,
+      strokeWeight: 0,
+      fillColor: "#ec4899",
+      fillOpacity: 0.25,
+      clickable: false,
+    });
+    overlaysRef.current.push(hqCircle);
 
     ticketsWithQuery.forEach(({ ticket, query }) => {
       const loc = geocoded[query];
