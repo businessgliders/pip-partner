@@ -563,6 +563,7 @@ export default function ApplicationBoard() {
           <MapView
             tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
             accentColor={board.color}
+            statusOrder={board.statuses}
             onTicketClick={(t) => setSelectedTicket(t)}
           />
         ) : (

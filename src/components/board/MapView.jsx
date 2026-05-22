@@ -1,8 +1,24 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import * as turf from "@turf/turf";
+
+// Status → swimlane color (matches KanbanColumn palette)
+const STATUS_COLORS = {
+  new: { hex: "#ec4899", bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", dot: "bg-pink-500" },
+  pending: { hex: "#ec4899", bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", dot: "bg-pink-500" },
+  scheduled: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  reviewed: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  contacted: { hex: "#a855f7", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
+  approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  invited: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  qualified: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  closed: { hex: "#64748b", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-500" },
+  declined: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
+};
+
+const getStatusColor = (status) => STATUS_COLORS[String(status).toLowerCase()] || { hex: "#94a3b8", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" };
 
 const HQ = {
   name: "Brampton East (HQ)",
@@ -47,7 +63,7 @@ function buildQuery(t) {
   return null;
 }
 
-export default function MapView({ tickets, accentColor = "#f1889b", onTicketClick }) {
+export default function MapView({ tickets, accentColor = "#f1889b", statusOrder = [], onTicketClick }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const overlaysRef = useRef([]); // markers + circles
@@ -169,11 +185,11 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       .finally(() => setGeocoding(false));
   }, [ticketsWithQuery, geocoded, loading, error]);
 
-  // Helper: build a circle polygon (lat/lng paths) using turf
+  // Helper: build a visible polygon (hexagon-like) using turf
   const createCirclePolygonPaths = (center, radiusKm) => {
     try {
-      const circle = turf.circle([center.lng, center.lat], radiusKm, { units: "kilometers", steps: 64 });
-      const ring = circle?.geometry?.coordinates?.[0];
+      const poly = turf.circle([center.lng, center.lat], radiusKm, { units: "kilometers", steps: 6 });
+      const ring = poly?.geometry?.coordinates?.[0];
       if (!ring) return null;
       return ring.map(([lng, lat]) => ({ lat, lng }));
     } catch {
@@ -213,8 +229,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       if (!loc) return;
       const position = { lat: loc.lat, lng: loc.lng };
 
-      const isQualified = ticket.status === "qualified";
-      const markerColor = isQualified ? "#22c55e" : accentColor;
+      const markerColor = getStatusColor(ticket.status).hex;
 
       const marker = new window.google.maps.Marker({
         position,
@@ -237,10 +252,10 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
           map: mapInstance.current,
           paths: ticketPaths,
           strokeColor: markerColor,
-          strokeOpacity: 0,
-          strokeWeight: 0,
+          strokeOpacity: 0.6,
+          strokeWeight: 1.5,
           fillColor: markerColor,
-          fillOpacity: isQualified ? 0.25 : 0.15,
+          fillOpacity: 0.18,
           clickable: false,
         });
         overlaysRef.current.push(poly);
@@ -286,7 +301,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
   const missingCount = ticketsWithQuery.length - mappedCount;
   const noLocationCount = (tickets?.length || 0) - ticketsWithQuery.length;
 
-  // Group tickets by status
+  // Group tickets by status — ordered by swimlane order
   const ticketsByStatus = useMemo(() => {
     const groups = {};
     ticketsWithQuery.forEach(({ ticket }) => {
@@ -294,8 +309,20 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       if (!groups[status]) groups[status] = [];
       groups[status].push(ticket);
     });
-    return groups;
-  }, [ticketsWithQuery]);
+    const ordered = [];
+    (statusOrder || []).forEach((s) => {
+      if (groups[s]) ordered.push([s, groups[s]]);
+    });
+    Object.keys(groups).forEach((s) => {
+      if (!statusOrder.includes(s)) ordered.push([s, groups[s]]);
+    });
+    return ordered;
+  }, [ticketsWithQuery, statusOrder]);
+
+  // Collapsed sections — default: all expanded
+  const [collapsedSections, setCollapsedSections] = useState({});
+  const toggleSection = (status) =>
+    setCollapsedSections((prev) => ({ ...prev, [status]: !prev[status] }));
 
   return (
     <div className="flex-1 lg:min-h-0 mt-2 flex flex-col lg:flex-row gap-3">
@@ -351,38 +378,56 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       </div>
 
       {/* Sidebar: Requests grouped by status */}
-      <div className="w-full lg:w-72 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex flex-col">
+      <div className="w-full lg:w-72 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex flex-col max-h-[calc(100vh-220px)]">
         <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
           <p className="text-xs tracking-widest uppercase font-semibold text-slate-600">Requests by Status</p>
         </div>
         <div className="flex-1 overflow-y-auto hide-scrollbar">
-          {Object.entries(ticketsByStatus).map(([status, statusTickets]) => (
-            <div key={status} className="border-b border-slate-100 last:border-b-0">
-              <div className="px-4 py-2 bg-slate-50 text-xs font-semibold text-slate-700 sticky top-0 capitalize">
-                {status} ({statusTickets.length})
+          {ticketsByStatus.map(([status, statusTickets]) => {
+            const c = getStatusColor(status);
+            const isCollapsed = !!collapsedSections[status];
+            return (
+              <div key={status} className="border-b border-slate-100 last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(status)}
+                  className={`w-full flex items-center justify-between px-4 py-2 text-xs font-semibold sticky top-0 capitalize border-l-4 ${c.bg} ${c.text} ${c.border} hover:brightness-95 transition`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${c.dot}`} />
+                    {status} ({statusTickets.length})
+                  </span>
+                  {isCollapsed ? (
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+                {!isCollapsed && (
+                  <div className="divide-y divide-slate-100">
+                    {statusTickets.map((ticket) => (
+                      <button
+                        key={ticket.id}
+                        onClick={() => {
+                          setSelectedSidebarTicket(ticket.id);
+                          onTicketClick(ticket);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-xs transition-colors border-l-4 ${
+                          selectedSidebarTicket === ticket.id
+                            ? "bg-slate-100"
+                            : "hover:bg-slate-50 border-transparent"
+                        }`}
+                        style={selectedSidebarTicket === ticket.id ? { borderLeftColor: c.hex } : {}}
+                      >
+                        <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
+                        <div className="text-slate-500 truncate">{ticket.email}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="divide-y divide-slate-100">
-                {statusTickets.map((ticket) => (
-                  <button
-                    key={ticket.id}
-                    onClick={() => {
-                      setSelectedSidebarTicket(ticket.id);
-                      onTicketClick(ticket);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-xs transition-colors ${
-                      selectedSidebarTicket === ticket.id
-                        ? "bg-slate-100 border-l-2"
-                        : "hover:bg-slate-50"
-                    }`}
-                    style={selectedSidebarTicket === ticket.id ? { borderLeftColor: accentColor } : {}}
-                  >
-                    <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
-                    <div className="text-slate-500 truncate">{ticket.email}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
