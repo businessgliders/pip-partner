@@ -129,10 +129,10 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       center: { lat: HQ.lat, lng: HQ.lng },
       radius: radiusKm * 1000,
       strokeColor: "#ec4899",
-      strokeOpacity: 0.55,
-      strokeWeight: 1,
+      strokeOpacity: 0,
+      strokeWeight: 0,
       fillColor: "#ec4899",
-      fillOpacity: 0.12,
+      fillOpacity: 0.15,
       clickable: false,
     });
     overlaysRef.current.push(hqCircle);
@@ -220,10 +220,10 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         center: position,
         radius: radiusKm * 1000,
         strokeColor: markerColor,
-        strokeOpacity: isQualified ? 0.55 : 0.55,
-        strokeWeight: 1,
+        strokeOpacity: 0,
+        strokeWeight: 0,
         fillColor: markerColor,
-        fillOpacity: isQualified ? 0.22 : 0.12,
+        fillOpacity: isQualified ? 0.25 : 0.15,
         clickable: false,
       });
 
