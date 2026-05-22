@@ -306,7 +306,7 @@ export default function SubmissionDetailModal({
           </div>
 
           {/* Right: Request Details + Assign To + Internal Notes */}
-          <div className="relative overflow-y-auto bg-white order-2 lg:order-none">
+          <div className="relative overflow-y-auto bg-white order-2 lg:order-none hide-scrollbar">
             <LocationMapBanner
               postalCode={row.preferred_postal_code || row.postal_code}
               city={row.preferred_location || row.location || row.city}
