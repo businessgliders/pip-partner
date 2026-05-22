@@ -12,7 +12,7 @@ const HQ = {
 };
 
 const ONTARIO_CENTER = { lat: 44.5, lng: -79.5 };
-const RADIUS_OPTIONS = [5, 10, 15, 20, 30, 50, 75, 100];
+const RADIUS_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 // Cache the JS API loader across mounts
 let googleMapsPromise = null;
