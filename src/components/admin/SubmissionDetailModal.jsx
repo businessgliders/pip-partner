@@ -79,6 +79,26 @@ export default function SubmissionDetailModal({
     queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
   };
 
+  const handleUpdateNote = async (index, newComment) => {
+    const existing = Array.isArray(row.internal_notes) ? row.internal_notes : [];
+    if (index < 0 || index >= existing.length) return;
+    const updated = existing.map((n, i) =>
+      i === index ? { ...n, comment: newComment, edited_at: new Date().toISOString() } : n
+    );
+    await base44.entities[entityName].update(row.id, { internal_notes: updated });
+    row.internal_notes = updated;
+    queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
+  };
+
+  const handleDeleteNote = async (index) => {
+    const existing = Array.isArray(row.internal_notes) ? row.internal_notes : [];
+    if (index < 0 || index >= existing.length) return;
+    const updated = existing.filter((_, i) => i !== index);
+    await base44.entities[entityName].update(row.id, { internal_notes: updated });
+    row.internal_notes = updated;
+    queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
+  };
+
   const handleAssign = async (email) => {
     await base44.entities[entityName].update(row.id, { assigned_to: email });
     row.assigned_to = email;
@@ -378,6 +398,9 @@ export default function SubmissionDetailModal({
               <InternalNotesSection
                 notes={row.internal_notes || []}
                 onAddNote={handleAddNote}
+                onUpdateNote={handleUpdateNote}
+                onDeleteNote={handleDeleteNote}
+                currentUserEmail={user?.email}
                 accentColor={accentColor}
                 large
               />
