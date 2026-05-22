@@ -51,15 +51,17 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
 
   const ticketAttachments = Array.isArray(ticket?.attachments) ? ticket.attachments : [];
 
-  // Load team members (admin users with staff-domain email) once
+  // Load team members (staff-domain users) via a backend function that uses
+  // service role — the built-in User entity RLS only lets admins list other
+  // users, so a direct entities.User.list call would return just the current
+  // user for non-admin staff.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const users = await base44.entities.User.list("-created_date", 200);
-        const staff = (users || []).filter(
-          (u) => isStaffEmail(u.email) && u.email !== currentUser?.email
-        );
+        const res = await base44.functions.invoke("listStaffMembers", {});
+        const members = res?.data?.members || [];
+        const staff = members.filter((u) => u.email !== currentUser?.email);
         if (!cancelled) setTeamMembers(staff);
       } catch (e) {
         console.error("Failed to load team members", e);
