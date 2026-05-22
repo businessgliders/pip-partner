@@ -314,7 +314,7 @@ export default function SubmissionDetailModal({
               label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
             />
             {/* Always-visible basic contact info */}
-            <div className="relative z-10 p-5 space-y-1.5 border-b border-slate-200/70">
+            <div className="relative z-10 px-5 py-3 space-y-1.5 border-b border-slate-200/70">
               {row.email && (
                 <a
                   href={`mailto:${row.email}`}
@@ -365,7 +365,7 @@ export default function SubmissionDetailModal({
 
             {/* Collapsible additional form fields */}
             {detailsOpen && (
-              <div className="relative z-10 p-5 space-y-4 border-b border-slate-200/70">
+              <div className="relative z-10 px-5 py-3 space-y-3 border-b border-slate-200/70">
                 <div className="grid grid-cols-1 gap-3">
                   {detailFields
                     .filter((f) => !REDUNDANT_KEYS.has(f.key))
@@ -381,7 +381,7 @@ export default function SubmissionDetailModal({
             )}
 
             {/* Always-visible admin sections */}
-            <div className="relative z-10 p-5 space-y-4">
+            <div className="relative z-10 px-5 py-3 space-y-3">
               <AssignTicketSection
                 assignedTo={row.assigned_to}
                 onAssign={handleAssign}
