@@ -219,10 +219,10 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
           <div style="margin-top:6px;color:${accentColor};font-weight:600;cursor:pointer">Open application →</div>
         </div>`,
       });
+      marker.addListener("mouseover", () => info.open(mapInstance.current, marker));
+      marker.addListener("mouseout", () => info.close());
       marker.addListener("click", () => {
-        info.open(mapInstance.current, marker);
         if (onTicketClick) {
-          // Small delay so InfoWindow can render before navigation may unmount
           setTimeout(() => onTicketClick(ticket), 50);
         }
       });
