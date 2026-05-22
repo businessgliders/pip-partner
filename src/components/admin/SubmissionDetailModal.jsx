@@ -307,24 +307,24 @@ export default function SubmissionDetailModal({
 
           {/* Right: Request Details + Assign To + Internal Notes */}
           <div className="relative overflow-y-auto bg-white order-2 lg:order-none">
-            {/* Mobile/Tablet collapse toggle */}
-            <button
-              type="button"
-              onClick={() => setDetailsOpen((v) => !v)}
-              className="lg:hidden w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white sticky top-0 z-20"
-            >
-              <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
-                Request Details & Notes
-              </span>
-              {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-            </button>
-            <div className={`${detailsOpen ? "block" : "hidden"} lg:block`}>
             <LocationMapBanner
               postalCode={row.preferred_postal_code || row.postal_code}
               city={row.preferred_location || row.location || row.city}
               province={row.province}
               label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
             />
+            {/* Collapse toggle (always visible) */}
+            <button
+              type="button"
+              onClick={() => setDetailsOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white hover:bg-slate-50 transition"
+            >
+              <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
+                {detailsOpen ? "Hide Details" : "Show Details"}
+              </span>
+              {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+            </button>
+            <div className={`${detailsOpen ? "block" : "hidden"}`}>
             <div className="relative z-10 p-5 space-y-4">
               <div>
                 <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-2">
