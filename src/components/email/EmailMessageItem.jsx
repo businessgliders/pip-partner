@@ -80,6 +80,13 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
         className={`flex flex-col ${isInbound ? "items-start" : "items-end"} mb-3`}
         id={`msg-${message.id}`}
       >
+        {message.is_ai_summary && (
+          <div className="text-[10px] text-violet-700 mb-1 mr-1 font-semibold tracking-wider uppercase">
+            <span className="inline-block px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300">
+              Request Summary
+            </span>
+          </div>
+        )}
         {isInternal && !isInbound && (
           <div className="text-[10px] text-amber-700 mb-1 mr-1 font-semibold tracking-wider uppercase">
             <span className="inline-block px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300">
