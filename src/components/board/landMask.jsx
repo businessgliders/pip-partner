@@ -14,25 +14,41 @@ export async function getCanadaLand() {
   if (landPromise) return landPromise;
 
   landPromise = fetch(CANADA_GEOJSON_URL)
-    .then((r) => r.json())
+    .then((r) => {
+      if (!r.ok) throw new Error(`Canada GeoJSON HTTP ${r.status}`);
+      return r.json();
+    })
     .then((fc) => {
-      // Union all province polygons into a single multipolygon
       const features = (fc.features || []).filter(
         (f) => f.geometry && (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon")
       );
-      if (!features.length) return null;
-      let merged = features[0];
-      for (let i = 1; i < features.length; i++) {
-        try {
-          merged = turf.union(merged, features[i]) || merged;
-        } catch {
-          // skip bad geometry
+      if (!features.length) {
+        console.warn("[landMask] no polygon features in Canada GeoJSON");
+        return null;
+      }
+      // turf v7 union takes a FeatureCollection; v6 takes (a, b)
+      let merged = null;
+      try {
+        merged = turf.union(turf.featureCollection(features));
+      } catch (e) {
+        console.warn("[landMask] union(FC) failed, falling back to pairwise", e?.message);
+        merged = features[0];
+        for (let i = 1; i < features.length; i++) {
+          try {
+            merged = turf.union(merged, features[i]) || merged;
+          } catch {
+            /* skip bad geometry */
+          }
         }
       }
       landUnion = merged;
+      console.log("[landMask] Canada land mask loaded:", merged?.geometry?.type);
       return merged;
     })
-    .catch(() => null);
+    .catch((e) => {
+      console.warn("[landMask] failed to load Canada GeoJSON:", e?.message);
+      return null;
+    });
 
   return landPromise;
 }
@@ -51,15 +67,20 @@ export function clipCircleToLand(centerLng, centerLat, radiusKm) {
     return [ring.map(([lng, lat]) => ({ lat, lng }))];
   }
 
-  let clipped;
+  let clipped = null;
+  // turf v7 intersect takes a FeatureCollection; v6 takes (a, b)
   try {
-    clipped = turf.intersect(circle, landUnion);
+    clipped = turf.intersect(turf.featureCollection([circle, landUnion]));
   } catch {
-    clipped = null;
+    try {
+      clipped = turf.intersect(circle, landUnion);
+    } catch {
+      clipped = null;
+    }
   }
   if (!clipped) {
-    const ring = circle.geometry.coordinates[0];
-    return [ring.map(([lng, lat]) => ({ lat, lng }))];
+    // No overlap with land — return empty so no polygon is drawn over water
+    return [];
   }
 
   const geom = clipped.geometry;
