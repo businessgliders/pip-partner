@@ -58,10 +58,11 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
   const [geocoded, setGeocoded] = useState({}); // { query: {lat,lng} | null }
   const [geocoding, setGeocoding] = useState(false);
 
-  // Tickets with a usable location query
+  // Tickets with a usable location query (exclude closed)
   const ticketsWithQuery = useMemo(
     () =>
       (tickets || [])
+        .filter((t) => t.status !== "closed")
         .map((t) => ({ ticket: t, query: buildQuery(t) }))
         .filter((x) => !!x.query),
     [tickets]
@@ -121,6 +122,20 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       },
       zIndex: 9999,
     });
+
+    // HQ radius circle
+    const hqCircle = new window.google.maps.Circle({
+      map: mapInstance.current,
+      center: { lat: HQ.lat, lng: HQ.lng },
+      radius: radiusKm * 1000,
+      strokeColor: "#ec4899",
+      strokeOpacity: 0.55,
+      strokeWeight: 1,
+      fillColor: "#ec4899",
+      fillOpacity: 0.12,
+      clickable: false,
+    });
+    overlaysRef.current.push(hqCircle);
 
     const hqInfo = new window.google.maps.InfoWindow({
       content: `<div style="font-family:sans-serif;font-size:12px;max-width:220px"><div style="font-weight:700;margin-bottom:4px">${HQ.name}</div><div style="color:#475569">${HQ.address}</div></div>`,
@@ -199,15 +214,16 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         },
       });
 
+      // Qualified circles use darker, less transparent style; others use accent style
       const circle = new window.google.maps.Circle({
         map: mapInstance.current,
         center: position,
         radius: radiusKm * 1000,
         strokeColor: markerColor,
-        strokeOpacity: 0.55,
+        strokeOpacity: isQualified ? 0.55 : 0.55,
         strokeWeight: 1,
         fillColor: markerColor,
-        fillOpacity: 0.12,
+        fillOpacity: isQualified ? 0.22 : 0.12,
         clickable: false,
       });
 
