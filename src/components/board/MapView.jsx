@@ -114,7 +114,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       icon: {
         path: window.google.maps.SymbolPath.CIRCLE,
         scale: 14,
-        fillColor: "#111827",
+        fillColor: "#ec4899",
         fillOpacity: 1,
         strokeColor: "#ffffff",
         strokeWeight: 2,
@@ -182,6 +182,9 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       if (!loc) return;
       const position = { lat: loc.lat, lng: loc.lng };
 
+      const isQualified = ticket.status === "qualified";
+      const markerColor = isQualified ? "#22c55e" : accentColor;
+
       const marker = new window.google.maps.Marker({
         position,
         map: mapInstance.current,
@@ -189,7 +192,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
           scale: 8,
-          fillColor: accentColor,
+          fillColor: markerColor,
           fillOpacity: 1,
           strokeColor: "#ffffff",
           strokeWeight: 2,
@@ -200,10 +203,10 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         map: mapInstance.current,
         center: position,
         radius: radiusKm * 1000,
-        strokeColor: accentColor,
+        strokeColor: markerColor,
         strokeOpacity: 0.55,
         strokeWeight: 1,
-        fillColor: accentColor,
+        fillColor: markerColor,
         fillOpacity: 0.12,
         clickable: false,
       });
