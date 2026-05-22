@@ -47,16 +47,6 @@ function buildQuery(t) {
   return null;
 }
 
-// Simplified Ontario/Canada coastline for clipping (approximated GeoJSON polygon)
-const ONTARIO_COASTLINE = {
-  type: "Polygon",
-  coordinates: [[
-    [-95, 42], [-85, 41], [-82, 42], [-81, 43], [-79, 44], [-78, 45], [-77, 46], [-76, 47], [-75, 48], [-74, 47.5],
-    [-73, 46], [-72, 45], [-71, 44], [-70, 43], [-70, 42], [-69, 42], [-69, 41], [-70, 40], [-75, 40], [-80, 40],
-    [-85, 41], [-90, 42], [-95, 43], [-95, 42]
-  ]]
-};
-
 export default function MapView({ tickets, accentColor = "#f1889b", onTicketClick }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -179,14 +169,14 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       .finally(() => setGeocoding(false));
   }, [ticketsWithQuery, geocoded, loading, error]);
 
-  // Helper: create a clipped circle polygon that excludes water
-  const createClippedCirclePolygon = (center, radiusKm) => {
+  // Helper: build a circle polygon (lat/lng paths) using turf
+  const createCirclePolygonPaths = (center, radiusKm) => {
     try {
-      const circle = turf.circle([center.lng, center.lat], radiusKm, { units: "kilometers" });
-      const clipped = turf.intersect(circle, ONTARIO_COASTLINE);
-      return clipped && clipped.type === "Polygon" ? clipped.coordinates : null;
+      const circle = turf.circle([center.lng, center.lat], radiusKm, { units: "kilometers", steps: 64 });
+      const ring = circle?.geometry?.coordinates?.[0];
+      if (!ring) return null;
+      return ring.map(([lng, lat]) => ({ lat, lng }));
     } catch {
-      // Fall back to simple circle if clipping fails
       return null;
     }
   };
@@ -202,13 +192,12 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
     const bounds = new window.google.maps.LatLngBounds();
     if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
 
-    // Add HQ clipped polygon
-    const hqClipped = createClippedCirclePolygon({ lat: HQ.lat, lng: HQ.lng }, radiusKm);
-    if (hqClipped) {
-      const paths = hqClipped[0].map(([lng, lat]) => ({ lat, lng }));
+    // Add HQ radius polygon
+    const hqPaths = createCirclePolygonPaths({ lat: HQ.lat, lng: HQ.lng }, radiusKm);
+    if (hqPaths) {
       const hqPoly = new window.google.maps.Polygon({
         map: mapInstance.current,
-        paths,
+        paths: hqPaths,
         strokeColor: "#ec4899",
         strokeOpacity: 0.5,
         strokeWeight: 1,
@@ -241,13 +230,12 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         },
       });
 
-      // Clipped polygon for each ticket's radius
-      const clipped = createClippedCirclePolygon(position, radiusKm);
-      if (clipped) {
-        const paths = clipped[0].map(([lng, lat]) => ({ lat, lng }));
+      // Radius polygon for each ticket
+      const ticketPaths = createCirclePolygonPaths(position, radiusKm);
+      if (ticketPaths) {
         const poly = new window.google.maps.Polygon({
           map: mapInstance.current,
-          paths,
+          paths: ticketPaths,
           strokeColor: markerColor,
           strokeOpacity: 0,
           strokeWeight: 0,
