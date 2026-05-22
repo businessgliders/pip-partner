@@ -41,9 +41,18 @@ export async function getCanadaLand() {
           }
         }
       }
-      landUnion = merged;
-      console.log("[landMask] Canada land mask loaded:", merged?.geometry?.type);
-      return merged;
+      // Buffer the land outward slightly so clipped circles spill a bit into
+      // water rather than cutting away coastal land due to low-res coastlines.
+      let buffered = merged;
+      try {
+        const b = turf.buffer(merged, 3, { units: "kilometers" });
+        if (b) buffered = b;
+      } catch (e) {
+        console.warn("[landMask] buffer failed, using unbuffered land", e?.message);
+      }
+      landUnion = buffered;
+      console.log("[landMask] Canada land mask loaded:", buffered?.geometry?.type);
+      return buffered;
     })
     .catch((e) => {
       console.warn("[landMask] failed to load Canada GeoJSON:", e?.message);
