@@ -19,7 +19,8 @@ import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
 import ProgramDock from "../components/board/ProgramDock";
-import { LayoutGrid, Table2, Download } from "lucide-react";
+import { LayoutGrid, Table2, Download, Map as MapIcon } from "lucide-react";
+import MapView from "../components/board/MapView";
 
 const PRIMARY = "#f1889b";
 const LOGO_URL = "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c51835c8a_PiPPartner.png";
@@ -82,7 +83,10 @@ export default function ApplicationBoard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("view") === "table" ? "table" : "status";
+    const v = params.get("view");
+    if (v === "table") return "table";
+    if (v === "map") return "map";
+    return "status";
   });
   const [hiddenColumns, setHiddenColumns] = useState([]);
   const [showCleanupPopup, setShowCleanupPopup] = useState(false);
@@ -145,11 +149,11 @@ export default function ApplicationBoard() {
     return Array.from(vals).sort();
   }, [board.categoryField, tickets]);
 
-  // "table" is always available; "category" requires categoryField
-  const effectiveViewMode = viewMode === "table"
-    ? "table"
+  // "table" and "map" are always available; "category" requires categoryField
+  const effectiveViewMode = (viewMode === "table" || viewMode === "map")
+    ? viewMode
     : (board.categoryField ? viewMode : "status");
-  const columns = effectiveViewMode === "table"
+  const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
     ? []
     : (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
         .filter((c) => !hiddenColumns.includes(c));
@@ -449,6 +453,16 @@ export default function ApplicationBoard() {
                     <Table2 className="w-4 h-4" />
                     <span className="hidden md:inline">Table</span>
                   </button>
+                  <button
+                    onClick={() => setViewMode("map")}
+                    title="Map view"
+                    className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                      viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                    }`}
+                  >
+                    <MapIcon className="w-4 h-4" />
+                    <span className="hidden md:inline">Map</span>
+                  </button>
                 </div>
               )}
 
@@ -545,6 +559,12 @@ export default function ApplicationBoard() {
               />
             )}
           </div>
+        ) : effectiveViewMode === "map" ? (
+          <MapView
+            tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
+            accentColor={board.color}
+            onTicketClick={(t) => setSelectedTicket(t)}
+          />
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="relative flex-1 min-h-0 mt-1 lg:mt-2">
