@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { getCanadaLand, clipCircleToLand } from "./landMask";
 
 // Status → swimlane color (matches KanbanColumn palette)
@@ -330,8 +330,86 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const toggleSection = (status) =>
     setCollapsedSections((prev) => ({ ...prev, [status]: !prev[status] }));
 
+  // Sidebar collapse state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
     <div className="flex-1 lg:min-h-0 mt-2 flex flex-col lg:flex-row gap-3">
+      {/* Sidebar: Requests grouped by status (LEFT) */}
+      {sidebarCollapsed ? (
+        <div className="hidden lg:flex flex-col items-center bg-white rounded-xl border border-slate-200 shadow-lg px-2 py-3">
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(false)}
+            title="Expand panel"
+            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 transition"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div className="w-full lg:w-72 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex flex-col max-h-[calc(100vh-220px)]">
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+            <p className="text-xs tracking-widest uppercase font-semibold text-slate-600">Requests by Status</p>
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(true)}
+              title="Collapse panel"
+              className="p-1 rounded-md hover:bg-slate-200 text-slate-500 transition"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto hide-scrollbar">
+            {ticketsByStatus.map(([status, statusTickets]) => {
+              const c = getStatusColor(status);
+              const isCollapsed = !!collapsedSections[status];
+              return (
+                <div key={status} className="border-b border-slate-100 last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(status)}
+                    className={`w-full flex items-center justify-between px-4 py-2 text-xs font-semibold sticky top-0 capitalize border-l-4 ${c.bg} ${c.text} ${c.border} hover:brightness-95 transition`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${c.dot}`} />
+                      {status} ({statusTickets.length})
+                    </span>
+                    {isCollapsed ? (
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  {!isCollapsed && (
+                    <div className="divide-y divide-slate-100">
+                      {statusTickets.map((ticket) => (
+                        <button
+                          key={ticket.id}
+                          onClick={() => {
+                            setSelectedSidebarTicket(ticket.id);
+                            onTicketClick(ticket);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-xs transition-colors border-l-4 ${
+                            selectedSidebarTicket === ticket.id
+                              ? "bg-slate-100"
+                              : "hover:bg-slate-200 border-transparent"
+                          }`}
+                          style={selectedSidebarTicket === ticket.id ? { borderLeftColor: c.hex } : {}}
+                        >
+                          <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
+                          <div className="text-slate-500 truncate">{ticket.email}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Map */}
       <div className="flex-1 lg:min-h-0 flex flex-col">
         <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col min-h-[500px]">
@@ -380,60 +458,6 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
             ) : null}
             <div ref={mapRef} className="absolute inset-0" />
           </div>
-        </div>
-      </div>
-
-      {/* Sidebar: Requests grouped by status */}
-      <div className="w-full lg:w-72 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex flex-col max-h-[calc(100vh-220px)]">
-        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-          <p className="text-xs tracking-widest uppercase font-semibold text-slate-600">Requests by Status</p>
-        </div>
-        <div className="flex-1 overflow-y-auto hide-scrollbar">
-          {ticketsByStatus.map(([status, statusTickets]) => {
-            const c = getStatusColor(status);
-            const isCollapsed = !!collapsedSections[status];
-            return (
-              <div key={status} className="border-b border-slate-100 last:border-b-0">
-                <button
-                  type="button"
-                  onClick={() => toggleSection(status)}
-                  className={`w-full flex items-center justify-between px-4 py-2 text-xs font-semibold sticky top-0 capitalize border-l-4 ${c.bg} ${c.text} ${c.border} hover:brightness-95 transition`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-                    {status} ({statusTickets.length})
-                  </span>
-                  {isCollapsed ? (
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  )}
-                </button>
-                {!isCollapsed && (
-                  <div className="divide-y divide-slate-100">
-                    {statusTickets.map((ticket) => (
-                      <button
-                        key={ticket.id}
-                        onClick={() => {
-                          setSelectedSidebarTicket(ticket.id);
-                          onTicketClick(ticket);
-                        }}
-                        className={`w-full text-left px-4 py-2 text-xs transition-colors border-l-4 ${
-                          selectedSidebarTicket === ticket.id
-                            ? "bg-slate-100"
-                            : "hover:bg-slate-200 border-transparent"
-                        }`}
-                        style={selectedSidebarTicket === ticket.id ? { borderLeftColor: c.hex } : {}}
-                      >
-                        <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
-                        <div className="text-slate-500 truncate">{ticket.email}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>
