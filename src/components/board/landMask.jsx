@@ -45,7 +45,7 @@ export async function getCanadaLand() {
       // water rather than cutting away coastal land due to low-res coastlines.
       let buffered = merged;
       try {
-        const b = turf.buffer(merged, 3, { units: "kilometers" });
+        const b = turf.buffer(merged, 1.5, { units: "kilometers" });
         if (b) buffered = b;
       } catch (e) {
         console.warn("[landMask] buffer failed, using unbuffered land", e?.message);
