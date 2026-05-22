@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen, ExternalLink } from "lucide-react";
 import { getCanadaLand, clipCircleToLand } from "./landMask";
 
 // Status → swimlane color (matches KanbanColumn palette)
@@ -67,6 +67,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const overlaysRef = useRef([]); // markers + circles
+  const markersByTicketRef = useRef({}); // ticketId -> { marker, position }
   const hqMarkerRef = useRef(null);
   const [apiKey, setApiKey] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -210,6 +211,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
     // Clear existing overlays
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
+    markersByTicketRef.current = {};
 
     const bounds = new window.google.maps.LatLngBounds();
     if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
@@ -237,24 +239,20 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
 
       const markerColor = getStatusColor(ticket.status).hex;
 
-      const isHighlighted = !selectedSidebarTicket || selectedSidebarTicket === ticket.id;
-      const isDimmed = selectedSidebarTicket && selectedSidebarTicket !== ticket.id;
-
       const marker = new window.google.maps.Marker({
         position,
         map: mapInstance.current,
         title: `${ticket._display_name || ticket.email || "Application"}`,
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
-          scale: selectedSidebarTicket === ticket.id ? 11 : 8,
+          scale: 8,
           fillColor: markerColor,
-          fillOpacity: isDimmed ? 0.25 : 1,
+          fillOpacity: 1,
           strokeColor: "#ffffff",
           strokeWeight: 2,
-          strokeOpacity: isDimmed ? 0.4 : 1,
         },
-        zIndex: selectedSidebarTicket === ticket.id ? 5000 : undefined,
       });
+      markersByTicketRef.current[ticket.id] = { marker, position };
 
       // Radius polygon for each ticket (clipped to land)
       const ticketPaths = createCirclePolygonPaths(position, radiusKm);
@@ -263,12 +261,11 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
           map: mapInstance.current,
           paths: ticketPaths,
           strokeColor: markerColor,
-          strokeOpacity: isDimmed ? 0.15 : 0.6,
+          strokeOpacity: 0.6,
           strokeWeight: 1.5,
           fillColor: markerColor,
-          fillOpacity: isDimmed ? 0.04 : (selectedSidebarTicket === ticket.id ? 0.3 : 0.18),
+          fillOpacity: 0.18,
           clickable: false,
-          zIndex: selectedSidebarTicket === ticket.id ? 4000 : undefined,
         });
         overlaysRef.current.push(poly);
       }
@@ -307,7 +304,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       // cleanup listener if effect re-runs
       return () => window.google.maps.event.removeListener(listener);
     }
-  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady, selectedSidebarTicket]);
+  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady]);
 
   const mappedCount = ticketsWithQuery.filter((x) => geocoded[x.query]).length;
   const missingCount = ticketsWithQuery.length - mappedCount;
@@ -390,23 +387,50 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
                   {!isCollapsed && (
                     <div className="divide-y divide-slate-100">
                       {statusTickets.map((ticket) => (
-                        <button
+                        <div
                           key={ticket.id}
-                          onClick={() => {
-                            setSelectedSidebarTicket(
-                              selectedSidebarTicket === ticket.id ? null : ticket.id
-                            );
-                          }}
-                          className={`w-full text-left px-4 py-2 text-xs transition-colors border-l-4 ${
+                          className={`w-full flex items-center gap-2 px-4 py-2 text-xs transition-colors border-l-4 ${
                             selectedSidebarTicket === ticket.id
                               ? "bg-slate-100"
-                              : "hover:bg-slate-200 border-transparent"
+                              : "hover:bg-slate-50 border-transparent"
                           }`}
                           style={selectedSidebarTicket === ticket.id ? { borderLeftColor: c.hex } : {}}
                         >
-                          <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
-                          <div className="text-slate-500 truncate">{ticket.email}</div>
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedSidebarTicket(ticket.id);
+                              const entry = markersByTicketRef.current[ticket.id];
+                              if (entry && mapInstance.current) {
+                                mapInstance.current.panTo(entry.position);
+                                if (mapInstance.current.getZoom() < 10) {
+                                  mapInstance.current.setZoom(11);
+                                }
+                                if (window.google?.maps?.event) {
+                                  window.google.maps.event.trigger(entry.marker, "mouseover");
+                                  setTimeout(() => {
+                                    window.google.maps.event.trigger(entry.marker, "mouseout");
+                                  }, 2500);
+                                }
+                              }
+                            }}
+                            className="flex-1 text-left min-w-0"
+                          >
+                            <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
+                            <div className="text-slate-500 truncate">{ticket.email}</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTicketClick(ticket);
+                            }}
+                            title="Open details"
+                            className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 shrink-0"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       ))}
                     </div>
                   )}
