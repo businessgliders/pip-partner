@@ -80,13 +80,6 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
         className={`flex flex-col ${isInbound ? "items-start" : "items-end"} mb-3`}
         id={`msg-${message.id}`}
       >
-        {message.is_ai_summary && (
-          <div className="text-[10px] text-violet-700 mb-1 mr-1 font-semibold tracking-wider uppercase">
-            <span className="inline-block px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300">
-              Request Summary
-            </span>
-          </div>
-        )}
         {isInternal && !isInbound && (
           <div className="text-[10px] text-amber-700 mb-1 mr-1 font-semibold tracking-wider uppercase">
             <span className="inline-block px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300">
@@ -106,6 +99,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           } ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
           onClick={() => setOpen(true)}
         >
+          {message.is_ai_summary && (
+            <div className="text-[9px] text-violet-600 opacity-60 font-semibold tracking-wider uppercase mb-1">
+              Request Summary
+            </div>
+          )}
           {(isInbound || isFailed) && (
             <div className="lg:text-xs text-[10px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
               {isFailed && <AlertTriangle className="w-3 h-3 text-red-600" />}
