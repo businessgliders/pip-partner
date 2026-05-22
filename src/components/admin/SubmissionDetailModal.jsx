@@ -313,24 +313,23 @@ export default function SubmissionDetailModal({
               province={row.province}
               label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
             />
-            {/* Collapse toggle (always visible, above map background) */}
+            {/* Collapse toggle for contact/request details */}
             <button
               type="button"
               onClick={() => setDetailsOpen((v) => !v)}
               className="relative z-30 w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white/95 backdrop-blur-sm hover:bg-white transition"
             >
               <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
-                {detailsOpen ? "Hide Details" : "Show Details"}
+                Request Details
               </span>
               {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
             </button>
+
+            {/* Collapsible details section */}
             <div className={`${detailsOpen ? "block" : "hidden"} relative z-10`}>
-            <div className="relative z-10 p-5 space-y-4">
-              <div>
-                <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-2">
-                  Request Details
-                </p>
-                <div className="space-y-1.5 mb-3 pb-3 border-b border-slate-200/70">
+              <div className="relative z-10 p-5 space-y-4 border-b border-slate-200/70">
+                {/* Contact info (always shown in this section) */}
+                <div className="space-y-1.5">
                   {row.email && (
                     <a
                       href={`mailto:${row.email}`}
@@ -366,7 +365,9 @@ export default function SubmissionDetailModal({
                     </a>
                   )}
                 </div>
-                <div className="grid grid-cols-1 gap-3">
+
+                {/* Additional form fields */}
+                <div className="grid grid-cols-1 gap-3 pt-3">
                   {detailFields
                     .filter((f) => !REDUNDANT_KEYS.has(f.key))
                     .map((f) => (
@@ -378,7 +379,10 @@ export default function SubmissionDetailModal({
                     ))}
                 </div>
               </div>
+            </div>
 
+            {/* Always-visible admin sections */}
+            <div className="relative z-10 p-5 space-y-4">
               <AssignTicketSection
                 assignedTo={row.assigned_to}
                 onAssign={handleAssign}
@@ -404,7 +408,6 @@ export default function SubmissionDetailModal({
                 accentColor={accentColor}
                 large
               />
-            </div>
             </div>
           </div>
         </div>
