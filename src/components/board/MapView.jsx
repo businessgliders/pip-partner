@@ -237,18 +237,23 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
 
       const markerColor = getStatusColor(ticket.status).hex;
 
+      const isHighlighted = !selectedSidebarTicket || selectedSidebarTicket === ticket.id;
+      const isDimmed = selectedSidebarTicket && selectedSidebarTicket !== ticket.id;
+
       const marker = new window.google.maps.Marker({
         position,
         map: mapInstance.current,
         title: `${ticket._display_name || ticket.email || "Application"}`,
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 8,
+          scale: selectedSidebarTicket === ticket.id ? 11 : 8,
           fillColor: markerColor,
-          fillOpacity: 1,
+          fillOpacity: isDimmed ? 0.25 : 1,
           strokeColor: "#ffffff",
           strokeWeight: 2,
+          strokeOpacity: isDimmed ? 0.4 : 1,
         },
+        zIndex: selectedSidebarTicket === ticket.id ? 5000 : undefined,
       });
 
       // Radius polygon for each ticket (clipped to land)
@@ -258,11 +263,12 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
           map: mapInstance.current,
           paths: ticketPaths,
           strokeColor: markerColor,
-          strokeOpacity: 0.6,
+          strokeOpacity: isDimmed ? 0.15 : 0.6,
           strokeWeight: 1.5,
           fillColor: markerColor,
-          fillOpacity: 0.18,
+          fillOpacity: isDimmed ? 0.04 : (selectedSidebarTicket === ticket.id ? 0.3 : 0.18),
           clickable: false,
+          zIndex: selectedSidebarTicket === ticket.id ? 4000 : undefined,
         });
         overlaysRef.current.push(poly);
       }
@@ -301,7 +307,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       // cleanup listener if effect re-runs
       return () => window.google.maps.event.removeListener(listener);
     }
-  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady]);
+  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady, selectedSidebarTicket]);
 
   const mappedCount = ticketsWithQuery.filter((x) => geocoded[x.query]).length;
   const missingCount = ticketsWithQuery.length - mappedCount;
@@ -387,8 +393,9 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
                         <button
                           key={ticket.id}
                           onClick={() => {
-                            setSelectedSidebarTicket(ticket.id);
-                            onTicketClick(ticket);
+                            setSelectedSidebarTicket(
+                              selectedSidebarTicket === ticket.id ? null : ticket.id
+                            );
                           }}
                           className={`w-full text-left px-4 py-2 text-xs transition-colors border-l-4 ${
                             selectedSidebarTicket === ticket.id
