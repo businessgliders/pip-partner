@@ -313,18 +313,18 @@ export default function SubmissionDetailModal({
               province={row.province}
               label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
             />
-            {/* Collapse toggle (always visible) */}
+            {/* Collapse toggle (always visible, above map background) */}
             <button
               type="button"
               onClick={() => setDetailsOpen((v) => !v)}
-              className="w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white hover:bg-slate-50 transition"
+              className="relative z-30 w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white/95 backdrop-blur-sm hover:bg-white transition"
             >
               <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
                 {detailsOpen ? "Hide Details" : "Show Details"}
               </span>
               {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
             </button>
-            <div className={`${detailsOpen ? "block" : "hidden"}`}>
+            <div className={`${detailsOpen ? "block" : "hidden"} relative z-10`}>
             <div className="relative z-10 p-5 space-y-4">
               <div>
                 <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold mb-2">
