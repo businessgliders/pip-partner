@@ -6,14 +6,14 @@ import * as turf from "@turf/turf";
 
 // Status → swimlane color (matches KanbanColumn palette)
 const STATUS_COLORS = {
-  new: { hex: "#ec4899", bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", dot: "bg-pink-500" },
-  pending: { hex: "#ec4899", bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", dot: "bg-pink-500" },
+  new: { hex: "#9ca3af", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" },
+  pending: { hex: "#9ca3af", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" },
   scheduled: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
   reviewed: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
   contacted: { hex: "#a855f7", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
   approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
   invited: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  qualified: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  qualified: { hex: "#22c55e", bg: "bg-green-50", border: "border-green-300", text: "text-green-700", dot: "bg-green-500" },
   closed: { hex: "#64748b", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-500" },
   declined: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
