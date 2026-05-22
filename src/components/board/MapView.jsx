@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Loader2 } from "lucide-react";
+import * as turf from "@turf/turf";
 
 const HQ = {
   name: "Brampton East (HQ)",
@@ -46,6 +47,16 @@ function buildQuery(t) {
   return null;
 }
 
+// Simplified Ontario/Canada coastline for clipping (approximated GeoJSON polygon)
+const ONTARIO_COASTLINE = {
+  type: "Polygon",
+  coordinates: [[
+    [-95, 42], [-85, 41], [-82, 42], [-81, 43], [-79, 44], [-78, 45], [-77, 46], [-76, 47], [-75, 48], [-74, 47.5],
+    [-73, 46], [-72, 45], [-71, 44], [-70, 43], [-70, 42], [-69, 42], [-69, 41], [-70, 40], [-75, 40], [-80, 40],
+    [-85, 41], [-90, 42], [-95, 43], [-95, 42]
+  ]]
+};
+
 export default function MapView({ tickets, accentColor = "#f1889b", onTicketClick }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -57,6 +68,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
   const [radiusKm, setRadiusKm] = useState(15);
   const [geocoded, setGeocoded] = useState({}); // { query: {lat,lng} | null }
   const [geocoding, setGeocoding] = useState(false);
+  const [selectedSidebarTicket, setSelectedSidebarTicket] = useState(null);
 
   // Tickets with a usable location query (exclude closed)
   const ticketsWithQuery = useMemo(
@@ -167,7 +179,19 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
       .finally(() => setGeocoding(false));
   }, [ticketsWithQuery, geocoded, loading, error]);
 
-  // 4. Render markers + circles whenever tickets / radius / geocoded change
+  // Helper: create a clipped circle polygon that excludes water
+  const createClippedCirclePolygon = (center, radiusKm) => {
+    try {
+      const circle = turf.circle([center.lng, center.lat], radiusKm, { units: "kilometers" });
+      const clipped = turf.intersect(circle, ONTARIO_COASTLINE);
+      return clipped && clipped.type === "Polygon" ? clipped.coordinates : null;
+    } catch {
+      // Fall back to simple circle if clipping fails
+      return null;
+    }
+  };
+
+  // 4. Render markers + clipped polygons whenever tickets / radius / geocoded change
   useEffect(() => {
     if (!mapInstance.current || !window.google) return;
 
@@ -178,19 +202,22 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
     const bounds = new window.google.maps.LatLngBounds();
     if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
 
-    // Add HQ radius circle
-    const hqCircle = new window.google.maps.Circle({
-      map: mapInstance.current,
-      center: { lat: HQ.lat, lng: HQ.lng },
-      radius: radiusKm * 1000,
-      strokeColor: "#ec4899",
-      strokeOpacity: 0,
-      strokeWeight: 0,
-      fillColor: "#ec4899",
-      fillOpacity: 0.25,
-      clickable: false,
-    });
-    overlaysRef.current.push(hqCircle);
+    // Add HQ clipped polygon
+    const hqClipped = createClippedCirclePolygon({ lat: HQ.lat, lng: HQ.lng }, radiusKm);
+    if (hqClipped) {
+      const paths = hqClipped[0].map(([lng, lat]) => ({ lat, lng }));
+      const hqPoly = new window.google.maps.Polygon({
+        map: mapInstance.current,
+        paths,
+        strokeColor: "#ec4899",
+        strokeOpacity: 0.5,
+        strokeWeight: 1,
+        fillColor: "#ec4899",
+        fillOpacity: 0.2,
+        clickable: false,
+      });
+      overlaysRef.current.push(hqPoly);
+    }
 
     ticketsWithQuery.forEach(({ ticket, query }) => {
       const loc = geocoded[query];
@@ -214,18 +241,22 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         },
       });
 
-      // Qualified circles use darker, less transparent style; others use accent style
-      const circle = new window.google.maps.Circle({
-        map: mapInstance.current,
-        center: position,
-        radius: radiusKm * 1000,
-        strokeColor: markerColor,
-        strokeOpacity: 0,
-        strokeWeight: 0,
-        fillColor: markerColor,
-        fillOpacity: isQualified ? 0.25 : 0.15,
-        clickable: false,
-      });
+      // Clipped polygon for each ticket's radius
+      const clipped = createClippedCirclePolygon(position, radiusKm);
+      if (clipped) {
+        const paths = clipped[0].map(([lng, lat]) => ({ lat, lng }));
+        const poly = new window.google.maps.Polygon({
+          map: mapInstance.current,
+          paths,
+          strokeColor: markerColor,
+          strokeOpacity: 0,
+          strokeWeight: 0,
+          fillColor: markerColor,
+          fillOpacity: isQualified ? 0.25 : 0.15,
+          clickable: false,
+        });
+        overlaysRef.current.push(poly);
+      }
 
       const info = new window.google.maps.InfoWindow({
         content: `<div style="font-family:sans-serif;font-size:12px;max-width:240px">
@@ -241,9 +272,10 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
         if (onTicketClick) {
           setTimeout(() => onTicketClick(ticket), 50);
         }
+        setSelectedSidebarTicket(ticket.id);
       });
 
-      overlaysRef.current.push(marker, circle);
+      overlaysRef.current.push(marker);
       bounds.extend(position);
     });
 
@@ -266,53 +298,103 @@ export default function MapView({ tickets, accentColor = "#f1889b", onTicketClic
   const missingCount = ticketsWithQuery.length - mappedCount;
   const noLocationCount = (tickets?.length || 0) - ticketsWithQuery.length;
 
+  // Group tickets by status
+  const ticketsByStatus = useMemo(() => {
+    const groups = {};
+    ticketsWithQuery.forEach(({ ticket }) => {
+      const status = ticket.status || "unknown";
+      if (!groups[status]) groups[status] = [];
+      groups[status].push(ticket);
+    });
+    return groups;
+  }, [ticketsWithQuery]);
+
   return (
-    <div className="flex-1 lg:min-h-0 mt-2 flex flex-col">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col min-h-[500px]">
-        {/* Controls bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
-          <div className="flex items-center gap-2 text-sm text-slate-700">
-            <MapPin className="w-4 h-4" style={{ color: accentColor }} />
-            <span className="font-semibold">{mappedCount}</span> mapped
-            {geocoding && (
-              <span className="inline-flex items-center gap-1 text-xs text-slate-500 ml-2">
-                <Loader2 className="w-3 h-3 animate-spin" /> geocoding...
-              </span>
-            )}
-            {missingCount > 0 && !geocoding && (
-              <span className="text-xs text-amber-600 ml-2">· {missingCount} couldn't be located</span>
-            )}
-            {noLocationCount > 0 && (
-              <span className="text-xs text-slate-400 ml-2">· {noLocationCount} with no postal code/location</span>
-            )}
+    <div className="flex-1 lg:min-h-0 mt-2 flex flex-col lg:flex-row gap-3">
+      {/* Map */}
+      <div className="flex-1 lg:min-h-0 flex flex-col">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col min-h-[500px]">
+          {/* Controls bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <MapPin className="w-4 h-4" style={{ color: accentColor }} />
+              <span className="font-semibold">{mappedCount}</span> mapped
+              {geocoding && (
+                <span className="inline-flex items-center gap-1 text-xs text-slate-500 ml-2">
+                  <Loader2 className="w-3 h-3 animate-spin" /> geocoding...
+                </span>
+              )}
+              {missingCount > 0 && !geocoding && (
+                <span className="text-xs text-amber-600 ml-2">· {missingCount} couldn't be located</span>
+              )}
+              {noLocationCount > 0 && (
+                <span className="text-xs text-slate-400 ml-2">· {noLocationCount} with no postal code/location</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-slate-600 font-medium">Radius:</label>
+              <Select value={String(radiusKm)} onValueChange={(v) => setRadiusKm(Number(v))}>
+                <SelectTrigger className="h-9 w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RADIUS_OPTIONS.map((r) => (
+                    <SelectItem key={r} value={String(r)}>{r} km</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-600 font-medium">Radius:</label>
-            <Select value={String(radiusKm)} onValueChange={(v) => setRadiusKm(Number(v))}>
-              <SelectTrigger className="h-9 w-28">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {RADIUS_OPTIONS.map((r) => (
-                  <SelectItem key={r} value={String(r)}>{r} km</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+          {/* Map */}
+          <div className="relative flex-1">
+            {error ? (
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-red-600 p-6 text-center">
+                {error}
+              </div>
+            ) : loading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+              </div>
+            ) : null}
+            <div ref={mapRef} className="absolute inset-0" />
           </div>
         </div>
+      </div>
 
-        {/* Map */}
-        <div className="relative flex-1">
-          {error ? (
-            <div className="absolute inset-0 flex items-center justify-center text-sm text-red-600 p-6 text-center">
-              {error}
+      {/* Sidebar: Requests grouped by status */}
+      <div className="w-full lg:w-72 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden flex flex-col">
+        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+          <p className="text-xs tracking-widest uppercase font-semibold text-slate-600">Requests by Status</p>
+        </div>
+        <div className="flex-1 overflow-y-auto hide-scrollbar">
+          {Object.entries(ticketsByStatus).map(([status, statusTickets]) => (
+            <div key={status} className="border-b border-slate-100 last:border-b-0">
+              <div className="px-4 py-2 bg-slate-50 text-xs font-semibold text-slate-700 sticky top-0 capitalize">
+                {status} ({statusTickets.length})
+              </div>
+              <div className="divide-y divide-slate-100">
+                {statusTickets.map((ticket) => (
+                  <button
+                    key={ticket.id}
+                    onClick={() => {
+                      setSelectedSidebarTicket(ticket.id);
+                      onTicketClick(ticket);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-xs transition-colors ${
+                      selectedSidebarTicket === ticket.id
+                        ? "bg-slate-100 border-l-2"
+                        : "hover:bg-slate-50"
+                    }`}
+                    style={selectedSidebarTicket === ticket.id ? { borderLeftColor: accentColor } : {}}
+                  >
+                    <div className="font-medium text-slate-900 truncate">{ticket._display_name || ticket.email}</div>
+                    <div className="text-slate-500 truncate">{ticket.email}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : loading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-            </div>
-          ) : null}
-          <div ref={mapRef} className="absolute inset-0" />
+          ))}
         </div>
       </div>
     </div>
