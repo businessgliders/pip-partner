@@ -421,7 +421,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
                         className={`w-full text-left px-4 py-2 text-xs transition-colors border-l-4 ${
                           selectedSidebarTicket === ticket.id
                             ? "bg-slate-100"
-                            : "hover:bg-slate-50 border-transparent"
+                            : "hover:bg-slate-200 border-transparent"
                         }`}
                         style={selectedSidebarTicket === ticket.id ? { borderLeftColor: c.hex } : {}}
                       >
