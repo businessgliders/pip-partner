@@ -511,15 +511,34 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
           {/* Map */}
           <div className="relative flex-1">
             {error ? (
-              <div className="absolute inset-0 flex items-center justify-center text-sm text-red-600 p-6 text-center">
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-red-600 p-6 text-center z-10">
                 {error}
               </div>
             ) : loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center z-10">
                 <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
               </div>
             ) : null}
             <div ref={mapRef} className="absolute inset-0" />
+            {!loading && !error && (geocoding || mappedCount < ticketsWithQuery.length) && ticketsWithQuery.length > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm z-20 pointer-events-none animate-in fade-in duration-200">
+                <div className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl bg-white/90 shadow-xl border border-slate-200">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full border-4 border-slate-200" />
+                    <div
+                      className="w-10 h-10 rounded-full border-4 border-transparent absolute inset-0 animate-spin"
+                      style={{ borderTopColor: accentColor }}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-slate-800">Mapping applications</div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {mappedCount} of {ticketsWithQuery.length} located
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
