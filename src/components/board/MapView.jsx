@@ -31,6 +31,24 @@ const HQ = {
 const ONTARIO_CENTER = { lat: 44.5, lng: -79.5 };
 const RADIUS_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45, 50];
 
+// Approximate province centroids — used to fit bounds instantly while waiting
+// for geocoding to finish.
+const PROVINCE_CENTROIDS = {
+  "Alberta": { lat: 53.9333, lng: -116.5765 },
+  "British Columbia": { lat: 53.7267, lng: -127.6476 },
+  "Manitoba": { lat: 53.7609, lng: -98.8139 },
+  "New Brunswick": { lat: 46.5653, lng: -66.4619 },
+  "Newfoundland and Labrador": { lat: 53.1355, lng: -57.6604 },
+  "Nova Scotia": { lat: 44.6820, lng: -63.7443 },
+  "Northwest Territories": { lat: 64.8255, lng: -124.8457 },
+  "Nunavut": { lat: 70.2998, lng: -83.1076 },
+  "Ontario": { lat: 50.0000, lng: -85.0000 },
+  "Prince Edward Island": { lat: 46.5107, lng: -63.4168 },
+  "Quebec": { lat: 52.9399, lng: -73.5491 },
+  "Saskatchewan": { lat: 52.9399, lng: -106.4509 },
+  "Yukon": { lat: 64.2823, lng: -135.0000 },
+};
+
 // Cache the JS API loader across mounts
 let googleMapsPromise = null;
 function loadGoogleMaps(apiKey) {
@@ -133,6 +151,29 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
         { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
       ],
     });
+
+    // Instantly fit to province centroids covering all current tickets so the
+    // user sees a tight view before geocoding finishes. Real geocoded bounds
+    // will refine this once available.
+    const provinceBounds = new window.google.maps.LatLngBounds();
+    provinceBounds.extend({ lat: HQ.lat, lng: HQ.lng });
+    (tickets || []).forEach((t) => {
+      if (t.status === "closed") return;
+      const c = PROVINCE_CENTROIDS[t.province];
+      if (c) provinceBounds.extend(c);
+    });
+    if (!provinceBounds.isEmpty()) {
+      mapInstance.current.fitBounds(provinceBounds, 60);
+      const lis = window.google.maps.event.addListenerOnce(
+        mapInstance.current,
+        "bounds_changed",
+        () => {
+          if (mapInstance.current.getZoom() > 8) mapInstance.current.setZoom(8);
+        }
+      );
+      // listener cleans itself via "once"
+      void lis;
+    }
 
     // HQ marker (use approximate, refine via geocode)
     hqMarkerRef.current = new window.google.maps.Marker({
