@@ -250,10 +250,6 @@ async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   return { ok: true, data: await res.json() };
 }
 
-// Delay (ms) before sending the submitter's discovery-call confirmation,
-// so the welcome email lands first in their inbox.
-const SUBMITTER_CONFIRMATION_DELAY_MS = 2.5 * 60 * 1000; // 2.5 minutes
-
 // Wait up to ~10s for an app_number to be assigned by the entity automation.
 async function fetchRawAppNumber(base44, inquiryId) {
   if (!inquiryId) return null;
@@ -324,8 +320,16 @@ Deno.serve(async (req) => {
       }
     }
 
+    // If this is the owner "no slot yet" notification (ownerOnly + no scheduledTime),
+    // skip it when the inquiry already has a Cal.com booking — the "call booked"
+    // owner email (sent by the webhook or the frontend confirm flow) will cover it.
+    let skipOwnerForBookedSlot = false;
+    if (!submitterOnly && !scheduledTime && inquiryData?.scheduled_call_time) {
+      skipOwnerForBookedSlot = true;
+    }
+
     let ownerResult = { ok: true, skipped: true };
-    if (!submitterOnly) {
+    if (!submitterOnly && !skipOwnerForBookedSlot) {
       const ownerHtml = ownerEmail(inquiryData, scheduledTime, appNumber);
       ownerResult = await sendGmail({
         accessToken,
@@ -346,43 +350,34 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2) Schedule the submitter's discovery-call confirmation after a delay,
-    //    so it arrives after the welcome email. Runs in the background.
-    //    If submitterOnly is true, send immediately (no need to wait for welcome).
+    // 2) Send the submitter's discovery-call confirmation immediately (no delay).
+    let submitterResult = { ok: true, skipped: true };
     if (!isTestSend && !ownerOnly && scheduledTime && inquiryData.email) {
-      const delayMs = submitterOnly ? 0 : SUBMITTER_CONFIRMATION_DELAY_MS;
-      (async () => {
-        try {
-          await new Promise((r) => setTimeout(r, delayMs));
-          // Refresh access token + app_number in case they changed during the wait
-          const { accessToken: freshToken } = await base44.asServiceRole.connectors.getConnection('gmail');
-          const freshRaw = (await fetchRawAppNumber(base44, inquiryId)) || rawNumber || '';
-          const freshApp = freshRaw ? formatAppNumber(freshRaw) : '';
-          const freshTag = freshApp ? `[Application #${freshApp}] ` : '';
-          const submitterSubject = `${freshTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`;
-          const submitterHtml = submitterEmail(inquiryData, scheduledTime, freshApp);
-          const res = await sendGmail({
-            accessToken: freshToken,
-            to: inquiryData.email,
-            subject: submitterSubject,
-            html: submitterHtml,
-          });
-          await logEmailMessage(base44, {
-            inquiryId,
-            to: inquiryData.email,
-            subject: submitterSubject,
-            html: submitterHtml,
-            gmailResult: res,
-            isInternal: false,
-          });
-          if (!res.ok) console.error('Delayed submitter confirmation failed:', res.error);
-        } catch (err) {
-          console.error('Delayed submitter confirmation error:', err);
-        }
-      })();
+      const submitterSubject = `${appTag}Your discovery call is confirmed \u2014 Pilates in Pink \u2122`;
+      const submitterHtml = submitterEmail(inquiryData, scheduledTime, appNumber);
+      submitterResult = await sendGmail({
+        accessToken,
+        to: inquiryData.email,
+        subject: submitterSubject,
+        html: submitterHtml,
+      });
+      await logEmailMessage(base44, {
+        inquiryId,
+        to: inquiryData.email,
+        subject: submitterSubject,
+        html: submitterHtml,
+        gmailResult: submitterResult,
+        isInternal: false,
+      });
+      if (!submitterResult.ok) console.error('Submitter confirmation failed:', submitterResult.error);
     }
 
-    return Response.json({ success: ownerResult.ok, ownerResult, delayedSubmitterEmail: !ownerOnly && !!scheduledTime && !!inquiryData.email });
+    return Response.json({
+      success: ownerResult.ok && submitterResult.ok,
+      ownerResult,
+      submitterResult,
+      skippedOwnerForBookedSlot: skipOwnerForBookedSlot,
+    });
   } catch (error) {
     console.error('sendFranchiseInquiryEmail error', error);
     return Response.json({ error: error.message }, { status: 500 });
