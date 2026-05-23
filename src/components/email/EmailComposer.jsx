@@ -339,7 +339,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         )}
       </div>
 
-      <div className="flex flex-wrap gap-1 lg:gap-1.5">
+      <div className="flex flex-wrap gap-1 lg:gap-1.5 justify-end lg:justify-start">
         <Button
           size="sm"
           variant={showDescribe ? "default" : "outline"}
@@ -561,8 +561,8 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex gap-1">
+      <div className={`flex items-center ${isMobileFullscreen ? "justify-end gap-1" : "justify-between"}`}>
+        <div className={`flex gap-1 ${isMobileFullscreen ? "hidden" : ""}`}>
           <Button size="sm" variant="outline" onClick={handleClear} title="Clear draft" className={isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}>
             <Trash2 className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />
             <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Clear</span>
