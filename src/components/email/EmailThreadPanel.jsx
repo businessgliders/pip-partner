@@ -335,9 +335,9 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto hide-scrollbar">
-            {/* Messages section */}
-            <div className="p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30">
+          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col">
+            {/* Messages section - takes more space on mobile */}
+            <div className="flex-1 p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30 overflow-y-auto">
               {allMessages.map((m) => {
                 const readBy = Array.isArray(m.read_by) ? m.read_by : [];
                 const isUnread =
@@ -357,17 +357,19 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
                 );
               })}
             </div>
-            {/* Composer section */}
-            <EmailComposer
-              ticket={ticket}
-              ticketType={ticketType}
-              currentUser={currentUser}
-              onSent={() => {
-                setComposerOpen(false);
-                handleSent();
-              }}
-              isMobileFullscreen
-            />
+            {/* Composer section - shrinks on mobile */}
+            <div className="shrink-0">
+              <EmailComposer
+                ticket={ticket}
+                ticketType={ticketType}
+                currentUser={currentUser}
+                onSent={() => {
+                  setComposerOpen(false);
+                  handleSent();
+                }}
+                isMobileFullscreen
+              />
+            </div>
           </div>
         </div>
       )}
