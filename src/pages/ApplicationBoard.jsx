@@ -512,23 +512,25 @@ export default function ApplicationBoard() {
               <div className="flex-1 hidden lg:block" />
 
               {/* Notification Bell */}
-              <NotificationCenter
-                unreadMessages={unreadMessages}
-                totalUnread={totalUnread}
-                markAsRead={markAsRead}
-                onSelect={(ticket, messageId, tabKey) => {
-                  if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                  setHighlightMessageId(messageId);
-                  setSelectedTicket(ticket);
-                }}
-              />
+              <div className="pr-3">
+                <NotificationCenter
+                  unreadMessages={unreadMessages}
+                  totalUnread={totalUnread}
+                  markAsRead={markAsRead}
+                  onSelect={(ticket, messageId, tabKey) => {
+                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                    setHighlightMessageId(messageId);
+                    setSelectedTicket(ticket);
+                  }}
+                />
+              </div>
 
               {/* User Switcher - desktop only */}
               <div className="hidden lg:block">
                 <UserMenu />
               </div>
-            </div>
-          </div>
+              </div>
+              </div>
 
           {/* Mobile-only horizontal pill switcher */}
           <div className="flex flex-wrap gap-2 mt-2 mb-1 -mx-2 px-2 lg:hidden">
