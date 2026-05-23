@@ -533,7 +533,7 @@ export default function ApplicationBoard() {
               </div>
 
           {/* Mobile-only horizontal pill switcher */}
-          <div className="flex flex-wrap gap-2 mt-4 mb-1 -mx-2 px-2 lg:hidden">
+          <div className="flex flex-wrap gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
               return (
