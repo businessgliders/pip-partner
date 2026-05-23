@@ -393,14 +393,30 @@ export default function ApplicationBoard() {
 
       <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full min-h-0" style={{ zIndex: 2 }}>
         <div className="mb-2 lg:mb-6 pb-1 lg:pb-0">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            {/* Top row: Logo + Count on mobile, Top row with buttons on desktop */}
+            <div className="flex items-center justify-between lg:gap-3 lg:flex-row">
               <Link
                 to="/Settings"
                 onClick={() => { setShowArchived(false); setSearchQuery(""); setViewMode("status"); }}
               >
                 <img src={LOGO_URL} alt="Pilates in Pink" className="h-12 md:h-16 drop-shadow-xl hover:scale-105 transition-transform" />
               </Link>
+              <div className="text-white text-xs md:text-sm font-medium drop-shadow lg:hidden">
+                {showArchived ? (
+                  <>{archivedTickets.length} archived applications</>
+                ) : (
+                  <>{activeCount} active applications · {firstColumnCount} in {firstColumn || "—"}</>
+                )}
+              </div>
+
+              {/* User menu on mobile, top right */}
+              <div className="lg:hidden">
+                <UserMenu />
+              </div>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-3">
               <div className="text-white text-xs md:text-sm font-medium drop-shadow">
                 {showArchived ? (
                   <>{archivedTickets.length} archived applications</>
@@ -493,7 +509,7 @@ export default function ApplicationBoard() {
               </button>
 
               {/* Spacer to push right items */}
-              <div className="flex-1" />
+              <div className="flex-1 hidden lg:block" />
 
               {/* Notification Bell */}
               <NotificationCenter
@@ -507,8 +523,10 @@ export default function ApplicationBoard() {
                 }}
               />
 
-              {/* User Switcher */}
-              <UserMenu />
+              {/* User Switcher - desktop only */}
+              <div className="hidden lg:block">
+                <UserMenu />
+              </div>
             </div>
           </div>
 
