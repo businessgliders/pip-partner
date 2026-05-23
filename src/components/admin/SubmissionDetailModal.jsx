@@ -355,7 +355,7 @@ export default function SubmissionDetailModal({
             <button
               type="button"
               onClick={() => setDetailsOpen((v) => !v)}
-              className="relative z-30 w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-white/95 backdrop-blur-sm hover:bg-white transition"
+              className="relative z-30 w-full flex items-center justify-between px-5 py-3 border-b border-slate-200 hover:bg-slate-50 transition"
             >
               <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
                 {detailsOpen ? "Hide" : "Show"} Additional Details
