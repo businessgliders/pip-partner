@@ -120,7 +120,10 @@ export default function KanbanColumn({
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
-                        style={dragProvided.draggableProps.style}
+                        style={{
+                          ...dragProvided.draggableProps.style,
+                          touchAction: "pan-x pan-y",
+                        }}
                       >
                         <TicketCard
                           ticket={ticket}
