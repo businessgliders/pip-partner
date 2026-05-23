@@ -8,7 +8,7 @@ import { getCanadaLand, clipCircleToLand } from "./landMask";
 const STATUS_COLORS = {
   new: { hex: "#9ca3af", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" },
   pending: { hex: "#9ca3af", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" },
-  scheduled: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  scheduled: { hex: "#f97316", bg: "bg-orange-50", border: "border-orange-300", text: "text-orange-700", dot: "bg-orange-500" },
   reviewed: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
   contacted: { hex: "#a855f7", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
   approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },

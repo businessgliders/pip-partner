@@ -8,27 +8,27 @@ import TicketCard from "./TicketCard";
 // Generic palettes keyed by column name (status or category). Falls back gracefully.
 const columnColors = {
   // statuses
-  new: "from-pink-400/20 to-pink-300/20 border-pink-300/40",
-  pending: "from-pink-400/20 to-pink-300/20 border-pink-300/40",
-  scheduled: "from-blue-400/20 to-blue-300/20 border-blue-300/40",
+  new: "from-slate-400/20 to-slate-300/20 border-slate-300/40",
+  pending: "from-slate-400/20 to-slate-300/20 border-slate-300/40",
+  scheduled: "from-orange-400/20 to-orange-300/20 border-orange-300/40",
   reviewed: "from-blue-400/20 to-blue-300/20 border-blue-300/40",
   contacted: "from-purple-400/20 to-purple-300/20 border-purple-300/40",
   approved: "from-emerald-400/20 to-emerald-300/20 border-emerald-300/40",
   invited: "from-emerald-400/20 to-emerald-300/20 border-emerald-300/40",
-  qualified: "from-amber-400/20 to-amber-300/20 border-amber-300/40",
+  qualified: "from-pink-400/20 to-pink-300/20 border-pink-300/40",
   closed: "from-slate-400/20 to-slate-300/20 border-slate-300/40",
   declined: "from-rose-400/20 to-rose-300/20 border-rose-300/40",
 };
 
 const headerColors = {
-  new: "bg-pink-500/30 border-pink-400/40",
-  pending: "bg-pink-500/30 border-pink-400/40",
-  scheduled: "bg-blue-500/30 border-blue-400/40",
+  new: "bg-slate-500/30 border-slate-400/40",
+  pending: "bg-slate-500/30 border-slate-400/40",
+  scheduled: "bg-orange-500/30 border-orange-400/40",
   reviewed: "bg-blue-500/30 border-blue-400/40",
   contacted: "bg-purple-500/30 border-purple-400/40",
   approved: "bg-emerald-500/30 border-emerald-400/40",
   invited: "bg-emerald-500/30 border-emerald-400/40",
-  qualified: "bg-amber-500/30 border-amber-400/40",
+  qualified: "bg-pink-500/30 border-pink-400/40",
   closed: "bg-slate-500/30 border-slate-400/40",
   declined: "bg-rose-500/30 border-rose-400/40",
 };
