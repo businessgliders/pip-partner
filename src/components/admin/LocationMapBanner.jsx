@@ -79,17 +79,17 @@ export default function LocationMapBanner({
         </div>
       </div>
 
-      {/* Clickable "View on Google Maps" pill — sticky in top-right */}
+      {/* Clickable "View on Google Maps" pill — sticky in top-right, icon-only on mobile */}
       <a
         href={googleMapsUrl}
         target="_blank"
         rel="noopener noreferrer"
         title="Open in Google Maps"
-        className="sticky top-3 float-right z-20 inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-700 bg-white/95 hover:bg-white border border-slate-200 hover:border-pink-300 px-2.5 py-1.5 rounded-full shadow-md transition-all mr-3 mt-3"
+        className="sticky top-3 float-right z-20 inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-700 bg-white/95 hover:bg-white border border-slate-200 hover:border-pink-300 lg:px-2.5 px-1.5 py-1.5 rounded-full shadow-md transition-all mr-3 mt-3"
       >
         <MapPin className="w-3 h-3 text-pink-600" />
-        <span>View on Google Maps</span>
-        <ExternalLink className="w-3 h-3" />
+        <span className="hidden lg:inline">View on Google Maps</span>
+        <ExternalLink className="w-3 h-3 hidden lg:inline" />
       </a>
     </>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Mail, ChevronDown, ChevronUp } from "lucide-react";
+import { Mail, ChevronDown, ChevronUp, X } from "lucide-react";
 import EmailMessageItem from "./EmailMessageItem";
 import EmailComposer from "./EmailComposer";
 import { buildWelcomeHtml } from "./welcomeEmailHtml";
@@ -256,69 +256,98 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
-        <div className="flex items-center gap-2 min-w-0">
-          <Mail className="w-4 h-4 text-pink-600 shrink-0" />
-          <span className="font-semibold text-sm lg:text-sm text-gray-800">
-            <span className="lg:hidden">Emails</span>
-            <span className="hidden lg:inline">Email Communications</span>
-          </span>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
-            {allMessages.length}
-          </span>
+    <>
+      <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
+          <div className="flex items-center gap-2 min-w-0">
+            <Mail className="w-4 h-4 text-pink-600 shrink-0" />
+            <span className="font-semibold text-sm lg:text-sm text-gray-800">
+              <span className="lg:hidden">Emails</span>
+              <span className="hidden lg:inline">Email Communications</span>
+            </span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
+              {allMessages.length}
+            </span>
+          </div>
+          {FROM_ALIASES[ticketType] && (
+            <span className="hidden lg:block text-[11px] text-gray-500 truncate ml-2 shrink-0">
+              <span className="text-gray-400">From:</span>{" "}
+              <span className="font-medium text-gray-700">{FROM_ALIASES[ticketType]}</span>
+            </span>
+          )}
         </div>
-        {FROM_ALIASES[ticketType] && (
-          <span className="hidden lg:block text-[11px] text-gray-500 truncate ml-2 shrink-0">
-            <span className="text-gray-400">From:</span>{" "}
-            <span className="font-medium text-gray-700">{FROM_ALIASES[ticketType]}</span>
-          </span>
-        )}
-      </div>
 
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-auto p-3 lg:p-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30"
-        style={{ maxHeight: "auto" }}
-      >
-        {allMessages.map((m) => {
-          const readBy = Array.isArray(m.read_by) ? m.read_by : [];
-          const isUnread =
-            !!userEmail &&
-            m.direction === "inbound" &&
-            !String(m.id || "").startsWith("__") &&
-            !readBy.some((e) => (e || "").toLowerCase() === userEmail);
-          return (
-            <EmailMessageItem
-              key={m.id}
-              message={m}
-              isHighlighted={highlightMessageId === m.id}
-              isUnread={isUnread}
-              onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
-              staffNameByEmail={staffNameByEmail}
-            />
-          );
-        })}
-      </div>
-
-      <div className="border-t bg-white">
-        <button
-          type="button"
-          onClick={() => setComposerOpen((v) => !v)}
-          className="lg:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+        <div
+          ref={containerRef}
+          className="flex-1 overflow-y-auto p-3 lg:p-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30"
+          style={{ maxHeight: "auto" }}
         >
-          <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">Reply</span>
-          {composerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-        </button>
-        <div className={`${composerOpen ? "block" : "hidden"} lg:block`}>
-          <EmailComposer
-            ticket={ticket}
-            ticketType={ticketType}
-            currentUser={currentUser}
-            onSent={handleSent}
-          />
+          {allMessages.map((m) => {
+            const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+            const isUnread =
+              !!userEmail &&
+              m.direction === "inbound" &&
+              !String(m.id || "").startsWith("__") &&
+              !readBy.some((e) => (e || "").toLowerCase() === userEmail);
+            return (
+              <EmailMessageItem
+                key={m.id}
+                message={m}
+                isHighlighted={highlightMessageId === m.id}
+                isUnread={isUnread}
+                onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
+                staffNameByEmail={staffNameByEmail}
+              />
+            );
+          })}
+        </div>
+
+        <div className="border-t bg-white">
+          <button
+            type="button"
+            onClick={() => setComposerOpen((v) => !v)}
+            className="lg:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+          >
+            <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">Reply</span>
+            {composerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+          </button>
+          <div className={`${composerOpen ? "block" : "hidden"} lg:block`}>
+            <EmailComposer
+              ticket={ticket}
+              ticketType={ticketType}
+              currentUser={currentUser}
+              onSent={handleSent}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Full-screen mobile popup for email composer */}
+      {composerOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden bg-white flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
+            <span className="font-semibold text-sm text-gray-800">Reply</span>
+            <button
+              type="button"
+              onClick={() => setComposerOpen(false)}
+              className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <EmailComposer
+              ticket={ticket}
+              ticketType={ticketType}
+              currentUser={currentUser}
+              onSent={() => {
+                setComposerOpen(false);
+                handleSent();
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
