@@ -141,8 +141,8 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   useEffect(() => {
     if (loading || error || !mapRef.current || mapInstance.current || !window.google) return;
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
-      center: ONTARIO_CENTER,
-      zoom: 6,
+      center: { lat: HQ.lat, lng: HQ.lng },
+      zoom: 9,
       scrollwheel: true,
       mapTypeControl: false,
       streetViewControl: false,
@@ -151,29 +151,6 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
         { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
       ],
     });
-
-    // Instantly fit to province centroids covering all current tickets so the
-    // user sees a tight view before geocoding finishes. Real geocoded bounds
-    // will refine this once available.
-    const provinceBounds = new window.google.maps.LatLngBounds();
-    provinceBounds.extend({ lat: HQ.lat, lng: HQ.lng });
-    (tickets || []).forEach((t) => {
-      if (t.status === "closed") return;
-      const c = PROVINCE_CENTROIDS[t.province];
-      if (c) provinceBounds.extend(c);
-    });
-    if (!provinceBounds.isEmpty()) {
-      mapInstance.current.fitBounds(provinceBounds, 60);
-      const lis = window.google.maps.event.addListenerOnce(
-        mapInstance.current,
-        "bounds_changed",
-        () => {
-          if (mapInstance.current.getZoom() > 8) mapInstance.current.setZoom(8);
-        }
-      );
-      // listener cleans itself via "once"
-      void lis;
-    }
 
     // HQ marker (use approximate, refine via geocode)
     hqMarkerRef.current = new window.google.maps.Marker({
