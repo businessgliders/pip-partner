@@ -16,7 +16,7 @@ export function fillTemplate(text, vars) {
   return text.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? "");
 }
 
-export default function TemplatePicker({ vars, onSelect }) {
+export default function TemplatePicker({ vars, onSelect, isMobileFullscreen }) {
   const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
@@ -35,9 +35,9 @@ export default function TemplatePicker({ vars, onSelect }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <FileText className="w-3.5 h-3.5" />
-          Templates
+        <Button variant="outline" size="sm" className={isMobileFullscreen ? "p-1.5" : "gap-1.5"}>
+          <FileText className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : ""}`} />
+          <span className={isMobileFullscreen ? "hidden" : ""}>Templates</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 max-h-96 overflow-y-auto">

@@ -326,7 +326,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
       {composerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
-            <span className="font-semibold text-sm text-gray-800">Reply</span>
+            <span className="font-semibold text-sm text-gray-800">Email Communications</span>
             <button
               type="button"
               onClick={() => setComposerOpen(false)}
@@ -335,7 +335,29 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto hide-scrollbar">
+            {/* Messages section */}
+            <div className="p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30">
+              {allMessages.map((m) => {
+                const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+                const isUnread =
+                  !!userEmail &&
+                  m.direction === "inbound" &&
+                  !String(m.id || "").startsWith("__") &&
+                  !readBy.some((e) => (e || "").toLowerCase() === userEmail);
+                return (
+                  <EmailMessageItem
+                    key={m.id}
+                    message={m}
+                    isHighlighted={highlightMessageId === m.id}
+                    isUnread={isUnread}
+                    onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
+                    staffNameByEmail={staffNameByEmail}
+                  />
+                );
+              })}
+            </div>
+            {/* Composer section */}
             <EmailComposer
               ticket={ticket}
               ticketType={ticketType}
@@ -344,6 +366,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
                 setComposerOpen(false);
                 handleSent();
               }}
+              isMobileFullscreen
             />
           </div>
         </div>

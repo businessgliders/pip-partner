@@ -25,7 +25,7 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function BookCallPopover({ onSelect }) {
+export default function BookCallPopover({ onSelect, isMobileFullscreen }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -84,10 +84,10 @@ export default function BookCallPopover({ onSelect }) {
         <Button
           size="sm"
           variant="outline"
-          className="text-pink-700 border-pink-200 hover:bg-pink-50"
+          className={`text-pink-700 border-pink-200 hover:bg-pink-50 ${isMobileFullscreen ? "p-1.5" : ""}`}
         >
-          <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
-          Book a Meeting
+          <CalendarDays className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "mr-1.5"}`} />
+          <span className={isMobileFullscreen ? "hidden" : ""}>Book a Meeting</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[420px] p-0" align="start">

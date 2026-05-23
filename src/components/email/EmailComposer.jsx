@@ -31,7 +31,7 @@ const FROM_ALIASES = {
   FrontAdminApplication: "hire@pilatesinpinkstudio.com",
 };
 
-export default function EmailComposer({ ticket, ticketType, currentUser, onSent, onCancel }) {
+export default function EmailComposer({ ticket, ticketType, currentUser, onSent, onCancel, isMobileFullscreen }) {
   const editorRef = useRef(null);
   const [sending, setSending] = useState(false);
   const [polishing, setPolishing] = useState(false);
@@ -218,7 +218,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   };
 
   return (
-    <div className="border-t bg-white p-4 space-y-3">
+    <div className={`border-t bg-white space-y-3 ${isMobileFullscreen ? "p-3" : "p-4"}`}>
       <div className="flex items-start justify-between text-xs text-gray-600 gap-2">
         <div className="space-y-0.5 min-w-0 flex-1">
           <div>
@@ -339,46 +339,46 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
         )}
       </div>
 
-      <div className="flex flex-wrap gap-1.5 lg:gap-2">
+      <div className="flex flex-wrap gap-1 lg:gap-1.5">
         <Button
           size="sm"
           variant={showDescribe ? "default" : "outline"}
-          className={`lg:px-3 px-2 ${showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
+          className={`${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"} ${showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
           onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
           title="Describe in simple words"
         >
           <Sparkles className="w-3.5 h-3.5 lg:mr-1.5" />
-          <span className="hidden lg:inline">Describe</span>
+          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Describe</span>
         </Button>
         <Button
           size="sm"
           variant={showSuggest ? "default" : "outline"}
-          className={`lg:px-3 px-2 ${showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
+          className={`${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"} ${showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
           onClick={() => { setShowSuggest((v) => !v); setShowDescribe(false); }}
           title="Suggest replies"
         >
           <Lightbulb className="w-3.5 h-3.5 lg:mr-1.5" />
-          <span className="hidden lg:inline">Suggest</span>
+          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Suggest</span>
         </Button>
-        <TemplatePicker vars={vars} onSelect={handleTemplate} />
+        <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
         {ticketType === "FranchiseInquiry" && (
-          <BookCallPopover onSelect={handleSlotSelected} />
+          <BookCallPopover onSelect={handleSlotSelected} isMobileFullscreen={isMobileFullscreen} />
         )}
         <Button
           size="sm"
           variant="outline"
-          className="text-slate-700 border-slate-200 hover:bg-slate-50 lg:px-3 px-2"
+          className={`text-slate-700 border-slate-200 hover:bg-slate-50 ${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}`}
           onClick={() => setDriveOpen(true)}
           title="Attach from Google Drive"
         >
           <img
             src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
             alt=""
-            className="w-3.5 h-3.5 lg:mr-1.5"
+            className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`}
           />
-          <span className="hidden lg:inline">Drive</span>
+          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Drive</span>
           {driveAttachments.length > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
+            <span className={`rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold ${isMobileFullscreen ? "ml-1 px-1 py-0" : "ml-1.5 px-1.5 py-0.5"}`}>
               {driveAttachments.length}
             </span>
           )}
@@ -389,13 +389,13 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
               <Button
                 size="sm"
                 variant="outline"
-                className="text-slate-700 border-slate-200 hover:bg-slate-50 lg:px-3 px-2"
+                className={`text-slate-700 border-slate-200 hover:bg-slate-50 ${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}`}
                 title="Attach ticket files"
               >
-                <Paperclip className="w-3.5 h-3.5 lg:mr-1.5" />
-                <span className="hidden lg:inline">Attach</span>
+                <Paperclip className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />
+                <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Attach</span>
                 {selectedAttachmentIdxs.length > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
+                  <span className={`rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold ${isMobileFullscreen ? "ml-1 px-1 py-0" : "ml-1.5 px-1.5 py-0.5"}`}>
                     {selectedAttachmentIdxs.length}
                   </span>
                 )}
@@ -545,16 +545,16 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           ref={editorRef}
           contentEditable
           data-placeholder="Write your reply..."
-          className="prose prose-sm max-w-none p-3 min-h-32 max-h-80 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+          className={`prose prose-sm max-w-none p-3 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 ${isMobileFullscreen ? "min-h-24 max-h-48" : "min-h-32 max-h-80"}`}
           suppressContentEditableWarning
         />
         {currentUser?.signature_html && (
-          <div className="border-t bg-gray-50/60 px-3 py-2">
-            <div className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
-              Your signature
+          <div className="border-t bg-gray-50/60 px-3 py-1.5">
+            <div className="text-[8px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">
+              Signature
             </div>
             <div
-              className="prose prose-sm max-w-none text-gray-700 [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
+              className="prose prose-xs max-w-none text-gray-600 text-xs [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
               dangerouslySetInnerHTML={{ __html: currentUser.signature_html }}
             />
           </div>
@@ -562,20 +562,20 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex gap-1.5">
-          <Button size="sm" variant="outline" onClick={handleClear} title="Clear draft" className="lg:px-3 px-2">
-            <Trash2 className="w-3.5 h-3.5 lg:mr-1.5" />
-            <span className="hidden lg:inline">Clear</span>
+        <div className="flex gap-1">
+          <Button size="sm" variant="outline" onClick={handleClear} title="Clear draft" className={isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}>
+            <Trash2 className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />
+            <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Clear</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing} title="Polish with AI" className="lg:px-3 px-2">
-            {polishing ? <Loader2 className="w-3.5 h-3.5 lg:mr-1.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 lg:mr-1.5" />}
-            <span className="hidden lg:inline">Polish</span>
+          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing} title="Polish with AI" className={isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}>
+            {polishing ? <Loader2 className={`w-3.5 h-3.5 animate-spin ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} /> : <Wand2 className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />}
+            <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Polish</span>
           </Button>
         </div>
-        <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className="bg-pink-600 hover:bg-pink-700 text-white lg:px-3 px-2">
-          {sending ? <Loader2 className="w-3.5 h-3.5 lg:mr-1.5 animate-spin" /> : <Send className="w-3.5 h-3.5 lg:mr-1.5" />}
-          <span className="hidden lg:inline">Send Reply</span>
-          <span className="lg:hidden">Send</span>
+        <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className={`bg-pink-600 hover:bg-pink-700 text-white ${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}`}>
+          {sending ? <Loader2 className={`w-3.5 h-3.5 animate-spin ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} /> : <Send className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />}
+          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Send Reply</span>
+          <span className={isMobileFullscreen ? "hidden" : "lg:hidden"}>Send</span>
         </Button>
       </div>
     </div>
