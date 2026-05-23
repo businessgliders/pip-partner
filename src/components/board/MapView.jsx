@@ -77,6 +77,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const [geocoding, setGeocoding] = useState(false);
   const [selectedSidebarTicket, setSelectedSidebarTicket] = useState(null);
   const [landReady, setLandReady] = useState(false);
+  const hasAutoFitRef = useRef(false);
 
   // Load the Canada land mask once
   useEffect(() => {
@@ -291,20 +292,33 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       bounds.extend(position);
     });
 
-    if (overlaysRef.current.length > 0 && !bounds.isEmpty()) {
-      mapInstance.current.fitBounds(bounds, 60);
-      // Don't zoom in too far if there's only one point
-      const listener = window.google.maps.event.addListenerOnce(
-        mapInstance.current,
-        "bounds_changed",
-        () => {
-          if (mapInstance.current.getZoom() > 10) mapInstance.current.setZoom(10);
-        }
-      );
-      // cleanup listener if effect re-runs
-      return () => window.google.maps.event.removeListener(listener);
-    }
   }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady]);
+
+  // Auto-fit bounds as soon as any geocoded positions are available — runs
+  // independently of polygon/land-mask rendering so the map zooms in quickly.
+  useEffect(() => {
+    if (!mapInstance.current || !window.google || hasAutoFitRef.current) return;
+    const positions = ticketsWithQuery
+      .map(({ query }) => geocoded[query])
+      .filter(Boolean);
+    if (positions.length === 0) return;
+
+    const bounds = new window.google.maps.LatLngBounds();
+    if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
+    positions.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }));
+    if (bounds.isEmpty()) return;
+
+    mapInstance.current.fitBounds(bounds, 60);
+    const listener = window.google.maps.event.addListenerOnce(
+      mapInstance.current,
+      "bounds_changed",
+      () => {
+        if (mapInstance.current.getZoom() > 10) mapInstance.current.setZoom(10);
+      }
+    );
+    hasAutoFitRef.current = true;
+    return () => window.google.maps.event.removeListener(listener);
+  }, [ticketsWithQuery, geocoded, loading]);
 
   const mappedCount = ticketsWithQuery.filter((x) => geocoded[x.query]).length;
   const missingCount = ticketsWithQuery.length - mappedCount;
