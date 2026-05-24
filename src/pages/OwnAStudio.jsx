@@ -13,6 +13,7 @@ import FranchiseFunnelForm from "../components/franchise/FranchiseFunnelForm";
 import SchedulePlaceholder from "../components/franchise/SchedulePlaceholder";
 import LoadingTransition from "../components/franchise/LoadingTransition";
 import ResumeInquiryDialog from "../components/franchise/ResumeInquiryDialog";
+import FindApplicationDialog from "../components/franchise/FindApplicationDialog";
 
 // Wraps a promise so the UI never hangs forever if the network/backend stalls.
 function withTimeout(promise, ms, message = "Request timed out") {
@@ -45,6 +46,7 @@ export default function OwnAStudio() {
     business_experience: "",
   });
   const [resumeDialog, setResumeDialog] = useState({ open: false, email: "" });
+  const [findDialogOpen, setFindDialogOpen] = useState(false);
   const formSectionRef = useRef(null);
 
   const handleChange = (field, value) =>
@@ -192,6 +194,14 @@ export default function OwnAStudio() {
         onClose={() => setResumeDialog({ open: false, email: "" })}
         onVerified={handleResumeVerified}
       />
+      <FindApplicationDialog
+        open={findDialogOpen}
+        onClose={() => setFindDialogOpen(false)}
+        onFound={(email) => {
+          setFindDialogOpen(false);
+          setResumeDialog({ open: true, email });
+        }}
+      />
       <HeroSection onCTAClick={scrollToForm} />
       <PillarsSection />
       <OpportunitySection />
@@ -220,8 +230,17 @@ export default function OwnAStudio() {
                   onChange={handleChange}
                   onSubmit={handleFormSubmit}
                   isSubmitting={isSubmitting}
-                  onExistingEmailFound={handleExistingEmailFound}
                 />
+                <p className="text-center text-sm text-[#b67651]/70 mt-5">
+                  Already applied?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setFindDialogOpen(true)}
+                    className="underline text-[#f1889b] hover:text-[#b67651] font-medium"
+                  >
+                    Find my application
+                  </button>
+                </p>
               </motion.div>
             )}
             {stage === "loading" && <LoadingTransition key="loading" />}
