@@ -230,6 +230,7 @@ export default function OwnAStudio() {
                   onChange={handleChange}
                   onSubmit={handleFormSubmit}
                   isSubmitting={isSubmitting}
+                  onExistingEmailFound={handleExistingEmailFound}
                 />
                 <p className="text-center text-sm text-[#b67651]/70 mt-5">
                   Already applied?{" "}
