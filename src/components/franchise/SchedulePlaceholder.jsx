@@ -134,7 +134,8 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
                 <button
                   key={d.iso}
                   onClick={() => { setSelectedDay(d.iso); setSelectedSlot(null); }}
-                  className="p-3 rounded-xl border transition-all text-center"
+                  disabled={isSubmitting}
+                  className="p-3 rounded-xl border transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     borderColor: selectedDay === d.iso ? "#f1889b" : "rgba(247,177,189,0.4)",
                     background: selectedDay === d.iso ? "#fbe0e2" : "rgba(255,255,255,0.5)",
@@ -161,7 +162,8 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
                     <button
                       key={slot.start}
                       onClick={() => setSelectedSlot(slot)}
-                      className="p-3 rounded-xl border text-sm font-medium transition-all"
+                      disabled={isSubmitting}
+                      className="p-3 rounded-xl border text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
                         borderColor: isSelected ? "#f1889b" : "rgba(247,177,189,0.4)",
                         background: isSelected ? "#fbe0e2" : "rgba(255,255,255,0.5)",
