@@ -127,18 +127,18 @@ function htmlToText(html) {
 
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png';
 
-// Franchise welcome — matches the "discovery call is confirmed" branded shell
+// Franchise welcome — acknowledgment of inquiry received
 function buildFranchiseWelcomeHtml({ firstName, appNumber }) {
   const BRAND_PINK = '#f1889b';
   const BRAND_ROSE = '#b67651';
   const safeFirst = escapeHtml(firstName);
   const safeApp = escapeHtml(appNumber);
   const inner = `
-    <h1 style="margin:0 0 16px;font-size:28px;font-weight:300;color:${BRAND_ROSE};line-height:1.2;">Welcome to <em style="color:${BRAND_PINK};">Pilates in Pink&trade;</em></h1>
-    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#5a3a28;">Hi ${safeFirst}, thank you for your interest in becoming a Pilates in Pink&trade; franchise partner. We're so excited to connect with you.</p>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#5a3a28;">We've received your inquiry and a member of our Franchise Team will be in touch personally within 1-2 business days to discuss the next steps.</p>
+    <h1 style="margin:0 0 16px;font-size:28px;font-weight:300;color:${BRAND_ROSE};line-height:1.2;">We've Received Your <em style="color:${BRAND_PINK};">Franchise Inquiry</em></h1>
+    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#5a3a28;">Hi ${safeFirst}, thank you for your interest in a Pilates in Pink&trade; franchise partnership. We're reviewing your inquiry.</p>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#5a3a28;">A member of our Franchise Team will be in touch personally within 1-2 business days to discuss the next steps.</p>
     <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:#5a3a28;">In the meantime, feel free to reply to this email with any questions &mdash; we read every message.</p>
-    <p style="margin:24px 0 0;font-size:15px;color:${BRAND_ROSE};font-style:italic;">With warmth,<br/>The Pilates in Pink&trade; Franchise Team</p>
+    <p style="margin:24px 0 0;font-size:15px;color:${BRAND_ROSE};font-style:italic;">Best regards,<br/>The Pilates in Pink&trade; Franchise Team</p>
     ${safeApp ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${safeApp}</p>` : ''}
   `;
   const preheader = `Thank you for your interest in becoming a Pilates in Pink franchise partner.`;
@@ -175,12 +175,12 @@ function buildWelcomeHtml({ clientName, programLabel, appNumber, theme }) {
         <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png" alt="Pilates in Pink" style="width: 80px; height: 80px; margin-bottom: 15px;" />
       </div>
       <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h2 style="color: ${theme.accent}; margin-top: 0; font-size: 24px; font-weight: 300;">${theme.headingTitle}${safeApp ? ` &middot; #${safeApp}` : ''}</h2>
+        <h2 style="color: ${theme.accent}; margin-top: 0; font-size: 24px; font-weight: 300;">We've Received Your ${safeProgram}${safeApp ? ` &middot; #${safeApp}` : ''}</h2>
         <div style="margin: 20px 0; padding: 18px 20px; background: ${theme.softBg}; border-radius: 10px;">
           <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Hi ${safeName},</p>
-          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Thank you for submitting your ${safeProgram} to <strong style="color:${theme.accent};">Pilates in Pink&trade;</strong>. We&rsquo;ve received it and a member of our team will be in touch personally within 1-2 business days.</p>
+          <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Thank you for submitting your ${safeProgram} to <strong style="color:${theme.accent};">Pilates in Pink&trade;</strong>. We're reviewing your application and a member of our team will be in touch personally within 1-2 business days.</p>
           <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">In the meantime, feel free to reply to this email with any questions &mdash; we read every message.</p>
-          <p style="margin: 0; color: ${theme.accent}; font-style: italic; font-size: 15px;">Pretty. Powerful. Pilates.</p>
+          <p style="margin: 0; color: ${theme.accent}; font-style: italic; font-size: 15px;">Best regards,<br/>The Pilates in Pink&trade; Team</p>
         </div>
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid ${theme.borderColor};">
           <p style="color: ${theme.accent}; margin: 0; font-size: 12px;">${safeApp ? `Reference: Application #${safeApp} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
@@ -261,7 +261,13 @@ Deno.serve(async (req) => {
       ? buildFranchiseWelcomeHtml({ firstName: ticket?.first_name || clientName.split(' ')[0] || 'there', appNumber: displayNumber })
       : buildWelcomeHtml({ clientName, programLabel, appNumber: displayNumber, theme });
     const bodyText = htmlToText(bodyHtml);
-    const subject = `[Application #${displayNumber}] Welcome to Pilates in Pink \u2122`;
+    const subject = ticket_type === 'FranchiseInquiry'
+      ? `[Application #${displayNumber}] We've Received Your Franchise Inquiry`
+      : ticket_type === 'InfluencerApplication'
+      ? `[Application #${displayNumber}] We've Received Your Influencer Application`
+      : ticket_type === 'InstructorApplication'
+      ? `[Application #${displayNumber}] We've Received Your Instructor Application`
+      : `[Application #${displayNumber}] We've Received Your Front Desk Application`;
     const fromEmail = FROM_ALIASES[ticket_type];
     const replyToEmail = REPLY_TO_ALIASES[ticket_type] || fromEmail;
     const fromHeader = `${rfc2047('Pilates in Pink \u2122')} <${fromEmail}>`;
