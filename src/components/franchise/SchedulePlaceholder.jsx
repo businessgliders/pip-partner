@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle2, Loader2 } from "lucide-react";
@@ -32,6 +32,9 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
   const [slotsByDay, setSlotsByDay] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Hard double-click guard — flips synchronously before React state updates,
+  // preventing two POSTs to bookCalEvent within the same tick.
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,10 +72,18 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
 
   const handleConfirm = () => {
     if (!canConfirm) return;
+    if (submittingRef.current || isSubmitting) return;
+    submittingRef.current = true;
     if (onClearBookingError) onClearBookingError();
     const day = days.find((d) => d.iso === selectedDay);
     const friendly = `${day?.label}, ${day?.date} at ${formatTimeLabel(selectedSlot.start)}`;
-    onConfirm({ start: selectedSlot.start, friendly, timeZone: TZ });
+    try {
+      onConfirm({ start: selectedSlot.start, friendly, timeZone: TZ });
+    } finally {
+      // Release the lock after a short window — long enough to block accidental
+      // double-taps, short enough that a retry after a real failure still works.
+      setTimeout(() => { submittingRef.current = false; }, 1500);
+    }
   };
 
   return (

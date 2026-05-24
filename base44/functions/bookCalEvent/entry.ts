@@ -38,19 +38,35 @@ Deno.serve(async (req) => {
       isAdmin = me?.role === 'admin';
     } catch (_) {}
 
+    let existingInquiry = null;
     if (!isAdmin) {
       if (!inquiryId || !/^[a-f0-9]{24}$/i.test(String(inquiryId))) {
         return Response.json({ error: 'Missing or invalid inquiryId' }, { status: 400 });
       }
-      let found = false;
       for (let i = 0; i < 5; i++) {
         try {
           const rec = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
-          if (rec) { found = true; break; }
+          if (rec) { existingInquiry = rec; break; }
         } catch (_) {}
         await new Promise((r) => setTimeout(r, 400));
       }
-      if (!found) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
+      if (!existingInquiry) return Response.json({ error: 'Inquiry not found' }, { status: 404 });
+    } else if (inquiryId && /^[a-f0-9]{24}$/i.test(String(inquiryId))) {
+      try {
+        existingInquiry = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+      } catch (_) {}
+    }
+
+    // Idempotency guard: if this inquiry already has a scheduled call, do not
+    // create another Cal.com booking. Returning success keeps the client flow
+    // happy (it transitions to "done") while preventing duplicates from
+    // double-clicks, page refreshes, or resumed sessions.
+    if (existingInquiry?.scheduled_call_time && !isAdmin) {
+      return Response.json({
+        success: true,
+        alreadyBooked: true,
+        scheduledCallTime: existingInquiry.scheduled_call_time,
+      });
     }
 
     const payload = {

@@ -68,10 +68,13 @@ export default function OwnAStudio() {
     setInquiryId(inquiry.id);
     setResumeDialog({ open: false, email: "" });
 
-    // If the applicant is past the "new" stage, they shouldn't see the booking
-    // step again. Show a friendly status view instead.
+    // If the applicant already booked a call OR is past the "new" stage, they
+    // shouldn't see the booking step again. Show a friendly status view that
+    // displays their existing booking instead of the slot picker — this is the
+    // primary defence against duplicate bookings on resumed sessions.
+    const alreadyBooked = !!inquiry.scheduled_call_time;
     const alreadyProgressed = inquiry.status && inquiry.status !== "new";
-    if (alreadyProgressed) {
+    if (alreadyBooked || alreadyProgressed) {
       setResumedInquiry(inquiry);
       setStage("resumed");
     } else {
@@ -110,9 +113,25 @@ export default function OwnAStudio() {
     setBookingError(null);
 
     try {
+      // 0) Re-check the inquiry record right before booking. If a call is
+      //    already scheduled (e.g. a previous tab booked it, or the user
+      //    refreshed after a successful booking), skip straight to "done"
+      //    instead of creating a duplicate Cal.com booking.
+      if (inquiryId) {
+        try {
+          const fresh = await base44.entities.FranchiseInquiry.get(inquiryId);
+          if (fresh?.scheduled_call_time) {
+            setStage("done");
+            return;
+          }
+        } catch (_) {}
+      }
+
       // 1) Book on Cal.com with a hard 25s timeout so the UI can never
-      //    hang on "Confirming…" if the request stalls.
-      await withTimeout(
+      //    hang on "Confirming…" if the request stalls. The server also
+      //    enforces idempotency — if the inquiry already has a scheduled
+      //    call, it returns alreadyBooked:true without creating a duplicate.
+      const bookRes = await withTimeout(
         base44.functions.invoke("bookCalEvent", {
           start: slot.start,
           timeZone: slot.timeZone,
@@ -126,21 +145,25 @@ export default function OwnAStudio() {
         "Booking is taking longer than expected"
       );
 
-      // 2) Update inquiry record
-      if (inquiryId) {
+      const alreadyBooked = bookRes?.data?.alreadyBooked || bookRes?.alreadyBooked;
+
+      // 2) Update inquiry record — but only if the server actually created a
+      //    new booking. If it short-circuited (alreadyBooked), we leave the
+      //    existing scheduled_call_time intact.
+      if (inquiryId && !alreadyBooked) {
         await base44.entities.FranchiseInquiry.update(inquiryId, {
           scheduled_call_time: slot.friendly,
           status: "scheduled",
         });
-      }
 
-      // 3) Send branded confirmation emails (fire-and-forget — backend delays
-      //    submitter confirmation so it lands after the welcome email)
-      base44.functions.invoke("sendFranchiseInquiryEmail", {
-        inquiryId: inquiryId,
-        inquiryData: formData,
-        scheduledTime: slot.friendly,
-      });
+        // 3) Send branded confirmation emails (fire-and-forget — backend delays
+        //    submitter confirmation so it lands after the welcome email)
+        base44.functions.invoke("sendFranchiseInquiryEmail", {
+          inquiryId: inquiryId,
+          inquiryData: formData,
+          scheduledTime: slot.friendly,
+        });
+      }
 
       setStage("done");
     } catch (err) {
