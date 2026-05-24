@@ -202,20 +202,6 @@ export default function FranchiseFunnelForm({ formData, onChange, onSubmit, isSu
                     )}
                   </button>
                 </div>
-                <p className={hintClass}>
-                  Already applied?{" "}
-                  <button
-                    type="button"
-                    onClick={handleEmailSearch}
-                    disabled={!isEmailValid((formData.email || "").trim()) || lookupState === "loading"}
-                    className="underline text-[#f1889b] hover:text-[#b67651] disabled:opacity-50 disabled:no-underline"
-                  >
-                    Find my application
-                  </button>
-                </p>
-                {lookupState === "notfound" && (
-                  <p className="text-xs text-[#b67651]/80">No application found for that email — please continue below.</p>
-                )}
               </div>
               <div className="space-y-2">
                 <Label className={labelClass}>Phone *</Label>
