@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { start, timeZone = 'America/Toronto', name, email, phone, notes, inquiryId } = body || {};
+    const { start, timeZone = 'America/Toronto', name, email, phone, notes, inquiryId, friendlyTime } = body || {};
 
     if (!start || !name || !email) {
       return Response.json({ error: 'Missing required fields: start, name, email' }, { status: 400 });
@@ -102,6 +102,24 @@ Deno.serve(async (req) => {
         { error: 'Failed to create booking', details: data },
         { status: resp.status }
       );
+    }
+
+    // Persist the booking on the inquiry record server-side. The applicant is
+    // not authenticated in the public funnel, so they cannot update the entity
+    // from the browser (RLS blocks it). Doing it here — with service role —
+    // makes the flow reliable and prevents the misleading "couldn't book that
+    // slot" error after Cal.com has already created the booking.
+    if (inquiryId && /^[a-f0-9]{24}$/i.test(String(inquiryId)) && existingInquiry && !existingInquiry.scheduled_call_time) {
+      try {
+        await base44.asServiceRole.entities.FranchiseInquiry.update(inquiryId, {
+          scheduled_call_time: friendlyTime || start,
+          status: 'scheduled',
+        });
+      } catch (updateErr) {
+        // Log but don't fail the request — the Cal.com booking already exists,
+        // and the calBookingWebhook will reconcile the inquiry record shortly.
+        console.error('bookCalEvent: failed to update inquiry record', updateErr);
+      }
     }
 
     return Response.json({ success: true, booking: data?.data || data });

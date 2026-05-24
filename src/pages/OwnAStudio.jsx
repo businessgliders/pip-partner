@@ -142,6 +142,7 @@ export default function OwnAStudio() {
           phone: formData.phone,
           notes: `Franchise inquiry — ${formData.preferred_location || ""} (${formData.available_capital || ""})`,
           inquiryId,
+          friendlyTime: slot.friendly,
         }),
         25000,
         "Booking is taking longer than expected"
@@ -149,17 +150,11 @@ export default function OwnAStudio() {
 
       const alreadyBooked = bookRes?.data?.alreadyBooked || bookRes?.alreadyBooked;
 
-      // 2) Update inquiry record — but only if the server actually created a
-      //    new booking. If it short-circuited (alreadyBooked), we leave the
-      //    existing scheduled_call_time intact.
+      // Inquiry record + status update is now performed server-side inside
+      // bookCalEvent (the public applicant can't update the entity due to RLS).
+      // Here we only fire the confirmation email — and only if we actually
+      // created a new booking.
       if (inquiryId && !alreadyBooked) {
-        await base44.entities.FranchiseInquiry.update(inquiryId, {
-          scheduled_call_time: slot.friendly,
-          status: "scheduled",
-        });
-
-        // 3) Send branded confirmation emails (fire-and-forget — backend delays
-        //    submitter confirmation so it lands after the welcome email)
         base44.functions.invoke("sendFranchiseInquiryEmail", {
           inquiryId: inquiryId,
           inquiryData: formData,
