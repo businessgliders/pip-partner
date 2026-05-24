@@ -80,7 +80,7 @@ function isValidUrl(url) {
 }
 
 function buildViewButton(applicationId) {
-  const boardUrl = `https://partner.pilatesinpinkstudio.com/ApplicationBoard?ticket=${applicationId}`;
+  const boardUrl = `https://partner.pilatesinpinkstudio.com/ApplicationBoard?tab=influencer&ticket=${applicationId}`;
   return `<a href="${escapeAttr(boardUrl)}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#b67651;color:white;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View in Application Board</a>`;
 }
 
