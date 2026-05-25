@@ -15,6 +15,8 @@ import AssignTicketSection from "./AssignTicketSection";
 import AttachmentsSection from "./AttachmentsSection";
 import ResendBookingEmailsButton from "./ResendBookingEmailsButton";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
+import StatusDropdown from "./StatusDropdown";
+import { BOARD_TYPES } from "../board/boardConfig";
 import { formatAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
 
@@ -99,6 +101,24 @@ export default function SubmissionDetailModal({
     queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
   };
 
+  const handleStatusChange = async (newStatus) => {
+    if (!newStatus || newStatus === row.status) return;
+    const history = Array.isArray(row.status_history) ? row.status_history : [];
+    const updated = [
+      ...history,
+      {
+        status: newStatus,
+        note: "",
+        by_name: user?.full_name || user?.email?.split("@")[0] || "Staff",
+        timestamp: new Date().toISOString(),
+      },
+    ];
+    await base44.entities[entityName].update(row.id, { status: newStatus, status_history: updated });
+    row.status = newStatus;
+    row.status_history = updated;
+    queryClient.invalidateQueries({ queryKey: ["app-board", entityName] });
+  };
+
   const handleAssign = async (email) => {
     await base44.entities[entityName].update(row.id, { assigned_to: email });
     row.assigned_to = email;
@@ -135,7 +155,11 @@ export default function SubmissionDetailModal({
                   </p>
                   <h2 className="text-xl font-semibold text-slate-900">{displayName}</h2>
                   <div className="mt-2 flex items-center gap-2">
-                    <StatusBadge status={row.status} />
+                    <StatusDropdown
+                      status={row.status}
+                      statuses={BOARD_TYPES.find((b) => b.key === tabKey)?.statuses || []}
+                      onChange={handleStatusChange}
+                    />
                     <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
                   </div>
                 </div>
