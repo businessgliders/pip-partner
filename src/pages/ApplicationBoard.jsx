@@ -597,7 +597,7 @@ export default function ApplicationBoard() {
           />
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="relative flex-1 min-h-0 mt-1 lg:mt-2">
+            <div className="relative flex-1 min-h-0 mt-1 lg:mt-2 flex">
               {canScrollLeft && (
                 <button
                   onClick={() => scrollSwimlanes("left")}
@@ -641,24 +641,24 @@ export default function ApplicationBoard() {
                   </div>
                 ))}
               </div>
-            </div>
 
-            {sidePanelStatus && (
-              <ClosedSidePanel
-                status={sidePanelStatus}
-                tickets={getTicketsByColumn(sidePanelStatus)}
-                onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                onTicketClick={(t) => setSelectedTicket(t)}
-                isLoading={isLoading}
-                highlightedTicketId={highlightedTicketId}
-                onArchiveSome={handleArchiveSome}
-                onArchiveAll={() => setArchiveAllConfirmDialog(true)}
-                viewMode={effectiveViewMode}
-                statusOptions={board.statuses}
-                boardKey={board.key}
-                unreadCountByTicket={unreadCountByTicket}
-              />
-            )}
+              {sidePanelStatus && (
+                <ClosedSidePanel
+                  status={sidePanelStatus}
+                  tickets={getTicketsByColumn(sidePanelStatus)}
+                  onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                  onTicketClick={(t) => setSelectedTicket(t)}
+                  isLoading={isLoading}
+                  highlightedTicketId={highlightedTicketId}
+                  onArchiveSome={handleArchiveSome}
+                  onArchiveAll={() => setArchiveAllConfirmDialog(true)}
+                  viewMode={effectiveViewMode}
+                  statusOptions={board.statuses}
+                  boardKey={board.key}
+                  unreadCountByTicket={unreadCountByTicket}
+                />
+              )}
+            </div>
           </DragDropContext>
         )}
 
