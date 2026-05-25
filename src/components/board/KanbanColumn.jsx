@@ -18,6 +18,7 @@ const columnColors = {
   qualified: "from-pink-400/20 to-pink-300/20 border-pink-300/40",
   closed: "from-slate-400/20 to-slate-300/20 border-slate-300/40",
   declined: "from-rose-400/20 to-rose-300/20 border-rose-300/40",
+  ghosted: "from-zinc-400/20 to-zinc-300/20 border-zinc-300/40",
 };
 
 const headerColors = {
@@ -31,6 +32,7 @@ const headerColors = {
   qualified: "bg-pink-500/30 border-pink-400/40",
   closed: "bg-slate-500/30 border-slate-400/40",
   declined: "bg-rose-500/30 border-rose-400/40",
+  ghosted: "bg-zinc-500/30 border-zinc-400/40",
 };
 
 export default function KanbanColumn({
@@ -49,7 +51,7 @@ export default function KanbanColumn({
   unreadCountByTicket = {},
 }) {
   const key = String(status).toLowerCase();
-  const isDimmed = key === "closed" || key === "declined";
+  const isDimmed = key === "closed" || key === "declined" || key === "ghosted";
   const colCls = columnColors[key] || "from-white/30 to-white/10 border-white/30";
   const headCls = headerColors[key] || "bg-white/40 border-white/40";
 

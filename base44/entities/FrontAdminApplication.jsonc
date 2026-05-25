@@ -60,7 +60,8 @@
         "pending",
         "reviewed",
         "invited",
-        "declined"
+        "declined",
+        "ghosted"
       ],
       "default": "pending",
       "description": "Application status"

@@ -124,7 +124,8 @@
         "scheduled",
         "contacted",
         "qualified",
-        "closed"
+        "closed",
+        "ghosted"
       ],
       "default": "new"
     },
