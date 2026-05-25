@@ -11,6 +11,7 @@ import NotificationCenter from "../components/admin/NotificationCenter";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import KanbanColumn from "../components/board/KanbanColumn";
+import ClosedSidePanel from "../components/board/ClosedSidePanel";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
 import { StatusChangeDialog, ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
@@ -153,9 +154,17 @@ export default function ApplicationBoard() {
   const effectiveViewMode = (viewMode === "table" || viewMode === "map")
     ? viewMode
     : (board.categoryField ? viewMode : "status");
+
+  // The last status (closed / declined) is rendered in a side panel,
+  // not in the main swimlane grid — so split it out here.
+  const sidePanelStatus =
+    effectiveViewMode === "status" ? allStatusColumns[allStatusColumns.length - 1] : null;
+  const mainStatusColumns =
+    effectiveViewMode === "status" ? allStatusColumns.slice(0, -1) : allStatusColumns;
+
   const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
     ? []
-    : (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
+    : (effectiveViewMode === "status" ? mainStatusColumns : allCategoryColumns)
         .filter((c) => !hiddenColumns.includes(c));
 
   useEffect(() => {
@@ -608,7 +617,7 @@ export default function ApplicationBoard() {
 
               <div
                 ref={swimlaneScrollRef}
-                className="flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:grid lg:grid-cols-4 lg:gap-6 lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-visible lg:h-auto"
+                className="flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:grid lg:grid-cols-4 lg:gap-6 lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-visible lg:h-auto lg:pr-16"
               >
                 {columns.map((col) => (
                   <div
@@ -623,8 +632,6 @@ export default function ApplicationBoard() {
                       onTicketClick={(t) => setSelectedTicket(t)}
                       isLoading={isLoading}
                       highlightedTicketId={highlightedTicketId}
-                      onArchiveSome={col === board.statuses[board.statuses.length - 1] ? handleArchiveSome : undefined}
-                      onArchiveAll={col === board.statuses[board.statuses.length - 1] ? () => setArchiveAllConfirmDialog(true) : undefined}
                       onTidyUp={col === resolvedKey ? () => setShowCleanupPopup(true) : undefined}
                       viewMode={effectiveViewMode}
                       statusOptions={board.statuses}
@@ -635,6 +642,23 @@ export default function ApplicationBoard() {
                 ))}
               </div>
             </div>
+
+            {sidePanelStatus && (
+              <ClosedSidePanel
+                status={sidePanelStatus}
+                tickets={getTicketsByColumn(sidePanelStatus)}
+                onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                onTicketClick={(t) => setSelectedTicket(t)}
+                isLoading={isLoading}
+                highlightedTicketId={highlightedTicketId}
+                onArchiveSome={handleArchiveSome}
+                onArchiveAll={() => setArchiveAllConfirmDialog(true)}
+                viewMode={effectiveViewMode}
+                statusOptions={board.statuses}
+                boardKey={board.key}
+                unreadCountByTicket={unreadCountByTicket}
+              />
+            )}
           </DragDropContext>
         )}
 
