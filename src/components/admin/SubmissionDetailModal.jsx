@@ -17,7 +17,7 @@ import ResendBookingEmailsButton from "./ResendBookingEmailsButton";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
 import StatusDropdown from "./StatusDropdown";
 import { BOARD_TYPES } from "../board/boardConfig";
-import { formatAppNumber } from "@/lib/appNumberDisplay";
+import { displayAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
 
 const ENTITY_KEY_TO_NAME = {
@@ -151,7 +151,7 @@ export default function SubmissionDetailModal({
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[10px] tracking-[0.2em] uppercase font-semibold mb-1" style={{ color: accentColor }}>
-                    Submission {row.app_number ? `#${formatAppNumber(row.app_number, tabKey)}` : ""}
+                    Submission {(row.display_ticket_number || row.app_number) ? `#${displayAppNumber(row, tabKey)}` : ""}
                   </p>
                   <h2 className="text-xl font-semibold text-slate-900">{displayName}</h2>
                   <div className="mt-2 flex items-center gap-2">

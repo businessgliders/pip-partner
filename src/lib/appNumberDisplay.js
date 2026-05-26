@@ -26,3 +26,16 @@ export function formatAppNumber(rawNumber, programKey) {
   if (!cfg) return String(rawNumber);
   return String(cfg.base + Number(rawNumber) * cfg.stride);
 }
+
+/**
+ * Preferred display helper — always uses the stored `display_ticket_number`
+ * when available so the UI matches what's in the database. Falls back to
+ * computing from `app_number` only for legacy records that don't have one yet.
+ */
+export function displayAppNumber(ticket, programKey) {
+  if (!ticket) return "";
+  if (ticket.display_ticket_number || ticket.display_ticket_number === 0) {
+    return String(ticket.display_ticket_number);
+  }
+  return formatAppNumber(ticket.app_number, programKey);
+}

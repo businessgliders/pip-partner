@@ -1,13 +1,13 @@
 import React from "react";
 import { StatusBadge, formatDate, fullName, locationLabel } from "../admin/SubmissionsTable";
-import { formatAppNumber } from "@/lib/appNumberDisplay";
+import { displayAppNumber } from "@/lib/appNumberDisplay";
 
 // Shared column config used by both the legacy AdminDashboard and the new
 // Table view inside ApplicationBoard. Keyed by board.key.
 export const TABLE_COLUMN_CONFIG = {
   franchise: {
     columns: [
-      { key: "app_number", label: "Ticket #", render: (r) => <span className="font-medium text-slate-600">#{formatAppNumber(r.app_number, "franchise")}</span> },
+      { key: "app_number", label: "Ticket #", render: (r) => <span className="font-medium text-slate-600">#{displayAppNumber(r, "franchise")}</span> },
       { key: "name",     label: "Name",     render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span> },
       { key: "email",    label: "Email" },
       { key: "location", label: "Location", render: (r) => locationLabel(r) },
