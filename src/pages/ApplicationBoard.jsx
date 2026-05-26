@@ -756,7 +756,7 @@ export default function ApplicationBoard() {
                         <div
                           key={col}
                           data-swimlane
-                          className="flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] snap-start lg:w-auto lg:snap-align-none"
+                          className="flex-shrink-0 w-[48%] sm:w-[40%] md:w-[32%] snap-start lg:w-auto lg:snap-align-none"
                         >
                           <KanbanColumn
                             status={col}
@@ -781,7 +781,7 @@ export default function ApplicationBoard() {
                       <div
                         key={col}
                         data-swimlane
-                        className="flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] snap-start lg:w-auto lg:snap-align-none"
+                        className="flex-shrink-0 w-[48%] sm:w-[40%] md:w-[32%] snap-start lg:w-auto lg:snap-align-none"
                       >
                         <KanbanColumn
                           status={col}
