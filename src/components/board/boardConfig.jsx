@@ -13,16 +13,6 @@ export const BOARD_TYPES = [
     bg: "#fbe0e2",
   },
   {
-    key: "influencer",
-    label: "Influencer",
-    entity: "InfluencerApplication",
-    tabKey: "influencer",
-    statuses: ["pending", "approved", "declined"],
-    categoryField: null,
-    color: "#f1889b",
-    bg: "#fce8ee",
-  },
-  {
     key: "instructor",
     label: "Instructor",
     entity: "InstructorApplication",
@@ -41,6 +31,16 @@ export const BOARD_TYPES = [
     categoryField: "province",
     color: "#d4a088",
     bg: "#faf3ec",
+  },
+  {
+    key: "influencer",
+    label: "Influencer",
+    entity: "InfluencerApplication",
+    tabKey: "influencer",
+    statuses: ["pending", "approved", "declined"],
+    categoryField: null,
+    color: "#f1889b",
+    bg: "#fce8ee",
   },
 ];
 
