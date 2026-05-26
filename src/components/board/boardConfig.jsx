@@ -13,7 +13,7 @@ export const STATUS_META = {
     lease: { label: "Lease", description: "Negotiating and signing the lease" },
     build_out: { label: "Build-Out", description: "Construction and studio fit-out in progress" },
     training: { label: "Training", description: "Owner and staff onboarding before launch" },
-    closed: { label: "Signed", description: "Franchise agreement signed" },
+    closed: { label: "Closed", description: "Franchise agreement signed" },
     ghosted: { label: "Ghosted", description: "No reply after multiple follow-ups" },
     contacted: { label: "Contacted", description: "Reached out, awaiting response" },
   },

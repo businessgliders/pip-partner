@@ -701,7 +701,6 @@ export default function ApplicationBoard() {
                             onTicketClick={(t) => setSelectedTicket(t)}
                             isLoading={isLoading}
                             highlightedTicketId={highlightedTicketId}
-                            onTidyUp={col === resolvedKey ? () => setShowCleanupPopup(true) : undefined}
                             viewMode={effectiveViewMode}
                             statusOptions={board.statuses}
                             boardKey={board.key}
@@ -727,16 +726,15 @@ export default function ApplicationBoard() {
                           onTicketClick={(t) => setSelectedTicket(t)}
                           isLoading={isLoading}
                           highlightedTicketId={highlightedTicketId}
-                          onTidyUp={col === resolvedKey ? () => setShowCleanupPopup(true) : undefined}
                           viewMode={effectiveViewMode}
                           statusOptions={board.statuses}
                           boardKey={board.key}
                           unreadCountByTicket={unreadCountByTicket}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          />
+                          </div>
+                          ))}
+                          </div>
+                          )}
               </div>
             </div>
 
