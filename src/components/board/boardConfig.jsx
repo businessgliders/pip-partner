@@ -8,7 +8,7 @@ export const STATUS_META = {
     new: { label: "New", description: "Just submitted — needs first outreach" },
     scheduled: { label: "Discovery Call", description: "Intro call booked or held" },
     discussion: { label: "Discussion", description: "Active back-and-forth after the call" },
-    qualified: { label: "Qualified", description: "Vetted and approved to move forward" },
+    qualified: { label: "Ready to Sign", description: "Vetted and approved to move forward" },
     site_selection: { label: "Site Selection", description: "Scouting and approving the studio location" },
     lease: { label: "Lease", description: "Negotiating and signing the lease" },
     build_out: { label: "Build-Out", description: "Construction and studio fit-out in progress" },
