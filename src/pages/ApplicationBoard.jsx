@@ -603,19 +603,19 @@ export default function ApplicationBoard() {
               0
             );
             return (
-              <div className="flex gap-2 mt-2 -mx-2 px-2 lg:hidden">
+              <div className="flex gap-1.5 mt-2 -mx-2 px-2 lg:hidden">
                 <button
                   onClick={() => setBoardStep("one")}
-                  className={`flex-1 px-2 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 px-1.5 py-1 rounded-full text-[11px] font-medium border transition-all flex items-center justify-center gap-1 ${
                     boardStep === "one"
-                      ? "bg-white text-gray-900 border-white shadow"
-                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
+                      ? "bg-white/90 text-gray-900 border-white"
+                      : "bg-white/10 text-white border-white/30 hover:bg-white/15"
                   }`}
                 >
                   Step One
                   {stepOneCount > 0 && (
-                    <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                      boardStep === "one" ? "bg-gray-900 text-white" : "bg-white/80 text-gray-900"
+                    <span className={`min-w-[16px] h-[16px] px-0.5 rounded-full text-[9px] font-semibold flex items-center justify-center ${
+                      boardStep === "one" ? "bg-gray-900 text-white" : "bg-white/60 text-gray-900"
                     }`}>
                       {stepOneCount}
                     </span>
@@ -623,16 +623,16 @@ export default function ApplicationBoard() {
                 </button>
                 <button
                   onClick={() => setBoardStep("two")}
-                  className={`flex-1 px-2 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 px-1.5 py-1 rounded-full text-[11px] font-medium border transition-all flex items-center justify-center gap-1 ${
                     boardStep === "two"
-                      ? "bg-white text-gray-900 border-white shadow"
-                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
+                      ? "bg-white/90 text-gray-900 border-white"
+                      : "bg-white/10 text-white border-white/30 hover:bg-white/15"
                   }`}
                 >
                   Step Two
                   {stepTwoCount > 0 && (
-                    <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                      boardStep === "two" ? "bg-gray-900 text-white" : "bg-pink-500 text-white ring-2 ring-white"
+                    <span className={`min-w-[16px] h-[16px] px-0.5 rounded-full text-[9px] font-semibold flex items-center justify-center ${
+                      boardStep === "two" ? "bg-gray-900 text-white" : "bg-pink-500/80 text-white"
                     }`}>
                       {stepTwoCount}
                     </span>
