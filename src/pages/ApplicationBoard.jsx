@@ -671,13 +671,12 @@ export default function ApplicationBoard() {
                 </button>
               )}
 
-              <div className="relative flex-1 overflow-hidden">
-                <div
-                  ref={swimlaneScrollRef}
-                  className={`relative flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:block lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-hidden lg:h-auto ${
-                    hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
-                  }`}
-                >
+              <div
+                ref={swimlaneScrollRef}
+                className={`relative flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:block lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-hidden lg:h-auto ${
+                  hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
+                }`}
+              >
                 {hasSteps ? (
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
@@ -736,15 +735,10 @@ export default function ApplicationBoard() {
                           ))}
                           </div>
                           )}
-                          </div>
-                          {/* Gradient peek indicator on the right */}
-                          <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-24 pointer-events-none" style={{
-                          background: "linear-gradient(to left, rgba(0,0,0,0.08), transparent)",
-                          }} />
-                          </div>
-                          </div>
+              </div>
+            </div>
 
-                          {sidePanelStatuses.length > 0 && (
+            {sidePanelStatuses.length > 0 && (
               <ClosedSidePanel
                 statuses={sidePanelStatuses.map((s) => ({
                   status: s,
