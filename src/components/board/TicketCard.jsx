@@ -129,13 +129,12 @@ export default function TicketCard({
       {/* Mobile compact */}
       <div className="md:hidden">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-1.5 min-w-0">
+          <div className="flex items-start gap-1.5 min-w-0 flex-1">
             <span className="text-sm">{emoji}</span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-xs font-semibold text-gray-900 truncate">
-                <span className="text-gray-500 mr-1">{num}</span>{name}
+                {name}
               </div>
-              {category && <div className="text-[10px] text-gray-600 mt-0.5">{category}</div>}
               {scheduledTimeLabel && (
                 <div className="text-[10px] text-emerald-700 mt-0.5 font-medium truncate">📅 {scheduledTimeLabel}</div>
               )}
@@ -145,7 +144,7 @@ export default function TicketCard({
             <DropdownMenuTrigger asChild>
               <button
                 onClick={(e) => e.stopPropagation()}
-                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-900 p-0.5"
+                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-900 p-0.5 flex-shrink-0"
               >
                 <MoreVertical className="w-3.5 h-3.5" />
               </button>
@@ -173,7 +172,7 @@ export default function TicketCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="text-[10px] text-gray-500 mt-1 text-right">{time}</div>
+        <div className="text-[10px] text-gray-500 mt-1 text-right">{new Date(ticket.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })}</div>
       </div>
 
       {/* Desktop */}
