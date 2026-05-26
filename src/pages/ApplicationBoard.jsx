@@ -629,13 +629,13 @@ export default function ApplicationBoard() {
                       : "bg-white/10 text-white border-white/30 hover:bg-white/15"
                   }`}
                 >
-                  Step Two
-                  {stepTwoCount > 0 && (
-                    <span className={`min-w-[16px] h-[16px] px-0.5 rounded-full text-[9px] font-semibold flex items-center justify-center ${
-                      boardStep === "two" ? "bg-gray-900 text-white" : "bg-pink-500/80 text-white"
-                    }`}>
-                      {stepTwoCount}
-                    </span>
+                  {stepTwoCount > 0 ? (
+                    <>
+                      <span>{stepTwoCount}</span>
+                      <span>Step Two</span>
+                    </>
+                  ) : (
+                    "Step Two"
                   )}
                 </button>
               </div>

@@ -114,10 +114,12 @@ export default function TicketCard({
       {unreadCount > 0 && (
         <div
           title={`${unreadCount} unread message${unreadCount === 1 ? "" : "s"}`}
-          className="absolute top-1.5 left-1.5 z-10 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-pink-500 text-white text-[10px] font-bold shadow-md animate-pulse-soft"
+          className="absolute top-1.5 left-1.5 z-10"
         >
-          <Mail className="w-3 h-3" />
-          <span>{unreadCount > 9 ? "9+" : unreadCount}</span>
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-pink-500 text-white text-[10px] font-bold shadow-md animate-pulse-soft">
+            <Mail className="w-3 h-3" />
+            <span>{unreadCount > 9 ? "9+" : unreadCount}</span>
+          </div>
         </div>
       )}
       {viewMode === "category" && (
