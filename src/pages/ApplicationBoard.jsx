@@ -591,6 +591,56 @@ export default function ApplicationBoard() {
               );
             })}
           </div>
+
+          {/* Mobile/Tablet-only Step One / Step Two switcher */}
+          {hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
+            const stepTwoCount = (board.stepTwo || []).reduce(
+              (acc, s) => acc + getTicketsByColumn(s).length,
+              0
+            );
+            const stepOneCount = (board.stepOne || []).reduce(
+              (acc, s) => acc + getTicketsByColumn(s).length,
+              0
+            );
+            return (
+              <div className="flex gap-2 mt-2 -mx-2 px-2 lg:hidden">
+                <button
+                  onClick={() => setBoardStep("one")}
+                  className={`flex-1 px-2 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center justify-center gap-1.5 ${
+                    boardStep === "one"
+                      ? "bg-white text-gray-900 border-white shadow"
+                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
+                  }`}
+                >
+                  Step One
+                  {stepOneCount > 0 && (
+                    <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                      boardStep === "one" ? "bg-gray-900 text-white" : "bg-white/80 text-gray-900"
+                    }`}>
+                      {stepOneCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setBoardStep("two")}
+                  className={`flex-1 px-2 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center justify-center gap-1.5 ${
+                    boardStep === "two"
+                      ? "bg-white text-gray-900 border-white shadow"
+                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
+                  }`}
+                >
+                  Step Two
+                  {stepTwoCount > 0 && (
+                    <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                      boardStep === "two" ? "bg-gray-900 text-white" : "bg-pink-500 text-white ring-2 ring-white"
+                    }`}>
+                      {stepTwoCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         {showArchived ? (
