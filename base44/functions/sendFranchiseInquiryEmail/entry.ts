@@ -323,9 +323,29 @@ Deno.serve(async (req) => {
     // If this is the owner "no slot yet" notification (ownerOnly + no scheduledTime),
     // skip it when the inquiry already has a Cal.com booking — the "call booked"
     // owner email (sent by the webhook or the frontend confirm flow) will cover it.
+    //
+    // To avoid duplicate owner emails (one "no slot yet" + one "call booked")
+    // for applicants who book a slot right after submitting the form, we
+    // intentionally delay the "no slot yet" notification by 90 seconds and
+    // re-check the inquiry record right before sending. If a booking has
+    // landed in the meantime, we skip the no-slot email entirely.
     let skipOwnerForBookedSlot = false;
-    if (!submitterOnly && !scheduledTime && inquiryData?.scheduled_call_time) {
+    const isNoSlotOwnerEmail = !submitterOnly && !scheduledTime;
+
+    if (isNoSlotOwnerEmail && inquiryData?.scheduled_call_time) {
       skipOwnerForBookedSlot = true;
+    }
+
+    if (isNoSlotOwnerEmail && !skipOwnerForBookedSlot) {
+      // Wait ~90s so the applicant has a fair chance to pick a slot first.
+      await new Promise((r) => setTimeout(r, 90000));
+      try {
+        const fresh = await base44.asServiceRole.entities.FranchiseInquiry.get(inquiryId);
+        if (fresh) {
+          inquiryData = fresh;
+          if (fresh.scheduled_call_time) skipOwnerForBookedSlot = true;
+        }
+      } catch (_) {}
     }
 
     let ownerResult = { ok: true, skipped: true };
