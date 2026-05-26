@@ -11,6 +11,7 @@ export default function ClosedSidePanel({
   status,
   tickets,
   onStatusChange,
+  onArchiveChange,
   onTicketClick,
   isLoading,
   highlightedTicketId,
@@ -79,6 +80,7 @@ export default function ClosedSidePanel({
             status={status}
             tickets={tickets}
             onStatusChange={onStatusChange}
+            onArchiveChange={onArchiveChange}
             onTicketClick={onTicketClick}
             isLoading={isLoading}
             highlightedTicketId={highlightedTicketId}

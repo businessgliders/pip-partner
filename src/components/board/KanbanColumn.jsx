@@ -39,6 +39,7 @@ export default function KanbanColumn({
   status,
   tickets,
   onStatusChange,
+  onArchiveChange,
   onTicketClick,
   isLoading,
   highlightedTicketId,
@@ -130,6 +131,7 @@ export default function KanbanColumn({
                         <TicketCard
                           ticket={ticket}
                           onStatusChange={onStatusChange}
+                          onArchiveChange={onArchiveChange}
                           onClick={() => onTicketClick?.(ticket)}
                           isDragging={dragSnapshot.isDragging}
                           isHighlighted={highlightedTicketId === ticket.id}

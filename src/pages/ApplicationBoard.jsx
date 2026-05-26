@@ -315,6 +315,10 @@ export default function ApplicationBoard() {
     queryClient.invalidateQueries({ queryKey: ["app-board", board.entity] });
   };
 
+  const handleArchiveChange = (ticket, archived) => {
+    updateMutation.mutate({ id: ticket.id, data: { archived } });
+  };
+
   const handleTidyUpMove = async (ids) => {
     const closedKey = board.statuses[board.statuses.length - 1];
     for (const id of ids) {
@@ -641,6 +645,7 @@ export default function ApplicationBoard() {
                       status={col}
                       tickets={getTicketsByColumn(col)}
                       onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                      onArchiveChange={handleArchiveChange}
                       onTicketClick={(t) => setSelectedTicket(t)}
                       isLoading={isLoading}
                       highlightedTicketId={highlightedTicketId}
@@ -660,6 +665,7 @@ export default function ApplicationBoard() {
                 status={sidePanelStatus}
                 tickets={getTicketsByColumn(sidePanelStatus)}
                 onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                onArchiveChange={handleArchiveChange}
                 onTicketClick={(t) => setSelectedTicket(t)}
                 isLoading={isLoading}
                 highlightedTicketId={highlightedTicketId}

@@ -1,9 +1,10 @@
 import React from "react";
-import { MoreVertical, FileText, Instagram, Music2, Mail } from "lucide-react";
+import { MoreVertical, FileText, Instagram, Music2, Mail, Archive, ArchiveRestore } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { displayAppNumber } from "@/lib/appNumberDisplay";
@@ -67,6 +68,7 @@ function formatRelativeTime(dateString) {
 export default function TicketCard({
   ticket,
   onStatusChange,
+  onArchiveChange,
   onClick,
   isDragging,
   isHighlighted,
@@ -152,6 +154,22 @@ export default function TicketCard({
               {statusOptions.filter((s) => s !== ticket.status).map((s) => (
                 <DropdownMenuItem key={s} onClick={() => onStatusChange?.(ticket, s)}>Move to {s}</DropdownMenuItem>
               ))}
+              {onArchiveChange && (
+                <>
+                  <DropdownMenuSeparator />
+                  {ticket.archived ? (
+                    <DropdownMenuItem onClick={() => onArchiveChange?.(ticket, false)}>
+                      <ArchiveRestore className="w-3.5 h-3.5 mr-2" />
+                      Unarchive
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => onArchiveChange?.(ticket, true)}>
+                      <Archive className="w-3.5 h-3.5 mr-2" />
+                      Move to Archived
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -206,6 +224,22 @@ export default function TicketCard({
               {statusOptions.filter((s) => s !== ticket.status).map((s) => (
                 <DropdownMenuItem key={s} onClick={() => onStatusChange?.(ticket, s)}>Move to {s}</DropdownMenuItem>
               ))}
+              {onArchiveChange && (
+                <>
+                  <DropdownMenuSeparator />
+                  {ticket.archived ? (
+                    <DropdownMenuItem onClick={() => onArchiveChange?.(ticket, false)}>
+                      <ArchiveRestore className="w-4 h-4 mr-2" />
+                      Unarchive
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => onArchiveChange?.(ticket, true)}>
+                      <Archive className="w-4 h-4 mr-2" />
+                      Move to Archived
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
