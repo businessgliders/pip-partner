@@ -650,7 +650,7 @@ export default function ApplicationBoard() {
                 <button
                   onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
                   title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
-                  className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-3 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all ${
+                  className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-4 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all ${
                     boardStep === "one" ? "right-1" : "left-1"
                   }`}
                   style={{
@@ -664,9 +664,9 @@ export default function ApplicationBoard() {
                     {boardStep === "one" ? "Step Two" : "Step One"}
                   </span>
                   {boardStep === "one" ? (
-                    <ChevronsLeft className="w-4 h-4 rotate-180" />
+                    <ChevronsLeft className="w-4 h-4" />
                   ) : (
-                    <ChevronsRight className="w-4 h-4 rotate-180" />
+                    <ChevronsRight className="w-4 h-4" />
                   )}
                 </button>
               )}
