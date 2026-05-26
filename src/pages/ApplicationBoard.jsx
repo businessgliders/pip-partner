@@ -155,12 +155,19 @@ export default function ApplicationBoard() {
     ? viewMode
     : (board.categoryField ? viewMode : "status");
 
-  // The last status (closed / declined) is rendered in a side panel,
-  // not in the main swimlane grid — so split it out here.
-  const sidePanelStatus =
-    effectiveViewMode === "status" ? allStatusColumns[allStatusColumns.length - 1] : null;
+  // The last status (closed / declined) and "ghosted" are rendered in a side
+  // panel, not in the main swimlane grid — so split them out here.
+  const SIDE_PANEL_KEYS = new Set(["ghosted"]);
+  const sidePanelStatuses = useMemo(() => {
+    if (effectiveViewMode !== "status") return [];
+    const last = allStatusColumns[allStatusColumns.length - 1];
+    const ghosted = allStatusColumns.filter((s) => SIDE_PANEL_KEYS.has(s) && s !== last);
+    return [last, ...ghosted].filter(Boolean);
+  }, [effectiveViewMode, allStatusColumns]);
   const mainStatusColumns =
-    effectiveViewMode === "status" ? allStatusColumns.slice(0, -1) : allStatusColumns;
+    effectiveViewMode === "status"
+      ? allStatusColumns.filter((s) => !sidePanelStatuses.includes(s))
+      : allStatusColumns;
 
   const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
     ? []
@@ -660,17 +667,19 @@ export default function ApplicationBoard() {
               </div>
             </div>
 
-            {sidePanelStatus && (
+            {sidePanelStatuses.length > 0 && (
               <ClosedSidePanel
-                status={sidePanelStatus}
-                tickets={getTicketsByColumn(sidePanelStatus)}
+                statuses={sidePanelStatuses.map((s) => ({
+                  status: s,
+                  tickets: getTicketsByColumn(s),
+                  onArchiveSome: s === sidePanelStatuses[0] ? handleArchiveSome : undefined,
+                  onArchiveAll: s === sidePanelStatuses[0] ? () => setArchiveAllConfirmDialog(true) : undefined,
+                }))}
                 onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
                 onArchiveChange={handleArchiveChange}
                 onTicketClick={(t) => setSelectedTicket(t)}
                 isLoading={isLoading}
                 highlightedTicketId={highlightedTicketId}
-                onArchiveSome={handleArchiveSome}
-                onArchiveAll={() => setArchiveAllConfirmDialog(true)}
                 viewMode={effectiveViewMode}
                 statusOptions={board.statuses}
                 boardKey={board.key}

@@ -3,26 +3,33 @@ import { ChevronRight } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
 
 /**
- * Glass-style slide-in side panel that hosts the "closed"/"declined" swimlane,
- * keeping it out of the main grid but a click away. Uses the existing
- * KanbanColumn so DnD, status changes, and counts continue to work.
+ * Glass-style slide-in side panel that hosts secondary swimlanes (closed/declined
+ * + ghosted), keeping them out of the main grid but a click away. Uses the
+ * existing KanbanColumn so DnD, status changes, and counts continue to work.
+ *
+ * Accepts `statuses`: [{ status, tickets, onArchiveSome?, onArchiveAll? }, ...]
+ * Columns are rendered side-by-side inside the panel.
  */
 export default function ClosedSidePanel({
-  status,
-  tickets,
+  statuses = [],
   onStatusChange,
   onArchiveChange,
   onTicketClick,
   isLoading,
   highlightedTicketId,
-  onArchiveSome,
-  onArchiveAll,
   viewMode,
   statusOptions,
   boardKey,
   unreadCountByTicket,
 }) {
   const [open, setOpen] = useState(false);
+
+  if (!statuses.length) return null;
+
+  // Panel width scales with number of columns
+  const panelWidth = statuses.length === 1 ? 380 : 380 + (statuses.length - 1) * 320;
+  const totalCount = statuses.reduce((sum, s) => sum + (s.tickets?.length || 0), 0);
+  const handleLabel = statuses.map((s) => s.status).join(" · ");
 
   return (
     <>
@@ -43,11 +50,11 @@ export default function ClosedSidePanel({
           writingMode: "vertical-rl",
           textOrientation: "mixed",
           transform: open
-            ? "translate(-380px, -50%)"
+            ? `translate(-${panelWidth}px, -50%)`
             : "translate(0, -50%)",
           transition: "transform 300ms ease-in-out, background-color 200ms",
         }}
-        aria-label={`${open ? "Close" : "Open"} ${status} panel`}
+        aria-label={`${open ? "Close" : "Open"} side panel`}
       >
         <ChevronRight
           className="w-4 h-4 text-white"
@@ -57,40 +64,46 @@ export default function ClosedSidePanel({
           }}
         />
         <span className="text-[10px] tracking-[0.2em] font-semibold text-white uppercase">
-          {status} · {tickets.length}
+          {handleLabel} · {totalCount}
         </span>
       </button>
 
       {/* Panel */}
       <aside
-        className="fixed top-0 right-0 h-screen w-[380px] max-w-[90vw] z-40 p-4 flex flex-col"
+        className="fixed top-0 right-0 h-screen z-40 p-4 flex flex-col"
         style={{
+          width: `${panelWidth}px`,
+          maxWidth: "95vw",
           transform: open ? "translateX(0)" : "translateX(100%)",
           transition: "transform 300ms ease-in-out",
         }}
       >
         <div
-          className="flex-1 min-h-0 rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/30 shadow-2xl"
+          className="flex-1 min-h-0 rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/30 shadow-2xl p-3 flex gap-3"
           style={{
             background:
               "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)",
           }}
         >
-          <KanbanColumn
-            status={status}
-            tickets={tickets}
-            onStatusChange={onStatusChange}
-            onArchiveChange={onArchiveChange}
-            onTicketClick={onTicketClick}
-            isLoading={isLoading}
-            highlightedTicketId={highlightedTicketId}
-            onArchiveSome={onArchiveSome}
-            onArchiveAll={onArchiveAll}
-            viewMode={viewMode}
-            statusOptions={statusOptions}
-            boardKey={boardKey}
-            unreadCountByTicket={unreadCountByTicket}
-          />
+          {statuses.map(({ status, tickets, onArchiveSome, onArchiveAll }) => (
+            <div key={status} className="flex-1 min-w-0">
+              <KanbanColumn
+                status={status}
+                tickets={tickets}
+                onStatusChange={onStatusChange}
+                onArchiveChange={onArchiveChange}
+                onTicketClick={onTicketClick}
+                isLoading={isLoading}
+                highlightedTicketId={highlightedTicketId}
+                onArchiveSome={onArchiveSome}
+                onArchiveAll={onArchiveAll}
+                viewMode={viewMode}
+                statusOptions={statusOptions}
+                boardKey={boardKey}
+                unreadCountByTicket={unreadCountByTicket}
+              />
+            </div>
+          ))}
         </div>
       </aside>
     </>
