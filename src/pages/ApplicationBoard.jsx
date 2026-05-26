@@ -718,7 +718,7 @@ export default function ApplicationBoard() {
                   >
                     {showBadge && (
                       <span
-                        className="absolute -top-2 -left-2 min-w-[20px] h-5 px-1.5 rounded-full bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center shadow-md ring-2 ring-white"
+                        className="text-[10px] font-bold"
                         style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
                       >
                         {stepTwoCount}
