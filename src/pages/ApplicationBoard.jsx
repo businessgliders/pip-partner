@@ -173,6 +173,11 @@ export default function ApplicationBoard() {
     if (id && tickets.length) {
       const found = tickets.find((t) => t.id === id);
       if (found) {
+        // Reset filters so the ticket is always visible underneath the modal
+        setSearchQuery("");
+        setHiddenColumns([]);
+        setViewMode("status");
+        setShowArchived(!!found.archived);
         setHighlightedTicketId(id);
         setTimeout(() => setSelectedTicket(found), 500);
         setTimeout(() => setHighlightedTicketId(null), 3000);
@@ -528,6 +533,13 @@ export default function ApplicationBoard() {
                   markAsRead={markAsRead}
                   onSelect={(ticket, messageId, tabKey) => {
                     if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                    // Reset filters so the ticket is visible underneath the modal
+                    setSearchQuery("");
+                    setHiddenColumns([]);
+                    setViewMode("status");
+                    setShowArchived(!!ticket?.archived);
+                    setHighlightedTicketId(ticket?.id || null);
+                    setTimeout(() => setHighlightedTicketId(null), 3000);
                     setHighlightMessageId(messageId);
                     setSelectedTicket(ticket);
                   }}
