@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
+import { getStatusLabel } from "./boardConfig";
 
 /**
  * Glass-style slide-in side panel that hosts secondary swimlanes (closed/declined
@@ -29,7 +30,7 @@ export default function ClosedSidePanel({
   // Panel width scales with number of columns
   const panelWidth = statuses.length === 1 ? 380 : 380 + (statuses.length - 1) * 320;
   const totalCount = statuses.reduce((sum, s) => sum + (s.tickets?.length || 0), 0);
-  const handleLabel = statuses.map((s) => s.status).join(" · ");
+  const handleLabel = statuses.map((s) => getStatusLabel(boardKey, s.status)).join(" · ");
 
   return (
     <>
