@@ -52,15 +52,12 @@ export default function KanbanColumn({
   unreadCountByTicket = {},
 }) {
   const key = String(status).toLowerCase();
-  const isDimmed = key === "closed" || key === "declined" || key === "ghosted";
   const colCls = columnColors[key] || "from-white/30 to-white/10 border-white/30";
   const headCls = headerColors[key] || "bg-white/40 border-white/40";
 
   return (
     <div
-      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col h-full md:h-[calc(100vh-200px)] lg:max-h-none lg:h-[calc(100vh-220px)] ${
-        isDimmed ? "opacity-60 hover:opacity-100 transition-opacity" : ""
-      }`}
+      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col h-full md:h-[calc(100vh-200px)] lg:max-h-none lg:h-[calc(100vh-220px)]`}
     >
       <div className={`backdrop-blur-md ${headCls} border-b px-3 md:px-4 py-3 md:py-4 flex-shrink-0`}>
         <div className="flex items-center justify-between gap-2">
@@ -74,7 +71,7 @@ export default function KanbanColumn({
                 <Sparkles className="w-3 h-3" /> Tidy Up
               </button>
             )}
-            {key === "closed" && tickets.length > 0 && onArchiveSome && (
+            {tickets.length > 0 && onArchiveSome && (
               <button
                 onClick={onArchiveSome}
                 className="text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
@@ -82,7 +79,7 @@ export default function KanbanColumn({
                 Clean Up
               </button>
             )}
-            {key === "closed" && tickets.length > 0 && onArchiveAll && (
+            {tickets.length > 0 && onArchiveAll && (
               <button
                 onClick={onArchiveAll}
                 className="text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"

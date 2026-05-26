@@ -285,18 +285,18 @@ export default function ApplicationBoard() {
     setDragNoteDialog(null);
   };
 
-  const handleArchiveSome = async () => {
-    const closedKey = board.statuses[board.statuses.length - 1];
+  const handleArchiveSome = async (targetStatus) => {
+    const statusKey = targetStatus || board.statuses[board.statuses.length - 1];
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const targets = tickets.filter((t) => {
-      if (t.archived || t.status !== closedKey) return false;
+      if (t.archived || t.status !== statusKey) return false;
       const ts = new Date(t.updated_date || t.created_date);
       return ts.getMonth() !== currentMonth || ts.getFullYear() !== currentYear;
     });
     if (targets.length === 0) {
-      setAlertDialog({ message: "No older closed applications to archive yet." });
+      setAlertDialog({ message: `No older ${statusKey} applications to archive yet.` });
       return;
     }
     await Promise.all(targets.map((t) => base44.entities[board.entity].update(t.id, { archived: true })));
@@ -305,11 +305,11 @@ export default function ApplicationBoard() {
   };
 
   const handleArchiveAllConfirm = async () => {
-    const closedKey = board.statuses[board.statuses.length - 1];
-    const targets = tickets.filter((t) => !t.archived && t.status === closedKey);
+    const statusKey = archiveAllConfirmDialog?.status || board.statuses[board.statuses.length - 1];
+    const targets = tickets.filter((t) => !t.archived && t.status === statusKey);
     setArchiveAllConfirmDialog(null);
     if (targets.length === 0) {
-      setAlertDialog({ message: "Nothing to archive — no closed applications." });
+      setAlertDialog({ message: `Nothing to archive — no ${statusKey} applications.` });
       return;
     }
     await Promise.all(targets.map((t) => base44.entities[board.entity].update(t.id, { archived: true })));
@@ -672,8 +672,8 @@ export default function ApplicationBoard() {
                 statuses={sidePanelStatuses.map((s) => ({
                   status: s,
                   tickets: getTicketsByColumn(s),
-                  onArchiveSome: s === sidePanelStatuses[0] ? handleArchiveSome : undefined,
-                  onArchiveAll: s === sidePanelStatuses[0] ? () => setArchiveAllConfirmDialog(true) : undefined,
+                  onArchiveSome: () => handleArchiveSome(s),
+                  onArchiveAll: () => setArchiveAllConfirmDialog({ status: s }),
                 }))}
                 onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
                 onArchiveChange={handleArchiveChange}
@@ -703,8 +703,8 @@ export default function ApplicationBoard() {
       />
       <ConfirmDialog
         isOpen={!!archiveAllConfirmDialog}
-        title="Archive all closed applications?"
-        message="This will archive every closed application, including this month's."
+        title={`Archive all ${archiveAllConfirmDialog?.status || "closed"} applications?`}
+        message={`This will archive every ${archiveAllConfirmDialog?.status || "closed"} application, including this month's.`}
         onConfirm={handleArchiveAllConfirm}
         onCancel={() => setArchiveAllConfirmDialog(null)}
       />
