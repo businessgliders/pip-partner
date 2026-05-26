@@ -681,9 +681,9 @@ export default function ApplicationBoard() {
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={boardStep}
-                      initial={{ x: boardStep === "two" ? "100%" : "-100%", opacity: 0 }}
+                      initial={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
+                      exit={{ x: boardStep === "two" ? "100%" : "-100%", opacity: 0 }}
                       transition={{ type: "tween", ease: "easeInOut", duration: 0.35 }}
                       className="contents lg:grid lg:grid-cols-4 lg:gap-6 lg:h-full"
                     >
