@@ -172,7 +172,7 @@ export default function TicketCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="text-[10px] text-gray-500 mt-1 text-right">{new Date(ticket.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })}</div>
+        <div className="text-[10px] text-gray-500 mt-1 text-right">{new Date(ticket.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
       </div>
 
       {/* Desktop */}
