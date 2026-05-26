@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
+import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon, ChevronsRight, ChevronsLeft } from "lucide-react";
 
@@ -649,46 +650,93 @@ export default function ApplicationBoard() {
                 <button
                   onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
                   title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
-                  className="hidden lg:flex absolute right-1 top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-3 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all"
-                  style={{ writingMode: "vertical-rl", transform: "translateY(-50%) rotate(180deg)" }}
+                  className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-3 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all ${
+                    boardStep === "one" ? "right-1" : "left-1"
+                  }`}
+                  style={{
+                    writingMode: "vertical-rl",
+                    transform: boardStep === "one"
+                      ? "translateY(-50%) rotate(180deg)"
+                      : "translateY(-50%)",
+                  }}
                 >
                   <span className="text-[11px] font-semibold tracking-wider uppercase">
                     {boardStep === "one" ? "Step Two" : "Step One"}
                   </span>
                   {boardStep === "one" ? (
-                    <ChevronsLeft className="w-4 h-4 rotate-180" />
-                  ) : (
                     <ChevronsRight className="w-4 h-4 rotate-180" />
+                  ) : (
+                    <ChevronsLeft className="w-4 h-4 rotate-180" />
                   )}
                 </button>
               )}
 
               <div
                 ref={swimlaneScrollRef}
-                className="flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:grid lg:grid-cols-4 lg:gap-6 lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-visible lg:h-auto lg:pr-16"
+                className={`relative flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:block lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-hidden lg:h-auto ${
+                  hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
+                }`}
               >
-                {columns.map((col) => (
-                  <div
-                    key={col}
-                    data-swimlane
-                    className="flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] snap-start lg:w-auto lg:snap-align-none"
-                  >
-                    <KanbanColumn
-                      status={col}
-                      tickets={getTicketsByColumn(col)}
-                      onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                      onArchiveChange={handleArchiveChange}
-                      onTicketClick={(t) => setSelectedTicket(t)}
-                      isLoading={isLoading}
-                      highlightedTicketId={highlightedTicketId}
-                      onTidyUp={col === resolvedKey ? () => setShowCleanupPopup(true) : undefined}
-                      viewMode={effectiveViewMode}
-                      statusOptions={board.statuses}
-                      boardKey={board.key}
-                      unreadCountByTicket={unreadCountByTicket}
-                    />
+                {hasSteps ? (
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={boardStep}
+                      initial={{ x: boardStep === "two" ? "100%" : "-100%", opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
+                      transition={{ type: "tween", ease: "easeInOut", duration: 0.35 }}
+                      className="contents lg:grid lg:grid-cols-4 lg:gap-6 lg:h-full"
+                    >
+                      {columns.map((col) => (
+                        <div
+                          key={col}
+                          data-swimlane
+                          className="flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] snap-start lg:w-auto lg:snap-align-none"
+                        >
+                          <KanbanColumn
+                            status={col}
+                            tickets={getTicketsByColumn(col)}
+                            onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                            onArchiveChange={handleArchiveChange}
+                            onTicketClick={(t) => setSelectedTicket(t)}
+                            isLoading={isLoading}
+                            highlightedTicketId={highlightedTicketId}
+                            onTidyUp={col === resolvedKey ? () => setShowCleanupPopup(true) : undefined}
+                            viewMode={effectiveViewMode}
+                            statusOptions={board.statuses}
+                            boardKey={board.key}
+                            unreadCountByTicket={unreadCountByTicket}
+                          />
+                        </div>
+                      ))}
+                    </motion.div>
+                  </AnimatePresence>
+                ) : (
+                  <div className="contents lg:grid lg:grid-cols-4 lg:gap-6 lg:h-full">
+                    {columns.map((col) => (
+                      <div
+                        key={col}
+                        data-swimlane
+                        className="flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] snap-start lg:w-auto lg:snap-align-none"
+                      >
+                        <KanbanColumn
+                          status={col}
+                          tickets={getTicketsByColumn(col)}
+                          onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                          onArchiveChange={handleArchiveChange}
+                          onTicketClick={(t) => setSelectedTicket(t)}
+                          isLoading={isLoading}
+                          highlightedTicketId={highlightedTicketId}
+                          onTidyUp={col === resolvedKey ? () => setShowCleanupPopup(true) : undefined}
+                          viewMode={effectiveViewMode}
+                          statusOptions={board.statuses}
+                          boardKey={board.key}
+                          unreadCountByTicket={unreadCountByTicket}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
