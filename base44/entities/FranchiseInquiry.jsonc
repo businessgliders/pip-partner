@@ -125,6 +125,10 @@
         "discussion",
         "contacted",
         "qualified",
+        "site_selection",
+        "lease",
+        "build_out",
+        "training",
         "closed",
         "ghosted"
       ],

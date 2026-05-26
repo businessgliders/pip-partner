@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
-import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon } from "lucide-react";
+import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon, ChevronsRight, ChevronsLeft } from "lucide-react";
 
 import UserMenu from "../components/dashboard/UserMenu";
 import NotificationCenter from "../components/admin/NotificationCenter";
@@ -97,6 +97,7 @@ export default function ApplicationBoard() {
   const [archiveAllConfirmDialog, setArchiveAllConfirmDialog] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [boardStep, setBoardStep] = useState("one"); // "one" | "two" — only used when board defines stepOne/stepTwo
   const swimlaneScrollRef = useRef(null);
 
   useEffect(() => {
@@ -104,6 +105,7 @@ export default function ApplicationBoard() {
     setHiddenColumns([]);
     setShowArchived(false);
     setCleanupDismissed(false);
+    setBoardStep("one");
   }, [activeTab]);
 
   const { data: rawTickets = [], isLoading } = useQuery({
@@ -164,9 +166,14 @@ export default function ApplicationBoard() {
     const ghosted = allStatusColumns.filter((s) => SIDE_PANEL_KEYS.has(s) && s !== last);
     return [last, ...ghosted].filter(Boolean);
   }, [effectiveViewMode, allStatusColumns]);
+
+  // If the board defines stepOne/stepTwo, the main grid swaps between them.
+  const hasSteps = Array.isArray(board.stepOne) && Array.isArray(board.stepTwo);
   const mainStatusColumns =
     effectiveViewMode === "status"
-      ? allStatusColumns.filter((s) => !sidePanelStatuses.includes(s))
+      ? (hasSteps
+          ? (boardStep === "one" ? board.stepOne : board.stepTwo)
+          : allStatusColumns.filter((s) => !sidePanelStatuses.includes(s)))
       : allStatusColumns;
 
   const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
@@ -635,6 +642,24 @@ export default function ApplicationBoard() {
                   className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/80 border border-white/80 shadow flex items-center justify-center"
                 >
                   <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+
+              {hasSteps && (
+                <button
+                  onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
+                  title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
+                  className="hidden lg:flex absolute right-1 top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-3 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all"
+                  style={{ writingMode: "vertical-rl", transform: "translateY(-50%) rotate(180deg)" }}
+                >
+                  <span className="text-[11px] font-semibold tracking-wider uppercase">
+                    {boardStep === "one" ? "Step Two" : "Step One"}
+                  </span>
+                  {boardStep === "one" ? (
+                    <ChevronsLeft className="w-4 h-4 rotate-180" />
+                  ) : (
+                    <ChevronsRight className="w-4 h-4 rotate-180" />
+                  )}
                 </button>
               )}
 
