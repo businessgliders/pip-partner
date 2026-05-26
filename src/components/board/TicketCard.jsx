@@ -165,7 +165,7 @@ export default function TicketCard({
                   ) : (
                     <DropdownMenuItem onClick={() => onArchiveChange?.(ticket, true)}>
                       <Archive className="w-3.5 h-3.5 mr-2" />
-                      Move to Archived
+                      Archive
                     </DropdownMenuItem>
                   )}
                 </>
@@ -235,7 +235,7 @@ export default function TicketCard({
                   ) : (
                     <DropdownMenuItem onClick={() => onArchiveChange?.(ticket, true)}>
                       <Archive className="w-4 h-4 mr-2" />
-                      Move to Archived
+                      Archive
                     </DropdownMenuItem>
                   )}
                 </>
