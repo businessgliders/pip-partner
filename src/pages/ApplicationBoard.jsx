@@ -664,9 +664,9 @@ export default function ApplicationBoard() {
                     {boardStep === "one" ? "Step Two" : "Step One"}
                   </span>
                   {boardStep === "one" ? (
-                    <ChevronsRight className="w-4 h-4 rotate-180" />
-                  ) : (
                     <ChevronsLeft className="w-4 h-4 rotate-180" />
+                  ) : (
+                    <ChevronsRight className="w-4 h-4 rotate-180" />
                   )}
                 </button>
               )}
