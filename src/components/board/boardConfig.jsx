@@ -1,13 +1,35 @@
 // Per-entity board configuration.
 // `categoryField`: which field drives the "View by Category" columns. null = hide toggle.
 
+// Per-board status display: label (overrides the raw status key) + tiny description
+// shown under the swimlane title. Falls back to the raw key when no entry exists.
+export const STATUS_META = {
+  franchise: {
+    new: { label: "New", description: "Just submitted — needs first outreach" },
+    scheduled: { label: "Discovery Call", description: "Intro call booked or held" },
+    discussion: { label: "Discussion", description: "Active back-and-forth after the call" },
+    qualified: { label: "Qualified", description: "Vetted and approved to move forward" },
+    closed: { label: "Signed", description: "Franchise agreement signed" },
+    ghosted: { label: "Ghosted", description: "No reply after multiple follow-ups" },
+    contacted: { label: "Contacted", description: "Reached out, awaiting response" },
+  },
+};
+
+export function getStatusMeta(boardKey, status) {
+  return STATUS_META?.[boardKey]?.[status] || null;
+}
+
+export function getStatusLabel(boardKey, status) {
+  return getStatusMeta(boardKey, status)?.label || status;
+}
+
 export const BOARD_TYPES = [
   {
     key: "franchise",
     label: "Franchise",
     entity: "FranchiseInquiry",
     tabKey: "franchise",
-    statuses: ["new", "scheduled", "ghosted", "qualified", "closed"],
+    statuses: ["new", "scheduled", "discussion", "ghosted", "qualified", "closed"],
     categoryField: "province",
     color: "#b67651",
     bg: "#fbe0e2",

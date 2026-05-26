@@ -122,6 +122,7 @@
       "enum": [
         "new",
         "scheduled",
+        "discussion",
         "contacted",
         "qualified",
         "closed",
