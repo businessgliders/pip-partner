@@ -361,9 +361,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Suggest</span>
         </Button>
         <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
-        {ticketType === "FranchiseInquiry" && (
-          <BookCallPopover onSelect={handleSlotSelected} isMobileFullscreen={isMobileFullscreen} />
-        )}
+        <BookCallPopover onSelect={handleSlotSelected} isMobileFullscreen={isMobileFullscreen} />
         <Button
           size="sm"
           variant="outline"
