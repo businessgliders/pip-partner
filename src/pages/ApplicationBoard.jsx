@@ -646,30 +646,45 @@ export default function ApplicationBoard() {
                 </button>
               )}
 
-              {hasSteps && (
-                <button
-                  onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
-                  title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
-                  className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-4 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all ${
-                    boardStep === "one" ? "right-1" : "left-1"
-                  }`}
-                  style={{
-                    writingMode: "vertical-rl",
-                    transform: boardStep === "one"
-                      ? "translateY(-50%) rotate(180deg)"
-                      : "translateY(-50%)",
-                  }}
-                >
-                  <span className="text-[11px] font-semibold tracking-wider uppercase">
-                    {boardStep === "one" ? "Step Two" : "Step One"}
-                  </span>
-                  {boardStep === "one" ? (
-                    <ChevronsLeft className="w-4 h-4" />
-                  ) : (
-                    <ChevronsRight className="w-4 h-4" />
-                  )}
-                </button>
-              )}
+              {hasSteps && (() => {
+                const stepTwoCount = (board.stepTwo || []).reduce(
+                  (acc, s) => acc + getTicketsByColumn(s).length,
+                  0
+                );
+                const showBadge = boardStep === "one" && stepTwoCount > 0;
+                return (
+                  <button
+                    onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
+                    title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
+                    className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-4 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all ${
+                      boardStep === "one" ? "right-1" : "left-1"
+                    }`}
+                    style={{
+                      writingMode: "vertical-rl",
+                      transform: boardStep === "one"
+                        ? "translateY(-50%) rotate(180deg)"
+                        : "translateY(-50%)",
+                    }}
+                  >
+                    {showBadge && (
+                      <span
+                        className="absolute -top-2 -left-2 min-w-[20px] h-5 px-1.5 rounded-full bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center shadow-md ring-2 ring-white"
+                        style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
+                      >
+                        {stepTwoCount}
+                      </span>
+                    )}
+                    <span className="text-[11px] font-semibold tracking-wider uppercase">
+                      {boardStep === "one" ? "Step Two" : "Step One"}
+                    </span>
+                    {boardStep === "one" ? (
+                      <ChevronsLeft className="w-4 h-4" />
+                    ) : (
+                      <ChevronsRight className="w-4 h-4" />
+                    )}
+                  </button>
+                );
+              })()}
 
               <div
                 ref={swimlaneScrollRef}
