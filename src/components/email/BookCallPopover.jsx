@@ -81,15 +81,21 @@ export default function BookCallPopover({ onSelect, isMobileFullscreen, boardKey
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          size="sm"
-          variant="outline"
-          className={`text-pink-700 border-pink-200 hover:bg-pink-50 ${isMobileFullscreen ? "p-1.5" : ""}`}
-        >
-          <CalendarDays className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "mr-1.5"}`} />
-          <span className={isMobileFullscreen ? "hidden" : ""}>Book a Meeting</span>
-        </Button>
-      </PopoverTrigger>
+         <Button
+           size="sm"
+           variant="outline"
+           className={`text-pink-700 border-pink-200 hover:bg-pink-50 ${isMobileFullscreen ? "p-1.5" : ""}`}
+           title={`Cal.com Event Type: ${boardKey === 'franchise' ? 'Franchise Discovery Call' : 'Hiring Interview'}`}
+         >
+           <CalendarDays className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "mr-1.5"}`} />
+           <span className={isMobileFullscreen ? "hidden" : ""}>Book a Meeting</span>
+           {!isMobileFullscreen && (
+             <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
+               {boardKey === 'franchise' ? 'Franchise' : 'Hiring'}
+             </span>
+           )}
+         </Button>
+       </PopoverTrigger>
       <PopoverContent className="w-[420px] p-0" align="start">
         <div className="p-4 border-b">
           <div className="flex items-start justify-between gap-2">
