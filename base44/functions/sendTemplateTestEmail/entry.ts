@@ -9,6 +9,34 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const FROM_EMAIL = 'franchise@pilatesinpinkstudio.com';
 const FROM_NAME = 'Pilates in Pink \u2122';
 
+const BRAND_PINK = '#f1889b';
+const BRAND_ROSE = '#b67651';
+const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png';
+
+function brandedShell(innerHtml, preheader = '') {
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#fbe0e2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#5a3a28;">
+  <span style="display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;">${preheader}</span>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,#f1889b 0%,#f7b1bd 40%,#fbe0e2 100%);padding:40px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(182,118,81,0.15);">
+        <tr><td style="padding:40px 40px 24px;text-align:center;background:linear-gradient(180deg,#fbe0e2 0%,#ffffff 100%);">
+          <img src="${LOGO_URL}" alt="Pilates in Pink" width="64" style="width:64px;height:64px;display:block;margin:0 auto 16px;"/>
+          <div style="font-size:11px;letter-spacing:3px;color:${BRAND_ROSE};font-weight:600;">PILATES IN PINK&trade;</div>
+        </td></tr>
+        <tr><td style="padding:24px 40px 40px;">${innerHtml}</td></tr>
+        <tr><td style="padding:24px 40px;background:#2a1a1f;color:rgba(255,255,255,0.7);text-align:center;font-size:12px;">
+          <div style="letter-spacing:2px;color:#f7b1bd;font-size:10px;margin-bottom:8px;">PRETTY &middot; POWERFUL &middot; PILATES</div>
+          <div>6161 Mayfield Road, Unit #105 &middot; Brampton, ON</div>
+          <div style="margin-top:8px;color:rgba(255,255,255,0.4);">&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
 function rfc2047(str) {
   if (/^[\x20-\x7E]*$/.test(str)) return str;
   const b64 = btoa(unescape(encodeURIComponent(str)));
@@ -87,8 +115,9 @@ Deno.serve(async (req) => {
     };
 
     const subject = `[TEST] ${renderVars(tpl.subject, vars)}`;
-    const bodyHtml = renderVars(tpl.body_html, vars);
-    const bodyText = htmlToText(bodyHtml);
+    const innerHtml = renderVars(tpl.body_html, vars);
+    const bodyHtml = brandedShell(innerHtml, renderVars(tpl.subject, vars));
+    const bodyText = htmlToText(innerHtml);
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
