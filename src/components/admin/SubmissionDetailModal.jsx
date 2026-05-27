@@ -139,13 +139,13 @@ export default function SubmissionDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[92vh] overflow-hidden p-0">
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] max-h-[92vh]">
+      <DialogContent className="max-w-6xl md:max-w-5xl lg:max-w-7xl max-h-[92vh] overflow-hidden p-0">
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-[3fr_2fr] max-h-[92vh]">
           {/* Left: Contact + Email Communications */}
-          <div
-            className="flex flex-col overflow-hidden border-r order-1 lg:order-none min-h-0 max-h-[92vh]"
-            style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf3ec 100%)" }}
-          >
+           <div
+             className="flex flex-col overflow-hidden border-r order-1 md:order-none min-h-0 max-h-[92vh]"
+             style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf3ec 100%)" }}
+           >
             {/* Header (fixed) */}
             <div className="p-6 border-b shrink-0">
               <div className="flex items-start justify-between">
@@ -330,7 +330,7 @@ export default function SubmissionDetailModal({
           </div>
 
           {/* Right: Request Details + Assign To + Internal Notes */}
-          <div className="relative overflow-y-auto bg-white order-2 lg:order-none hide-scrollbar">
+          <div className="relative overflow-y-auto bg-white order-2 md:order-none hide-scrollbar">
             <LocationMapBanner
               postalCode={row.preferred_postal_code || row.postal_code}
               city={row.preferred_location || row.location || row.city}
