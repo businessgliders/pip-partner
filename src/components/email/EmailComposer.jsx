@@ -100,8 +100,49 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   };
 
   const handleInsertLink = () => {
-    const url = window.prompt("Enter URL");
-    if (url) exec("createLink", url);
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    // Make sure focus is in the editor so the selection is valid
+    editor.focus();
+
+    const selection = window.getSelection();
+    const hasSelectionInEditor =
+      selection &&
+      selection.rangeCount > 0 &&
+      !selection.isCollapsed &&
+      editor.contains(selection.anchorNode);
+
+    const selectedText = hasSelectionInEditor ? selection.toString() : "";
+
+    const rawUrl = window.prompt("Enter URL", "https://");
+    if (!rawUrl) return;
+    const trimmed = rawUrl.trim();
+    if (!trimmed || trimmed === "https://" || trimmed === "http://") return;
+
+    // Normalize: add https:// if no scheme and it's not a mailto/tel link
+    const href = /^(https?:|mailto:|tel:|#|\/)/i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`;
+
+    if (hasSelectionInEditor) {
+      // Wrap the selected text with a link
+      document.execCommand("createLink", false, href);
+      // Make the newly-created link open in a new tab
+      const anchors = editor.querySelectorAll(`a[href="${href}"]`);
+      anchors.forEach((a) => {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+      });
+    } else {
+      // No selection — ask for visible text and insert a fresh anchor
+      const linkText = window.prompt("Link text", href) || href;
+      const safeText = linkText.replace(/[<>&]/g, (c) =>
+        ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])
+      );
+      const html = `<a href="${href}" target="_blank" rel="noopener noreferrer">${safeText}</a>&nbsp;`;
+      document.execCommand("insertHTML", false, html);
+    }
   };
 
   // Build the actual recipient list to send
