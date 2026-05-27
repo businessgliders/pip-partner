@@ -182,7 +182,7 @@ export default function TicketCard({
           <div className="flex items-start gap-2 min-w-0">
             <div className="min-w-0">
               <div className="text-sm font-semibold text-gray-900 truncate">
-               <span className="text-xs font-bold text-gray-400">{num}</span> {name}
+               {name}
               </div>
               {scheduledTimeLabel && (
                 <span className="inline-block mt-1 mr-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium max-w-full truncate">
