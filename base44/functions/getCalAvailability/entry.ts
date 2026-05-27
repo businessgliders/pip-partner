@@ -10,15 +10,24 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     const apiKey = Deno.env.get('CAL_API_KEY');
-    const eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID');
     const username = Deno.env.get('CAL_USERNAME');
 
-    if (!apiKey || !eventTypeId) {
+    if (!apiKey) {
       return Response.json({ error: 'Cal.com is not configured' }, { status: 500 });
     }
 
     let body = {};
     try { body = await req.json(); } catch (_) { body = {}; }
+
+    // Determine event type based on boardKey: 'franchise' or 'hiring' (default)
+    const boardKey = body.boardKey || 'hiring';
+    const eventTypeId = boardKey === 'franchise'
+      ? Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE')
+      : Deno.env.get('CAL_EVENT_TYPE_ID_HIRING');
+
+    if (!eventTypeId) {
+      return Response.json({ error: `Cal.com event type for '${boardKey}' is not configured` }, { status: 500 });
+    }
 
     // Auth: two paths supported.
     // 1) Public franchise funnel — applicants aren't logged in, so we require

@@ -16,14 +16,22 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     const apiKey = Deno.env.get('CAL_API_KEY');
-    const eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID');
 
-    if (!apiKey || !eventTypeId) {
+    if (!apiKey) {
       return Response.json({ error: 'Cal.com is not configured' }, { status: 500 });
     }
 
     const body = await req.json();
-    const { start, timeZone = 'America/Toronto', name, email, phone, notes, inquiryId, friendlyTime } = body || {};
+    const { start, timeZone = 'America/Toronto', name, email, phone, notes, inquiryId, friendlyTime, boardKey = 'hiring' } = body || {};
+
+    // Determine event type based on boardKey: 'franchise' or 'hiring' (default)
+    const eventTypeId = boardKey === 'franchise'
+      ? Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE')
+      : Deno.env.get('CAL_EVENT_TYPE_ID_HIRING');
+
+    if (!eventTypeId) {
+      return Response.json({ error: `Cal.com event type for '${boardKey}' is not configured` }, { status: 500 });
+    }
 
     if (!start || !name || !email) {
       return Response.json({ error: 'Missing required fields: start, name, email' }, { status: 400 });

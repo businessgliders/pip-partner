@@ -18,6 +18,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Cal.com is not configured' }, { status: 500 });
     }
 
+    // Note: getCalBookings fetches ALL upcoming bookings across both event types.
+    // No need to filter by boardKey — the board UI displays bookings for all application types.
     // Pull upcoming bookings (Cal v2 supports filtering by status).
     // We page through results until we have everything or hit a safety cap.
     const map = {};
