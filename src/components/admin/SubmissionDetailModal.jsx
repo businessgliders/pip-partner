@@ -19,6 +19,7 @@ import StatusDropdown from "./StatusDropdown";
 import { BOARD_TYPES } from "../board/boardConfig";
 import { displayAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
+import FddCountdownBadge from "./FddCountdownBadge";
 
 const ENTITY_KEY_TO_NAME = {
   franchise: "FranchiseInquiry",
@@ -154,13 +155,14 @@ export default function SubmissionDetailModal({
                     Submission {(row.display_ticket_number || row.app_number) ? `#${displayAppNumber(row, tabKey)}` : ""}
                   </p>
                   <h2 className="text-xl font-semibold text-slate-900">{displayName}</h2>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
                     <StatusDropdown
                       status={row.status}
                       statuses={BOARD_TYPES.find((b) => b.key === tabKey)?.statuses || []}
                       onChange={handleStatusChange}
                     />
                     <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
+                    {tabKey === "franchise" && <FddCountdownBadge ticketId={row.id} />}
                   </div>
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1 mt-6">
