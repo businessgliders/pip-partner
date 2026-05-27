@@ -347,31 +347,7 @@ export default function ApplicationBoard() {
     setCleanupDismissed(true);
   };
 
-  const updateScrollState = () => {
-    const el = swimlaneScrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 5);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
-  };
-  useEffect(() => {
-    updateScrollState();
-    const el = swimlaneScrollRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", updateScrollState);
-    window.addEventListener("resize", updateScrollState);
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [columns.length, showArchived]);
 
-  const scrollSwimlanes = (direction) => {
-    const el = swimlaneScrollRef.current;
-    if (!el) return;
-    const first = el.querySelector("[data-swimlane]");
-    const w = (first?.clientWidth || 320) + 16;
-    el.scrollBy({ left: direction === "left" ? -w : w, behavior: "smooth" });
-  };
 
   return (
     <div
@@ -651,37 +627,78 @@ export default function ApplicationBoard() {
               </div>
 
           {/* Mobile-only horizontal pill switcher */}
-          <div className="flex flex-wrap gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden">
+          <div className="flex gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
+              const activeIndex = BOARD_TYPES.findIndex((b) => b.key === activeTab);
+              const isUnderActive = hasSteps && t.key === activeTab;
               return (
-                <button
-                  key={t.key}
-                  onClick={() => setActiveTab(t.key)}
-                  className={`flex-1 min-w-max px-2 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                    isActive
-                      ? "bg-white text-gray-900 border-white shadow"
-                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  {t.label}
-                </button>
+                <div key={t.key} className="flex-1 flex flex-col gap-1.5 min-w-0">
+                  <button
+                    onClick={() => setActiveTab(t.key)}
+                    className={`w-full px-2 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      isActive
+                        ? "bg-white text-gray-900 border-white shadow"
+                        : "bg-white/20 text-white border-white/40 hover:bg-white/30"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                  {isUnderActive && !showArchived && effectiveViewMode === "status" && (() => {
+                    const stepTwoCount = (board.stepTwo || []).reduce(
+                      (acc, s) => acc + getTicketsByColumn(s).length,
+                      0
+                    );
+                    const stepOneCount = (board.stepOne || []).reduce(
+                      (acc, s) => acc + getTicketsByColumn(s).length,
+                      0
+                    );
+                    return (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setBoardStep("one")}
+                          className={`flex-1 px-1 py-0.5 rounded-full text-[10px] font-medium border transition-all flex items-center justify-center gap-1 min-w-0 ${
+                            boardStep === "one"
+                              ? "bg-white/90 text-gray-900 border-white"
+                              : "bg-white/10 text-white border-white/30 hover:bg-white/15"
+                          }`}
+                        >
+                          <span className="truncate">Step One</span>
+                          {stepOneCount > 0 && (
+                            <span className="flex-shrink-0 text-[9px] font-semibold">
+                              ({stepOneCount})
+                            </span>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setBoardStep("two")}
+                          className={`flex-1 px-1 py-0.5 rounded-full text-[10px] font-medium border transition-all flex items-center justify-center gap-1 min-w-0 ${
+                            boardStep === "two"
+                              ? "bg-white/90 text-gray-900 border-white"
+                              : "bg-white/10 text-white border-white/30 hover:bg-white/15"
+                          }`}
+                        >
+                          <span className="truncate">Step Two</span>
+                          {stepTwoCount > 0 && (
+                            <span className="flex-shrink-0 text-[9px] font-semibold">
+                              ({stepTwoCount})
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
               );
             })}
           </div>
 
-          {/* Mobile/Tablet-only Step One / Step Two switcher */}
-          {hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
-            const stepTwoCount = (board.stepTwo || []).reduce(
-              (acc, s) => acc + getTicketsByColumn(s).length,
-              0
-            );
-            const stepOneCount = (board.stepOne || []).reduce(
-              (acc, s) => acc + getTicketsByColumn(s).length,
-              0
-            );
+          {/* Legacy Step switcher block (now unused — kept hidden to avoid layout shift) */}
+          {false && hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
+            const stepTwoCount = 0;
+            const stepOneCount = 0;
             return (
-              <div className="flex gap-1.5 mt-2 -mx-2 px-2 lg:hidden">
+              <div className="flex gap-1.5 mt-2 -mx-2 px-2 hidden">
                 <button
                   onClick={() => setBoardStep("one")}
                   className={`flex-1 px-1.5 py-1 rounded-full text-[11px] font-medium border transition-all flex items-center justify-center gap-1 ${
@@ -757,22 +774,6 @@ export default function ApplicationBoard() {
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="relative flex-1 min-h-0 mt-1 lg:mt-2">
-              {canScrollLeft && (
-                <button
-                  onClick={() => scrollSwimlanes("left")}
-                  className="lg:hidden absolute left-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/80 border border-white/80 shadow flex items-center justify-center"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-              )}
-              {canScrollRight && (
-                <button
-                  onClick={() => scrollSwimlanes("right")}
-                  className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/80 border border-white/80 shadow flex items-center justify-center"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              )}
 
               {hasSteps && (() => {
                 const stepTwoCount = (board.stepTwo || []).reduce(
@@ -816,7 +817,7 @@ export default function ApplicationBoard() {
 
               <div
                 ref={swimlaneScrollRef}
-                className={`relative flex overflow-x-auto h-full -mx-4 md:-mx-8 pl-6 pr-4 md:pl-10 md:pr-8 pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain gap-4 lg:block lg:flex-1 lg:min-h-0 lg:mx-0 lg:px-0 lg:overflow-hidden lg:h-auto ${
+                className={`relative h-full pb-2 lg:flex-1 lg:min-h-0 lg:overflow-hidden ${
                   hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
                 }`}
               >
@@ -828,13 +829,13 @@ export default function ApplicationBoard() {
                       animate={{ x: 0, opacity: 1 }}
                       exit={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
                       transition={{ type: "tween", ease: "easeInOut", duration: 0.35 }}
-                      className="contents lg:grid lg:grid-cols-4 lg:gap-6 lg:h-full"
+                      className="grid grid-cols-4 gap-1.5 md:gap-3 h-full lg:gap-6"
                     >
                       {columns.map((col) => (
                         <div
                           key={col}
                           data-swimlane
-                          className="flex-shrink-0 w-[48%] sm:w-[40%] md:w-[32%] snap-start lg:w-auto lg:snap-align-none"
+                          className="min-w-0 h-full"
                         >
                           <KanbanColumn
                             status={col}
@@ -854,12 +855,12 @@ export default function ApplicationBoard() {
                     </motion.div>
                   </AnimatePresence>
                 ) : (
-                  <div className="contents lg:grid lg:grid-cols-4 lg:gap-6 lg:h-full">
+                  <div className="grid grid-cols-4 gap-1.5 md:gap-3 h-full lg:gap-6">
                     {columns.map((col) => (
                       <div
                         key={col}
                         data-swimlane
-                        className="flex-shrink-0 w-[48%] sm:w-[40%] md:w-[32%] snap-start lg:w-auto lg:snap-align-none"
+                        className="min-w-0 h-full"
                       >
                         <KanbanColumn
                           status={col}
@@ -873,11 +874,11 @@ export default function ApplicationBoard() {
                           statusOptions={board.statuses}
                           boardKey={board.key}
                           unreadCountByTicket={unreadCountByTicket}
-                          />
-                          </div>
-                          ))}
-                          </div>
-                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

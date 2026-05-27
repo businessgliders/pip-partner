@@ -71,14 +71,14 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col h-full md:h-[calc(100vh-200px)] lg:max-h-none lg:h-[calc(100vh-220px)]`}
+      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col h-full lg:h-[calc(100vh-220px)]`}
     >
-      <div className={`backdrop-blur-md ${headCls} border-b px-3 md:px-4 py-3 md:py-4 flex-shrink-0`}>
-        <div className="flex items-center justify-between gap-2">
+      <div className={`backdrop-blur-md ${headCls} border-b px-2 md:px-4 py-2 md:py-4 flex-shrink-0`}>
+        <div className="flex items-center justify-between gap-1 md:gap-2">
           <div className="min-w-0">
-            <h3 className="text-white font-semibold capitalize text-sm md:text-base truncate">{displayLabel}</h3>
+            <h3 className="text-white font-semibold capitalize text-xs md:text-base truncate">{displayLabel}</h3>
             {description && (
-              <p className="text-white/70 text-[10px] leading-tight mt-0.5 truncate">{description}</p>
+              <p className="text-white/70 text-[10px] leading-tight mt-0.5 truncate hidden md:block">{description}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
