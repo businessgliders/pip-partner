@@ -143,6 +143,7 @@ export default function OwnAStudio() {
           notes: `Franchise inquiry — ${formData.preferred_location || ""} (${formData.available_capital || ""})`,
           inquiryId,
           friendlyTime: slot.friendly,
+          boardKey: 'franchise',
         }),
         25000,
         "Booking is taking longer than expected"
@@ -248,6 +249,7 @@ export default function OwnAStudio() {
                 isSubmitting={isSubmitting}
                 bookingError={bookingError}
                 onClearBookingError={() => setBookingError(null)}
+                boardKey="franchise"
               />
             )}
             {stage === "resumed" && resumedInquiry && (

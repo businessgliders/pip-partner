@@ -25,35 +25,35 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function BookCallPopover({ onSelect, isMobileFullscreen }) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [slotsByDay, setSlotsByDay] = useState({});
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
+export default function BookCallPopover({ onSelect, isMobileFullscreen, boardKey = 'hiring' }) {
+   const [open, setOpen] = useState(false);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState(null);
+   const [slotsByDay, setSlotsByDay] = useState({});
+   const [selectedDay, setSelectedDay] = useState(null);
+   const [selectedSlot, setSelectedSlot] = useState(null);
 
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await base44.functions.invoke("getCalAvailability", { timeZone: TZ });
-        if (cancelled) return;
-        setSlotsByDay(res?.data?.slots || {});
-      } catch (e) {
-        console.error("getCalAvailability failed", e?.response?.data || e);
-        if (!cancelled) setError(
-          e?.response?.data?.error || e?.message || "Couldn't load availability."
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [open]);
+   useEffect(() => {
+     if (!open) return;
+     let cancelled = false;
+     (async () => {
+       setLoading(true);
+       setError(null);
+       try {
+         const res = await base44.functions.invoke("getCalAvailability", { timeZone: TZ, boardKey });
+         if (cancelled) return;
+         setSlotsByDay(res?.data?.slots || {});
+       } catch (e) {
+         console.error("getCalAvailability failed", e?.response?.data || e);
+         if (!cancelled) setError(
+           e?.response?.data?.error || e?.message || "Couldn't load availability."
+         );
+       } finally {
+         if (!cancelled) setLoading(false);
+       }
+     })();
+     return () => { cancelled = true; };
+   }, [open, boardKey]);
 
   const days = useMemo(() => {
     return Object.keys(slotsByDay)

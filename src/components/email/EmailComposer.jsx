@@ -151,6 +151,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
             phone: ticket?.phone || "",
             notes: `Booked by staff from admin board (ticket ${ticket?.id || ""})`,
             inquiryId: ticket?.id,
+            boardKey: ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring',
           });
         } catch (bookErr) {
           console.error("bookCalEvent failed after send", bookErr);
@@ -361,7 +362,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Suggest</span>
         </Button>
         <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
-        <BookCallPopover onSelect={handleSlotSelected} isMobileFullscreen={isMobileFullscreen} />
+        <BookCallPopover onSelect={handleSlotSelected} isMobileFullscreen={isMobileFullscreen} boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'} />
         <Button
           size="sm"
           variant="outline"

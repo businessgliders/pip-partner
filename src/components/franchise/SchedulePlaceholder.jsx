@@ -26,34 +26,34 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId, bookingError, onClearBookingError }) {
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [slotsByDay, setSlotsByDay] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  // Hard double-click guard — flips synchronously before React state updates,
-  // preventing two POSTs to bookCalEvent within the same tick.
-  const submittingRef = useRef(false);
+export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId, bookingError, onClearBookingError, boardKey = 'franchise' }) {
+   const [selectedDay, setSelectedDay] = useState(null);
+   const [selectedSlot, setSelectedSlot] = useState(null);
+   const [slotsByDay, setSlotsByDay] = useState({});
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState(null);
+   // Hard double-click guard — flips synchronously before React state updates,
+   // preventing two POSTs to bookCalEvent within the same tick.
+   const submittingRef = useRef(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await base44.functions.invoke("getCalAvailability", { timeZone: TZ, inquiryId });
-        if (cancelled) return;
-        const slots = res?.data?.slots || {};
-        setSlotsByDay(slots);
-      } catch (e) {
-        if (!cancelled) setError("Couldn't load availability. Please try again.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [inquiryId]);
+   useEffect(() => {
+     let cancelled = false;
+     (async () => {
+       setLoading(true);
+       setError(null);
+       try {
+         const res = await base44.functions.invoke("getCalAvailability", { timeZone: TZ, inquiryId, boardKey });
+         if (cancelled) return;
+         const slots = res?.data?.slots || {};
+         setSlotsByDay(slots);
+       } catch (e) {
+         if (!cancelled) setError("Couldn't load availability. Please try again.");
+       } finally {
+         if (!cancelled) setLoading(false);
+       }
+     })();
+     return () => { cancelled = true; };
+   }, [inquiryId, boardKey]);
 
   const days = useMemo(() => {
     return Object.keys(slotsByDay)
