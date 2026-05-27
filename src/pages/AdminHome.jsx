@@ -9,7 +9,7 @@ const TILES = [
     title: "Submissions",
     description: "Franchise, influencer, instructor & front desk applications",
     icon: Inbox,
-    href: "/ApplicationBoard?view=table",
+    href: "/ApplicationBoard",
   },
   {
     title: "Marketing",
