@@ -35,11 +35,15 @@ export default function TemplatePicker({ vars, onSelect, isMobileFullscreen }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={isMobileFullscreen ? "p-1.5" : "gap-1.5"}>
-          <FileText className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : ""}`} />
-          <span className={isMobileFullscreen ? "hidden" : ""}>Templates</span>
-        </Button>
-      </DropdownMenuTrigger>
+         <Button
+           size="sm"
+           variant="outline"
+           className={`text-pink-700 border-pink-200 hover:bg-pink-50 ${isMobileFullscreen ? "p-1.5" : "gap-1.5"}`}
+         >
+           <FileText className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : ""}`} />
+           <span className={isMobileFullscreen ? "hidden" : ""}>Templates</span>
+         </Button>
+       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 max-h-96 overflow-y-auto">
         {templates.length === 0 && (
           <div className="px-3 py-4 text-xs text-gray-500 text-center">No templates yet</div>
