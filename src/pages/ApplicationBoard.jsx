@@ -435,7 +435,8 @@ export default function ApplicationBoard() {
               >
                 <img src={LOGO_URL} alt="Pilates in Pink" className="h-12 md:h-16 drop-shadow-xl hover:scale-105 transition-transform" />
               </Link>
-              <div className="text-white text-xs md:text-sm font-medium drop-shadow lg:hidden">
+              {/* Mobile-only count text */}
+              <div className="text-white text-xs font-medium drop-shadow md:hidden">
                 {showArchived ? (
                   <>{archivedTickets.length} archived applications</>
                 ) : (
@@ -443,7 +444,84 @@ export default function ApplicationBoard() {
                 )}
               </div>
 
-              {/* User menu on mobile, top right */}
+              {/* Tablet-only (md → lg): View filter + search + bell where the count text used to be */}
+              <div className="hidden md:flex lg:hidden items-center gap-2">
+                {!showArchived && (
+                  <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
+                    <button
+                      onClick={() => setViewMode("status")}
+                      title="Board view"
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("table")}
+                      title="Table view"
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <Table2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("map")}
+                      title="Map view"
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <MapIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setShowArchived((v) => !v)}
+                      title="Archived"
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                        showArchived ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <Archive className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                {showArchived && (
+                  <button
+                    onClick={() => setShowArchived(false)}
+                    title="Back to board"
+                    className="h-10 px-3 rounded-xl backdrop-blur-md bg-purple-500/80 border border-purple-400/80 text-white shadow-lg flex items-center gap-1.5 text-sm"
+                  >
+                    <Archive className="w-4 h-4" />
+                    <span>Archived</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setMobileSearchDialog(true)}
+                  title="Search"
+                  className="h-10 w-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+                <NotificationCenter
+                  unreadMessages={unreadMessages}
+                  totalUnread={totalUnread}
+                  markAsRead={markAsRead}
+                  onSelect={(ticket, messageId, tabKey) => {
+                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                    setSearchQuery("");
+                    setHiddenColumns([]);
+                    setViewMode("status");
+                    setShowArchived(!!ticket?.archived);
+                    setHighlightedTicketId(ticket?.id || null);
+                    setTimeout(() => setHighlightedTicketId(null), 3000);
+                    setHighlightMessageId(messageId);
+                    setSelectedTicket(ticket);
+                  }}
+                />
+              </div>
+
+              {/* User menu on mobile/tablet, top right */}
               <div className="lg:hidden">
                 <UserMenu />
               </div>
@@ -459,7 +537,7 @@ export default function ApplicationBoard() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="hidden lg:flex flex-wrap items-center gap-3">
               {/* Search */}
               <div className="hidden md:block">
                 <div className="relative">
