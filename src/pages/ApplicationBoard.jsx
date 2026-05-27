@@ -534,8 +534,7 @@ export default function ApplicationBoard() {
               </button>
 
               {/* View Filter */}
-              {!showArchived && (
-                <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1 ml-3">
+              <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1 ml-3">
                   <button
                     onClick={() => setViewMode("status")}
                     title="Board view"
@@ -567,7 +566,6 @@ export default function ApplicationBoard() {
                     <span className="hidden md:inline">Map</span>
                   </button>
                 </div>
-              )}
 
               {!showArchived && viewMode === "table" && (
                 <button
