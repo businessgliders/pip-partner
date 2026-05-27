@@ -306,12 +306,12 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
           <button
             type="button"
             onClick={() => setComposerOpen((v) => !v)}
-            className="lg:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+            className="md:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
           >
             <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">Reply</span>
             {composerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
           </button>
-          <div className={`${composerOpen ? "block" : "hidden"} lg:block`}>
+          <div className={`${composerOpen ? "block" : "hidden"} md:block`}>
             <EmailComposer
               ticket={ticket}
               ticketType={ticketType}
@@ -324,7 +324,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
 
       {/* Full-screen mobile popup for email composer */}
       {composerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden bg-white flex flex-col">
+        <div className="fixed inset-0 z-50 md:hidden bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
             <span className="font-semibold text-sm text-gray-800">Email Communications</span>
             <button
