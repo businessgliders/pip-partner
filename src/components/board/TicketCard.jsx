@@ -184,7 +184,7 @@ export default function TicketCard({
             <span className="text-lg">{emoji}</span>
             <div className="min-w-0">
               <div className="text-sm font-semibold text-gray-900 truncate">
-                <span className="font-bold text-gray-500 mr-1">{num}</span>{name}
+               <span className="text-xs font-bold text-gray-400">{num}</span> {name}
               </div>
               {scheduledTimeLabel && (
                 <span className="inline-block mt-1 mr-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium max-w-full truncate">
