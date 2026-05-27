@@ -132,7 +132,6 @@ export default function TicketCard({
       <div className="md:hidden">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-1.5 min-w-0 flex-1">
-            <span className="text-sm">{emoji}</span>
             <div className="min-w-0 flex-1">
               <div className="text-xs font-semibold text-gray-900 truncate">
                 {name}
@@ -181,7 +180,6 @@ export default function TicketCard({
       <div className="hidden md:block">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 min-w-0">
-            <span className="text-lg">{emoji}</span>
             <div className="min-w-0">
               <div className="text-sm font-semibold text-gray-900 truncate">
                <span className="text-xs font-bold text-gray-400">{num}</span> {name}
