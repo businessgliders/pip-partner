@@ -817,7 +817,7 @@ export default function ApplicationBoard() {
 
               <div
                 ref={swimlaneScrollRef}
-                className={`relative h-full pb-2 lg:flex-1 lg:min-h-0 lg:overflow-hidden ${
+                className={`relative h-full min-h-0 overflow-hidden pb-2 lg:flex-1 ${
                   hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
                 }`}
               >
