@@ -783,8 +783,8 @@ export default function ApplicationBoard() {
                   <button
                     onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
                     title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
-                    className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1 px-2 py-4 rounded-xl backdrop-blur-md bg-white/80 border border-white/80 shadow-lg text-gray-900 hover:bg-white/90 transition-all ${
-                      boardStep === "one" ? "right-1" : "left-1"
+                    className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1.5 px-2 py-4 rounded-l-xl backdrop-blur-md bg-white/20 border border-r-0 border-white/30 shadow-lg text-white hover:bg-white/30 transition-all ${
+                      boardStep === "one" ? "right-0" : "left-0"
                     }`}
                     style={{
                       writingMode: "vertical-rl",
@@ -795,13 +795,13 @@ export default function ApplicationBoard() {
                   >
                     {showBadge && (
                       <span
-                        className="text-[10px] font-bold"
+                        className="w-5 h-5 rounded-full bg-white/60 flex items-center justify-center text-[9px] font-bold text-gray-900"
                         style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
                       >
                         {stepTwoCount}
                       </span>
                     )}
-                    <span className="text-[11px] font-semibold tracking-wider uppercase">
+                    <span className="text-[10px] font-semibold tracking-wider uppercase">
                       {boardStep === "one" ? "Step Two" : "Step One"}
                     </span>
                     {boardStep === "one" ? (
