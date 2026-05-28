@@ -513,7 +513,7 @@ export default function ApplicationBoard() {
               </div>
             </div>
 
-            <div className="hidden lg:flex flex-wrap items-center gap-3 max-w-7xl lg:mr-32 xl:mr-48">
+            <div className="hidden lg:flex flex-wrap items-center gap-3 max-w-7xl lg:mr-16">
                {/* Search */}
                <div className="hidden md:block">
                  <div className="relative">
