@@ -767,17 +767,26 @@ export default function EmailComposer({
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex gap-1">
-          <Button size="sm" variant="outline" onClick={handleClear} title="Clear draft" className={isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}>
-            <Trash2 className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />
-            <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Clear</span>
-          </Button>
-          <Button size="sm" variant="outline" onClick={handlePolish} disabled={polishing} title="Polish with AI" className={isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}>
-            {polishing ? <Loader2 className={`w-3.5 h-3.5 animate-spin ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} /> : <Wand2 className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />}
-            <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Polish</span>
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-1">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleClear}
+          title="Clear draft"
+          className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handlePolish}
+          disabled={polishing}
+          title="Polish with AI"
+          className="text-purple-700 border-purple-200 hover:bg-purple-50 p-1.5"
+        >
+          {polishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+        </Button>
         <Button size="sm" onClick={handleSend} disabled={sending || !canSend} className={`bg-pink-600 hover:bg-pink-700 text-white ${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}`}>
           {sending ? <Loader2 className={`w-3.5 h-3.5 animate-spin ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} /> : <Send className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />}
           <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Send Reply</span>
