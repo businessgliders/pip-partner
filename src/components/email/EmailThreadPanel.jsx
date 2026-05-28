@@ -134,11 +134,31 @@ function buildIntakeSummary(ticket, ticketType) {
 
 export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId, markAsRead }) {
   const containerRef = useRef(null);
+  const panelRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
   const [composerOpen, setComposerOpen] = useState(false);
   // Desktop composer editor height (in px) when user has resized via the drag handle.
   // null = use the default responsive sizing baked into EmailComposer.
   const [editorHeight, setEditorHeight] = useState(null);
+  // Track panel height so the inline drag handle can clamp the editor and keep
+  // the Send Reply row visible inside the container.
+  const [panelHeight, setPanelHeight] = useState(0);
+  useEffect(() => {
+    if (!panelRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) setPanelHeight(entry.contentRect.height);
+    });
+    ro.observe(panelRef.current);
+    return () => ro.disconnect();
+  }, []);
+  // Reserve ~260px for header + composer chrome (toolbar, recipients, send row).
+  // Editor must not exceed (panelHeight - reserved) or the send row gets clipped.
+  const inlineEditorMax = Math.max(80, panelHeight - 260);
+  useEffect(() => {
+    if (editorHeight !== null && editorHeight > inlineEditorMax) {
+      setEditorHeight(inlineEditorMax);
+    }
+  }, [inlineEditorMax, editorHeight]);
   // Desktop full-screen modal toggle for the entire thread + composer
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -263,7 +283,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
 
   return (
     <>
-      <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div ref={panelRef} className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
           <div className="flex items-center gap-2 min-w-0">
             <Mail className="w-4 h-4 text-pink-600 shrink-0" />
@@ -322,9 +342,9 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
             <div className="hidden md:block">
               <ComposerDragHandle
                 currentHeight={editorHeight ?? 200}
-                onResize={setEditorHeight}
+                onResize={(h) => setEditorHeight(Math.min(h, inlineEditorMax))}
                 minHeight={80}
-                maxHeight={600}
+                maxHeight={inlineEditorMax}
               />
             </div>
             <EmailComposer
@@ -359,7 +379,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30">
+          <div className="overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30" style={{ flex: "0 0 60%" }}>
             <div className="max-w-5xl mx-auto">
               {allMessages.map((m) => {
                 const readBy = Array.isArray(m.read_by) ? m.read_by : [];
@@ -381,8 +401,8 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               })}
             </div>
           </div>
-          <div className="shrink-0 border-t bg-white">
-            <div className="max-w-5xl mx-auto">
+          <div className="border-t bg-white overflow-y-auto" style={{ flex: "0 0 40%" }}>
+            <div className="max-w-5xl mx-auto h-full">
               <EmailComposer
                 ticket={ticket}
                 ticketType={ticketType}
