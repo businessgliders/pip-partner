@@ -44,6 +44,8 @@ export default function EmailComposer({
   editorHeightPx,
   draftHtml,
   onDraftChange,
+  draftStatus,
+  draftLastSavedAt,
 }) {
   const navigate = useNavigate();
   const editorRef = useRef(null);
@@ -785,18 +787,34 @@ export default function EmailComposer({
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handlePolish}
-          disabled={polishing}
-          title="Polish with AI"
-          className="text-purple-700 border-purple-200 hover:bg-purple-50"
-        >
-          {polishing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Wand2 className="w-3.5 h-3.5 mr-1.5" />}
-          <span>Polish</span>
-        </Button>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handlePolish}
+            disabled={polishing}
+            title="Polish with AI"
+            className="text-purple-700 border-purple-200 hover:bg-purple-50"
+          >
+            {polishing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Wand2 className="w-3.5 h-3.5 mr-1.5" />}
+            <span>Polish</span>
+          </Button>
+          {draftStatus === "saving" && (
+            <span className="text-[11px] text-gray-400 flex items-center gap-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Saving draft…
+            </span>
+          )}
+          {draftStatus === "saved" && draftLastSavedAt && (
+            <span className="text-[11px] text-gray-400 truncate">
+              Draft saved
+            </span>
+          )}
+          {draftStatus === "error" && (
+            <span className="text-[11px] text-red-500">Draft save failed</span>
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <Button
             size="sm"

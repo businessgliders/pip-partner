@@ -5,7 +5,13 @@ import { Mail, ChevronDown, ChevronUp, X } from "lucide-react";
 import EmailMessageItem from "./EmailMessageItem";
 import EmailComposer from "./EmailComposer";
 import ComposerDragHandle from "./ComposerDragHandle";
+import DraftConfirmDialog from "./DraftConfirmDialog";
 import { buildWelcomeHtml } from "./welcomeEmailHtml";
+import { useEmailDraft } from "@/hooks/useEmailDraft";
+
+function isHtmlEmpty(html) {
+  return !(html || "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, "").trim();
+}
 
 const STAFF_DOMAINS = ["pilatesinpinkstudio.com", "pilatesinpink.ca"];
 const isStaff = (e) => !!e && STAFF_DOMAINS.some((d) => e.toLowerCase().endsWith(`@${d}`));
@@ -163,6 +169,83 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
   const [fullscreen, setFullscreen] = useState(false);
   // Shared composer draft so switching to/from fullscreen preserves content
   const [draftHtml, setDraftHtml] = useState("");
+
+  // Persistent draft (auto-save + close-confirm)
+  const draft = useEmailDraft({
+    ticketId: ticket.id,
+    ticketType,
+    userEmail: currentUser?.email,
+  });
+
+  // Hydrate the composer once the draft is loaded
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    if (!draft.loaded) return;
+    hydratedRef.current = true;
+    if (draft.loadedDraft?.body_html) {
+      setDraftHtml(draft.loadedDraft.body_html);
+    }
+  }, [draft.loaded, draft.loadedDraft]);
+
+  // Track the latest html for auto-save
+  useEffect(() => {
+    draft.trackHtml(draftHtml);
+  }, [draftHtml, draft]);
+
+  // Close-confirm dialog state. pendingClose holds the callback to run after deciding.
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmSaving, setConfirmSaving] = useState(false);
+  const pendingCloseRef = useRef(null);
+
+  const requestClose = (closeFn) => {
+    if (isHtmlEmpty(draftHtml) || !draft.isDirty()) {
+      // Nothing meaningful unsaved → just close.
+      closeFn();
+      return;
+    }
+    pendingCloseRef.current = closeFn;
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSave = async () => {
+    setConfirmSaving(true);
+    try {
+      await draft.saveNow(draftHtml);
+    } finally {
+      setConfirmSaving(false);
+      setConfirmOpen(false);
+      const fn = pendingCloseRef.current;
+      pendingCloseRef.current = null;
+      fn?.();
+    }
+  };
+
+  const handleConfirmDiscard = async () => {
+    setConfirmSaving(true);
+    try {
+      await draft.discard();
+      setDraftHtml("");
+    } finally {
+      setConfirmSaving(false);
+      setConfirmOpen(false);
+      const fn = pendingCloseRef.current;
+      pendingCloseRef.current = null;
+      fn?.();
+    }
+  };
+
+  const handleConfirmKeepEditing = () => {
+    pendingCloseRef.current = null;
+    setConfirmOpen(false);
+  };
+
+  // After a successful send, clear the persisted draft.
+  const handleSentAndClearDraft = async () => {
+    setDraftHtml("");
+    await draft.discard();
+    handleSent();
+  };
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["email-messages", ticket.id],
@@ -353,11 +436,13 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               ticket={ticket}
               ticketType={ticketType}
               currentUser={currentUser}
-              onSent={() => { setDraftHtml(""); handleSent(); }}
+              onSent={handleSentAndClearDraft}
               onRequestFullscreen={() => setFullscreen(true)}
               editorHeightPx={editorHeight}
               draftHtml={draftHtml}
               onDraftChange={setDraftHtml}
+              draftStatus={draft.status}
+              draftLastSavedAt={draft.lastSavedAt}
             />
           </div>
         </div>
@@ -376,7 +461,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
             </div>
             <button
               type="button"
-              onClick={() => setFullscreen(false)}
+              onClick={() => requestClose(() => setFullscreen(false))}
               className="p-1.5 rounded-md hover:bg-white/60 text-gray-600"
               title="Exit fullscreen"
             >
@@ -411,16 +496,27 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
                 ticket={ticket}
                 ticketType={ticketType}
                 currentUser={currentUser}
-                onSent={() => { setDraftHtml(""); handleSent(); }}
-                onRequestFullscreen={() => setFullscreen(false)}
+                onSent={handleSentAndClearDraft}
+                onRequestFullscreen={() => requestClose(() => setFullscreen(false))}
                 isFullscreen
                 draftHtml={draftHtml}
                 onDraftChange={setDraftHtml}
+                draftStatus={draft.status}
+                draftLastSavedAt={draft.lastSavedAt}
               />
             </div>
           </div>
         </div>
       )}
+
+      <DraftConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(v) => { if (!v) handleConfirmKeepEditing(); }}
+        onSave={handleConfirmSave}
+        onDiscard={handleConfirmDiscard}
+        onKeepEditing={handleConfirmKeepEditing}
+        saving={confirmSaving}
+      />
 
       {/* Full-screen mobile popup for email composer */}
       {composerOpen && (
@@ -429,7 +525,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
             <span className="font-semibold text-sm text-gray-800">Email Communications</span>
             <button
               type="button"
-              onClick={() => setComposerOpen(false)}
+              onClick={() => requestClose(() => setComposerOpen(false))}
               className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
             >
               <X className="w-5 h-5" />
@@ -463,14 +559,15 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
                 ticket={ticket}
                 ticketType={ticketType}
                 currentUser={currentUser}
-                onSent={() => {
-                  setDraftHtml("");
+                onSent={async () => {
+                  await handleSentAndClearDraft();
                   setComposerOpen(false);
-                  handleSent();
                 }}
                 isMobileFullscreen
                 draftHtml={draftHtml}
                 onDraftChange={setDraftHtml}
+                draftStatus={draft.status}
+                draftLastSavedAt={draft.lastSavedAt}
               />
             </div>
           </div>

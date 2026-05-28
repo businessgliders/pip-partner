@@ -1,0 +1,62 @@
+{
+  "name": "EmailDraft",
+  "type": "object",
+  "properties": {
+    "ticket_id": {
+      "type": "string",
+      "description": "ID of the ticket this draft belongs to"
+    },
+    "ticket_type": {
+      "type": "string",
+      "enum": [
+        "FranchiseInquiry",
+        "InfluencerApplication",
+        "InstructorApplication",
+        "FrontAdminApplication"
+      ]
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the staff member who owns the draft"
+    },
+    "body_html": {
+      "type": "string",
+      "description": "HTML body of the in-progress reply"
+    },
+    "subject_override": {
+      "type": "string",
+      "description": "Optional subject override saved with the draft"
+    },
+    "last_saved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "ticket_id",
+    "ticket_type",
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
