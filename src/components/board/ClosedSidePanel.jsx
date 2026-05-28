@@ -34,11 +34,11 @@ export default function ClosedSidePanel({
 
   return (
     <>
-      {/* Backdrop - mobile only */}
+      {/* Backdrop */}
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-[2px] lg:bg-black/20"
           aria-hidden="true"
         />
       )}
