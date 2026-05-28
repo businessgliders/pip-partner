@@ -473,100 +473,6 @@ export default function EmailComposer({
         </button>
       )}
 
-      <div className="flex flex-wrap gap-1 lg:gap-1.5">
-        <Button
-          size="sm"
-          variant={showDescribe ? "default" : "outline"}
-          className={`${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"} ${showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
-          onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
-          title="Describe in simple words"
-        >
-          <Sparkles className="w-3.5 h-3.5 lg:mr-1.5" />
-          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Describe</span>
-        </Button>
-        <Button
-          size="sm"
-          variant={showSuggest ? "default" : "outline"}
-          className={`${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"} ${showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
-          onClick={() => { setShowSuggest((v) => !v); setShowDescribe(false); }}
-          title="Suggest replies"
-        >
-          <Lightbulb className="w-3.5 h-3.5 lg:mr-1.5" />
-          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Suggest</span>
-        </Button>
-        <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
-        <BookCallPopover
-          onSelect={handleSlotSelected}
-          onAddLink={({ url, label }) => {
-            const safeLabel = (label || url).replace(/[<>&]/g, (c) =>
-              ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])
-            );
-            const linkHtml = `${safeLabel}: <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-            const current = getHtml();
-            if (isEmpty(current)) {
-              setHtml(`<p>${linkHtml}</p>`);
-            } else {
-              editorRef.current?.focus();
-              document.execCommand("insertHTML", false, `${linkHtml}&nbsp;`);
-              setHasContent(true);
-            }
-          }}
-          isMobileFullscreen={isMobileFullscreen}
-          boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'}
-        />
-
-
-        {ticketAttachments.length > 0 && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className={`text-slate-700 border-slate-200 hover:bg-slate-50 ${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}`}
-                title="Attach ticket files"
-              >
-                <Paperclip className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`} />
-                <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Attach</span>
-                {selectedAttachmentIdxs.length > 0 && (
-                  <span className={`rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold ${isMobileFullscreen ? "ml-1 px-1 py-0" : "ml-1.5 px-1.5 py-0.5"}`}>
-                    {selectedAttachmentIdxs.length}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-72 p-2 max-h-72 overflow-y-auto">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
-                Attach from ticket
-              </p>
-              {ticketAttachments.map((a, idx) => {
-                const checked = selectedAttachmentIdxs.includes(idx);
-                return (
-                  <label
-                    key={idx}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
-                  >
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={(v) => {
-                        setSelectedAttachmentIdxs((cur) =>
-                          v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
-                        );
-                      }}
-                    />
-                    {a.type === "link" ? (
-                      <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    ) : (
-                      <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    )}
-                    <span className="truncate text-sm flex-1">{a.label || a.url}</span>
-                  </label>
-                );
-              })}
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
-
       {(selectedAttachmentIdxs.length > 0 || driveAttachments.length > 0) && (
         <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200">
           <Paperclip className="w-3.5 h-3.5 text-slate-500" />
@@ -673,6 +579,97 @@ export default function EmailComposer({
           <button type="button" onClick={handleInsertLink} className="p-1.5 hover:bg-gray-200 rounded">
             <LinkIcon className="w-3.5 h-3.5" />
           </button>
+          <div className="ml-auto flex items-center gap-1 flex-wrap justify-end">
+            <Button
+              size="sm"
+              variant={showDescribe ? "default" : "outline"}
+              className={`h-7 px-2 ${showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
+              onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
+              title="Describe in simple words"
+            >
+              <Sparkles className="w-3.5 h-3.5 lg:mr-1.5" />
+              <span className="hidden lg:inline">Describe</span>
+            </Button>
+            <Button
+              size="sm"
+              variant={showSuggest ? "default" : "outline"}
+              className={`h-7 px-2 ${showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
+              onClick={() => { setShowSuggest((v) => !v); setShowDescribe(false); }}
+              title="Suggest replies"
+            >
+              <Lightbulb className="w-3.5 h-3.5 lg:mr-1.5" />
+              <span className="hidden lg:inline">Suggest</span>
+            </Button>
+            <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
+            <BookCallPopover
+              onSelect={handleSlotSelected}
+              onAddLink={({ url, label }) => {
+                const safeLabel = (label || url).replace(/[<>&]/g, (c) =>
+                  ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])
+                );
+                const linkHtml = `${safeLabel}: <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+                const current = getHtml();
+                if (isEmpty(current)) {
+                  setHtml(`<p>${linkHtml}</p>`);
+                } else {
+                  editorRef.current?.focus();
+                  document.execCommand("insertHTML", false, `${linkHtml}&nbsp;`);
+                  setHasContent(true);
+                }
+              }}
+              isMobileFullscreen={isMobileFullscreen}
+              boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'}
+            />
+            {ticketAttachments.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-slate-700 border-slate-200 hover:bg-slate-50"
+                    title="Attach ticket files"
+                  >
+                    <Paperclip className="w-3.5 h-3.5 lg:mr-1.5" />
+                    <span className="hidden lg:inline">Attach</span>
+                    {selectedAttachmentIdxs.length > 0 && (
+                      <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
+                        {selectedAttachmentIdxs.length}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-72 p-2 max-h-72 overflow-y-auto">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
+                    Attach from ticket
+                  </p>
+                  {ticketAttachments.map((a, idx) => {
+                    const checked = selectedAttachmentIdxs.includes(idx);
+                    return (
+                      <label
+                        key={idx}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            setSelectedAttachmentIdxs((cur) =>
+                              v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
+                            );
+                          }}
+                        />
+                        {a.type === "link" ? (
+                          <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        )}
+                        <span className="truncate text-sm flex-1">{a.label || a.url}</span>
+                      </label>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
         <div
           ref={editorRef}
