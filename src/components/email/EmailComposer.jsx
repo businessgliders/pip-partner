@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
   Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users,
-  Paperclip, FileText, Link2, Maximize2, Minimize2, ChevronDown, ChevronRight, Settings2
+  Paperclip, FileText, Link2, Maximize2, Minimize2, ChevronDown, ChevronRight, Settings2, Save
 } from "lucide-react";
 import {
   Popover, PopoverTrigger, PopoverContent
@@ -816,6 +816,15 @@ export default function EmailComposer({
           )}
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onDraftChange?.(getHtml())}
+            title="Save draft manually"
+            className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
+          >
+            <Save className="w-3.5 h-3.5" />
+          </Button>
           <Button
             size="sm"
             variant="outline"
