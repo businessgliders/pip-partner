@@ -101,10 +101,6 @@ export default function ClosedSidePanel({
       >
         <div
           className="flex-1 min-h-0 rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/30 shadow-2xl p-2 flex gap-2"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)",
-          }}
         >
           {statuses.map(({ status, tickets, onArchiveSome, onArchiveAll }) => (
             <div key={status} className="flex-1 min-w-0">
@@ -140,10 +136,6 @@ export default function ClosedSidePanel({
       >
         <div
           className="flex-1 min-h-0 rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/30 shadow-2xl p-3 flex gap-3"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)",
-          }}
         >
           {statuses.map(({ status, tickets, onArchiveSome, onArchiveAll }) => (
             <div key={status} className="flex-1 min-w-0">
