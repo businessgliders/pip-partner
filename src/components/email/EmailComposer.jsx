@@ -514,64 +514,8 @@ export default function EmailComposer({
           isMobileFullscreen={isMobileFullscreen}
           boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'}
         />
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={async (e) => {
-            const files = Array.from(e.target.files || []);
-            if (files.length === 0) return;
-            setUploading(true);
-            try {
-              const uploaded = [];
-              for (const file of files) {
-                const res = await base44.integrations.Core.UploadFile({ file });
-                if (res?.file_url) {
-                  uploaded.push({ label: file.name, url: res.file_url, type: "link" });
-                }
-              }
-              if (uploaded.length > 0) {
-                setDriveAttachments((cur) => [...cur, ...uploaded]);
-              }
-            } catch (err) {
-              console.error("Upload failed", err);
-              alert("Failed to upload file: " + (err?.message || "Unknown error"));
-            } finally {
-              setUploading(false);
-              if (fileInputRef.current) fileInputRef.current.value = "";
-            }
-          }}
-        />
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          title="Attach files from this device"
-        >
-          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className={`text-slate-700 border-slate-200 hover:bg-slate-50 ${isMobileFullscreen ? "p-1.5" : "lg:px-3 px-2"}`}
-          onClick={() => setDriveOpen(true)}
-          title="Attach from Google Drive"
-        >
-          <img
-            src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
-            alt=""
-            className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "lg:mr-1.5"}`}
-          />
-          <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Drive</span>
-          {driveAttachments.length > 0 && (
-            <span className={`rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold ${isMobileFullscreen ? "ml-1 px-1 py-0" : "ml-1.5 px-1.5 py-0.5"}`}>
-              {driveAttachments.length}
-            </span>
-          )}
-        </Button>
+
+
         {ticketAttachments.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
@@ -750,17 +694,73 @@ export default function EmailComposer({
         {currentUser?.signature_html && (
           <div className="border-t bg-gray-50/60 px-3 py-1.5">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <div className="text-[8px] uppercase tracking-wider text-gray-400 font-semibold">
-                Signature
+              <div className="flex items-center gap-1">
+                <span className="text-[8px] uppercase tracking-wider text-gray-400 font-semibold">
+                  Signature
+                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/Settings/Signature")}
+                  className="text-gray-400 hover:text-gray-700 p-0.5"
+                  title="Manage signature"
+                >
+                  <Settings2 className="w-3 h-3" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => navigate("/Settings/Signature")}
-                className="text-gray-400 hover:text-gray-700 p-0.5"
-                title="Manage signature"
-              >
-                <Settings2 className="w-3 h-3" />
-              </button>
+              <div className="flex items-center gap-1">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length === 0) return;
+                    setUploading(true);
+                    try {
+                      const uploaded = [];
+                      for (const file of files) {
+                        const res = await base44.integrations.Core.UploadFile({ file });
+                        if (res?.file_url) {
+                          uploaded.push({ label: file.name, url: res.file_url, type: "link" });
+                        }
+                      }
+                      if (uploaded.length > 0) {
+                        setDriveAttachments((cur) => [...cur, ...uploaded]);
+                      }
+                    } catch (err) {
+                      console.error("Upload failed", err);
+                      alert("Failed to upload file: " + (err?.message || "Unknown error"));
+                    } finally {
+                      setUploading(false);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  title="Attach files from this device"
+                >
+                  {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
+                  onClick={() => setDriveOpen(true)}
+                  title="Attach from Google Drive"
+                >
+                  <img
+                    src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
+                    alt=""
+                    className="w-3.5 h-3.5"
+                  />
+                </Button>
+              </div>
             </div>
             <div
               className="prose prose-xs max-w-none text-gray-600 text-xs [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
