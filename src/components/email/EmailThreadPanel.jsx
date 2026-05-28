@@ -151,9 +151,9 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     ro.observe(panelRef.current);
     return () => ro.disconnect();
   }, []);
-  // Reserve ~260px for header + composer chrome (toolbar, recipients, send row).
-  // Editor must not exceed (panelHeight - reserved) or the send row gets clipped.
-  const inlineEditorMax = Math.max(80, panelHeight - 260);
+  // Cap the editor at ~45% of the panel so the Send Reply row never gets pushed
+  // beneath the container edge, regardless of toolbar/signature chrome size.
+  const inlineEditorMax = Math.max(80, Math.floor(panelHeight * 0.45));
   useEffect(() => {
     if (editorHeight !== null && editorHeight > inlineEditorMax) {
       setEditorHeight(inlineEditorMax);

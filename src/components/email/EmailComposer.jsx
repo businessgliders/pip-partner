@@ -651,7 +651,7 @@ export default function EmailComposer({
             editorHeightPx
               ? ""
               : isFullscreen
-                ? "min-h-64 max-h-[60vh]"
+                ? "min-h-32 max-h-[28vh]"
                 : isMobileFullscreen
                   ? (hasContent ? "min-h-24 max-h-48" : "min-h-14 max-h-48")
                   : (hasContent ? "min-h-32 max-h-80" : "min-h-16 max-h-80")
