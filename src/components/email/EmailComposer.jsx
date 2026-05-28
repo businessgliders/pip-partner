@@ -463,7 +463,25 @@ export default function EmailComposer({
           <span className={isMobileFullscreen ? "hidden" : "hidden lg:inline"}>Suggest</span>
         </Button>
         <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
-        <BookCallPopover onSelect={handleSlotSelected} isMobileFullscreen={isMobileFullscreen} boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'} />
+        <BookCallPopover
+          onSelect={handleSlotSelected}
+          onAddLink={({ url, label }) => {
+            const safeLabel = (label || url).replace(/[<>&]/g, (c) =>
+              ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])
+            );
+            const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
+            const current = getHtml();
+            if (isEmpty(current)) {
+              setHtml(`<p>${linkHtml}</p>`);
+            } else {
+              editorRef.current?.focus();
+              document.execCommand("insertHTML", false, `${linkHtml}&nbsp;`);
+              setHasContent(true);
+            }
+          }}
+          isMobileFullscreen={isMobileFullscreen}
+          boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'}
+        />
         <Button
           size="sm"
           variant="outline"

@@ -25,7 +25,12 @@ function formatTimeLabel(iso) {
   });
 }
 
-export default function BookCallPopover({ onSelect, isMobileFullscreen, boardKey = 'hiring' }) {
+const CAL_EVENT_LINKS = {
+  franchise: "https://cal.com/pilatesinpink/franchise-discovery-call",
+  hiring: "https://cal.com/pilatesinpink/hiring-interview",
+};
+
+export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscreen, boardKey = 'hiring' }) {
    const [open, setOpen] = useState(false);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState(null);
@@ -105,11 +110,15 @@ export default function BookCallPopover({ onSelect, isMobileFullscreen, boardKey
                 Pick a slot — it will be reserved only when you send the email.
               </p>
             </div>
-            <a
-              href="https://cal.com/pilatesinpink"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Open Cal.com"
+            <button
+              type="button"
+              onClick={() => {
+                const url = CAL_EVENT_LINKS[boardKey] || CAL_EVENT_LINKS.hiring;
+                const label = boardKey === 'franchise' ? 'Book a Franchise Discovery Call' : 'Book an Interview';
+                onAddLink?.({ url, label });
+                setOpen(false);
+              }}
+              title="Insert Cal.com event-type link into the email"
               className="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-slate-200 hover:bg-slate-50 text-[11px] text-slate-700"
             >
               <img
@@ -117,8 +126,8 @@ export default function BookCallPopover({ onSelect, isMobileFullscreen, boardKey
                 alt="Cal.com"
                 className="w-4 h-4 rounded-sm"
               />
-              Open
-            </a>
+              Add Link
+            </button>
           </div>
         </div>
 
