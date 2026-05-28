@@ -151,9 +151,9 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     ro.observe(panelRef.current);
     return () => ro.disconnect();
   }, []);
-  // Cap the editor at ~45% of the panel so the Send Reply row never gets pushed
+  // Cap the editor at ~40% of the panel so the Send Reply row never gets pushed
   // beneath the container edge, regardless of toolbar/signature chrome size.
-  const inlineEditorMax = Math.max(80, Math.floor(panelHeight * 0.45));
+  const inlineEditorMax = Math.max(80, Math.floor(panelHeight * 0.40));
   useEffect(() => {
     if (editorHeight !== null && editorHeight > inlineEditorMax) {
       setEditorHeight(inlineEditorMax);
