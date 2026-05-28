@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Folder, ChevronRight, Search, Loader2, ArrowLeft } from "lucide-react";
+import { Folder, FolderOpen, ChevronRight, Search, Loader2, ArrowLeft, Users } from "lucide-react";
 
 // Picker dialog for Google Drive files.
 // onPick: (selected[]) => void  — selected is an array of { label, url, type: 'link', mimeType, drive_id }
@@ -180,8 +180,17 @@ export default function DrivePickerDialog({ open, onOpenChange, onPick, multiple
                         onClick={() => handleOpenFolder(f)}
                         className="flex items-center gap-3 flex-1 min-w-0 text-left"
                       >
-                        <Folder className="w-5 h-5 text-amber-500 shrink-0" />
+                        {f.isSharedDrive ? (
+                          <Users className="w-5 h-5 text-blue-500 shrink-0" />
+                        ) : (
+                          <Folder className="w-5 h-5 text-amber-500 shrink-0" />
+                        )}
                         <span className="truncate text-sm text-slate-800">{f.name}</span>
+                        {f.isSharedDrive && (
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                            Shared
+                          </span>
+                        )}
                         <ChevronRight className="w-4 h-4 text-slate-400 ml-auto shrink-0" />
                       </button>
                     ) : (

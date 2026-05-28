@@ -58,6 +58,8 @@ export default function EmailComposer({
   // Ad-hoc Drive files picked just for this email (not persisted on ticket)
   const [driveAttachments, setDriveAttachments] = useState([]); // [{label, url, type:'link'}]
   const [driveOpen, setDriveOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   // Subject override — only set when a template is used so the staff can tweak it
   const [subjectOverride, setSubjectOverride] = useState(null);
   // Tracks whether the editor currently has any content (for compact-when-empty UI)
@@ -482,6 +484,45 @@ export default function EmailComposer({
           isMobileFullscreen={isMobileFullscreen}
           boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'}
         />
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          onChange={async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
+            setUploading(true);
+            try {
+              const uploaded = [];
+              for (const file of files) {
+                const res = await base44.integrations.Core.UploadFile({ file });
+                if (res?.file_url) {
+                  uploaded.push({ label: file.name, url: res.file_url, type: "link" });
+                }
+              }
+              if (uploaded.length > 0) {
+                setDriveAttachments((cur) => [...cur, ...uploaded]);
+              }
+            } catch (err) {
+              console.error("Upload failed", err);
+              alert("Failed to upload file: " + (err?.message || "Unknown error"));
+            } finally {
+              setUploading(false);
+              if (fileInputRef.current) fileInputRef.current.value = "";
+            }
+          }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          title="Attach files from this device"
+        >
+          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+        </Button>
         <Button
           size="sm"
           variant="outline"

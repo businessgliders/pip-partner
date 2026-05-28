@@ -22,23 +22,22 @@ Deno.serve(async (req) => {
     // Build the Drive query string.
     const clauses = ['trashed = false'];
     if (q && q.trim()) {
-      // Escape single quotes
       const safe = q.trim().replace(/'/g, "\\'");
       clauses.push(`name contains '${safe}'`);
     } else if (parentId) {
       clauses.push(`'${parentId}' in parents`);
     } else {
-      // Default: root level
       clauses.push(`'root' in parents`);
     }
 
     const params = new URLSearchParams({
       q: clauses.join(' and '),
-      fields: 'nextPageToken, files(id,name,mimeType,iconLink,webViewLink,modifiedTime,size)',
+      fields: 'nextPageToken, files(id,name,mimeType,iconLink,webViewLink,modifiedTime,size,driveId)',
       orderBy: 'folder,name',
       pageSize: String(Math.min(Number(pageSize) || 50, 100)),
       supportsAllDrives: 'true',
       includeItemsFromAllDrives: 'true',
+      corpora: 'allDrives',
     });
     if (pageToken) params.set('pageToken', pageToken);
 
@@ -50,7 +49,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Drive API error', detail: text }, { status: 502 });
     }
     const data = await res.json();
-    const files = (data.files || []).map((f) => ({
+    let files = (data.files || []).map((f) => ({
       id: f.id,
       name: f.name,
       mimeType: f.mimeType,
@@ -60,6 +59,32 @@ Deno.serve(async (req) => {
       size: f.size,
       isFolder: f.mimeType === 'application/vnd.google-apps.folder',
     }));
+
+    // At the root (no search, no parent), also list Shared Drives as virtual folders
+    if (!q?.trim() && !parentId && !pageToken) {
+      try {
+        const drivesRes = await fetch(
+          'https://www.googleapis.com/drive/v3/drives?pageSize=100&fields=drives(id,name)',
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (drivesRes.ok) {
+          const drivesData = await drivesRes.json();
+          const sharedDrives = (drivesData.drives || []).map((d) => ({
+            id: d.id,
+            name: d.name,
+            mimeType: 'application/vnd.google-apps.folder',
+            iconLink: null,
+            webViewLink: `https://drive.google.com/drive/folders/${d.id}`,
+            isFolder: true,
+            isSharedDrive: true,
+          }));
+          // Show Shared Drives first
+          files = [...sharedDrives, ...files];
+        }
+      } catch (e) {
+        console.error('Failed to list shared drives', e);
+      }
+    }
 
     return Response.json({ files, nextPageToken: data.nextPageToken || null });
   } catch (error) {
