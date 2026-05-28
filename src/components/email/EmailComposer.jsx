@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
   Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users,
-  Paperclip, FileText, Link2, Maximize2, Minimize2, ChevronDown, ChevronRight
+  Paperclip, FileText, Link2, Maximize2, Minimize2, ChevronDown, ChevronRight, Settings2
 } from "lucide-react";
 import {
   Popover, PopoverTrigger, PopoverContent
@@ -42,6 +43,7 @@ export default function EmailComposer({
   isFullscreen,
   editorHeightPx,
 }) {
+  const navigate = useNavigate();
   const editorRef = useRef(null);
   const [sending, setSending] = useState(false);
   const [polishing, setPolishing] = useState(false);
@@ -747,8 +749,18 @@ export default function EmailComposer({
         />
         {currentUser?.signature_html && (
           <div className="border-t bg-gray-50/60 px-3 py-1.5">
-            <div className="text-[8px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">
-              Signature
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="text-[8px] uppercase tracking-wider text-gray-400 font-semibold">
+                Signature
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate("/Settings/Signature")}
+                className="text-gray-400 hover:text-gray-700 p-0.5"
+                title="Manage signature"
+              >
+                <Settings2 className="w-3 h-3" />
+              </button>
             </div>
             <div
               className="prose prose-xs max-w-none text-gray-600 text-xs [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
