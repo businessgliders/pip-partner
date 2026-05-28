@@ -27,7 +27,7 @@ function formatTimeLabel(iso) {
 
 const CAL_EVENT_LINKS = {
   franchise: "https://cal.com/pilatesinpink/franchise",
-  hiring: "https://cal.com/pilatesinpink/hiring-interview",
+  hiring: "https://cal.com/pilatesinpink/hiring",
 };
 
 export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscreen, boardKey = 'hiring' }) {
