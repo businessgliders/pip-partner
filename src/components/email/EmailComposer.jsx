@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
   Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users,
-  Paperclip, FileText, Link2, Maximize2, Minimize2
+  Paperclip, FileText, Link2, Maximize2, Minimize2, ChevronDown, ChevronRight
 } from "lucide-react";
 import {
   Popover, PopoverTrigger, PopoverContent
@@ -64,6 +64,8 @@ export default function EmailComposer({
   const [subjectOverride, setSubjectOverride] = useState(null);
   // Tracks whether the editor currently has any content (for compact-when-empty UI)
   const [hasContent, setHasContent] = useState(false);
+  // Subject row collapsed/expanded state (collapsed by default)
+  const [subjectExpanded, setSubjectExpanded] = useState(false);
 
   const ticketAttachments = Array.isArray(ticket?.attachments) ? ticket.attachments : [];
 
@@ -264,7 +266,10 @@ export default function EmailComposer({
 
   const handleTemplate = ({ subject, body_html }) => {
     setHtml(body_html);
-    if (subject) setSubjectOverride(subject);
+    if (subject) {
+      setSubjectOverride(subject);
+      setSubjectExpanded(true);
+    }
   };
   const handleApply = (html) => {
     setHtml(html);
@@ -420,27 +425,50 @@ export default function EmailComposer({
         </div>
       </div>
 
-      {subjectOverride !== null && (
+      {subjectExpanded ? (
         <div className="flex items-center gap-2">
-          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold shrink-0">
-            Subject
-          </label>
-          <input
-            type="text"
-            value={subjectOverride}
-            onChange={(e) => setSubjectOverride(e.target.value)}
-            placeholder="Email subject"
-            className="flex-1 min-w-0 text-sm px-2.5 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-pink-300"
-          />
           <button
             type="button"
-            onClick={() => setSubjectOverride(null)}
-            className="text-gray-400 hover:text-gray-700"
-            title="Use default subject"
+            onClick={() => setSubjectExpanded(false)}
+            className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold shrink-0 hover:text-gray-700 flex items-center gap-1"
+            title="Collapse"
           >
-            <X className="w-3.5 h-3.5" />
+            <ChevronDown className="w-3 h-3" />
+            Subject
           </button>
+          <input
+            type="text"
+            value={subjectOverride ?? ""}
+            onChange={(e) => setSubjectOverride(e.target.value)}
+            placeholder="Leave blank for default reply subject"
+            className="flex-1 min-w-0 text-sm px-2.5 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-pink-300"
+          />
+          {subjectOverride !== null && (
+            <button
+              type="button"
+              onClick={() => setSubjectOverride(null)}
+              className="text-gray-400 hover:text-gray-700"
+              title="Use default subject"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setSubjectExpanded(true)}
+          className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 w-full text-left"
+          title="Edit subject"
+        >
+          <ChevronRight className="w-3 h-3 shrink-0" />
+          <span className="font-medium shrink-0">Subject:</span>
+          <span className="truncate text-gray-500 italic">
+            {subjectOverride && subjectOverride.trim()
+              ? subjectOverride
+              : "(default reply subject)"}
+          </span>
+        </button>
       )}
 
       <div className="flex flex-wrap gap-1 lg:gap-1.5">
