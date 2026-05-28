@@ -673,54 +673,6 @@ export default function EmailComposer({
                 </button>
               </div>
               <div className="flex items-center gap-1">
-                {ticketAttachments.length > 0 && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5 relative"
-                        title="Attach ticket files"
-                      >
-                        <Paperclip className="w-3.5 h-3.5" />
-                        {selectedAttachmentIdxs.length > 0 && (
-                          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-pink-600 text-white text-[10px] font-semibold flex items-center justify-center leading-none">
-                            {selectedAttachmentIdxs.length}
-                          </span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="end" className="w-72 p-2 max-h-72 overflow-y-auto">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
-                        Attach from ticket
-                      </p>
-                      {ticketAttachments.map((a, idx) => {
-                        const checked = selectedAttachmentIdxs.includes(idx);
-                        return (
-                          <label
-                            key={idx}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
-                          >
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={(v) => {
-                                setSelectedAttachmentIdxs((cur) =>
-                                  v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
-                                );
-                              }}
-                            />
-                            {a.type === "link" ? (
-                              <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            ) : (
-                              <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            )}
-                            <span className="truncate text-sm flex-1">{a.label || a.url}</span>
-                          </label>
-                        );
-                      })}
-                    </PopoverContent>
-                  </Popover>
-                )}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -750,29 +702,79 @@ export default function EmailComposer({
                     }
                   }}
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  title="Attach files from this device"
-                >
-                  {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5"
-                  onClick={() => setDriveOpen(true)}
-                  title="Attach from Google Drive"
-                >
-                  <img
-                    src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
-                    alt=""
-                    className="w-3.5 h-3.5"
-                  />
-                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5 relative"
+                      title="Attach files"
+                      disabled={uploading}
+                    >
+                      {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+                      {(selectedAttachmentIdxs.length + driveAttachments.length) > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-pink-600 text-white text-[10px] font-semibold flex items-center justify-center leading-none">
+                          {selectedAttachmentIdxs.length + driveAttachments.length}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-72 p-2 max-h-80 overflow-y-auto">
+                    <div className="flex flex-col gap-1 mb-2 pb-2 border-b border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left"
+                      >
+                        <Paperclip className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        <span className="text-sm text-slate-700">Upload from this device</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDriveOpen(true)}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left"
+                      >
+                        <img
+                          src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
+                          alt=""
+                          className="w-3.5 h-3.5 shrink-0"
+                        />
+                        <span className="text-sm text-slate-700">From Google Drive</span>
+                      </button>
+                    </div>
+                    {ticketAttachments.length > 0 && (
+                      <>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1 px-1">
+                          From ticket
+                        </p>
+                        {ticketAttachments.map((a, idx) => {
+                          const checked = selectedAttachmentIdxs.includes(idx);
+                          return (
+                            <label
+                              key={idx}
+                              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(v) => {
+                                  setSelectedAttachmentIdxs((cur) =>
+                                    v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
+                                  );
+                                }}
+                              />
+                              {a.type === "link" ? (
+                                <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              ) : (
+                                <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              )}
+                              <span className="truncate text-sm flex-1">{a.label || a.url}</span>
+                            </label>
+                          );
+                        })}
+                      </>
+                    )}
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div
