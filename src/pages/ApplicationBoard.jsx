@@ -786,22 +786,24 @@ export default function ApplicationBoard() {
                         : "translateY(-50%)",
                     }}
                   >
-                    {showBadge && (
-                      <span
-                        className="w-5 h-5 rounded-full bg-white/60 flex items-center justify-center text-[9px] font-bold text-gray-900"
-                        style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
-                      >
-                        {stepTwoCount}
-                      </span>
-                    )}
                     <span className="text-[10px] font-semibold tracking-wider uppercase">
                       {boardStep === "one" ? "Step Two" : "Step One"}
                     </span>
-                    {boardStep === "one" ? (
-                      <ChevronsLeft className="w-4 h-4" />
-                    ) : (
-                      <ChevronsRight className="w-4 h-4" />
-                    )}
+                    <div className="flex items-center gap-1">
+                      {boardStep === "one" ? (
+                        <ChevronsLeft className="w-4 h-4" />
+                      ) : (
+                        <ChevronsRight className="w-4 h-4" />
+                      )}
+                      {showBadge && (
+                        <span
+                          className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[8px] font-bold text-gray-900"
+                          style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
+                        >
+                          {stepTwoCount}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })()}
