@@ -182,9 +182,17 @@ Deno.serve(async (req) => {
     }
 
     // Read from the franchise@ mailbox via the app-user connector connection
-    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(
-      FRANCHISE_GMAIL_CONNECTOR_ID
-    );
+    let accessToken;
+    try {
+      const conn = await base44.asServiceRole.connectors.getCurrentAppUserConnection(
+        FRANCHISE_GMAIL_CONNECTOR_ID
+      );
+      accessToken = conn.accessToken;
+    } catch (e) {
+      // No app user is connected (e.g. scheduled run with no admin context).
+      // This is expected when the mailbox hasn't been connected yet — not an error.
+      return Response.json({ found: 0, new: 0, skipped: 'no_connection' });
+    }
 
     const listRes = await fetch(
       'https://gmail.googleapis.com/gmail/v1/users/me/messages?q=' +
