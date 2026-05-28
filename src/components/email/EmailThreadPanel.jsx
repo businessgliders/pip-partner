@@ -379,7 +379,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30" style={{ flex: "0 0 45%" }}>
+          <div className="overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30" style={{ flex: "0 0 40%" }}>
             <div className="max-w-3xl mx-auto">
               {allMessages.map((m) => {
                 const readBy = Array.isArray(m.read_by) ? m.read_by : [];
@@ -401,7 +401,7 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               })}
             </div>
           </div>
-          <div className="border-t bg-white overflow-y-auto" style={{ flex: "0 0 55%" }}>
+          <div className="border-t bg-white overflow-y-auto" style={{ flex: "0 0 60%" }}>
             <div className="max-w-3xl mx-auto h-full">
               <EmailComposer
                 ticket={ticket}
