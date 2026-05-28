@@ -93,7 +93,7 @@ export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscree
            title={`Cal.com Event Type: ${boardKey === 'franchise' ? 'Franchise Discovery Call' : 'Hiring Interview'}`}
          >
            <CalendarDays className={`w-3.5 h-3.5 ${isMobileFullscreen ? "" : "mr-1.5"}`} />
-           <span className={isMobileFullscreen ? "hidden" : ""}>Book a Meeting</span>
+           <span className={isMobileFullscreen ? "hidden" : ""}>Meeting</span>
            {!isMobileFullscreen && (
              <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
                {boardKey === 'franchise' ? 'Franchise' : 'Hiring'}
@@ -105,7 +105,7 @@ export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscree
         <div className="p-4 border-b">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h4 className="text-sm font-semibold text-slate-900">Book a Meeting</h4>
+              <h4 className="text-sm font-semibold text-slate-900">Meeting</h4>
               <p className="text-xs text-slate-500 mt-0.5">
                 Pick a slot — it will be reserved only when you send the email.
               </p>
