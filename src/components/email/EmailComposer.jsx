@@ -48,6 +48,10 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
   // Ad-hoc Drive files picked just for this email (not persisted on ticket)
   const [driveAttachments, setDriveAttachments] = useState([]); // [{label, url, type:'link'}]
   const [driveOpen, setDriveOpen] = useState(false);
+  // Subject override — only set when a template is used so the staff can tweak it
+  const [subjectOverride, setSubjectOverride] = useState(null);
+  // Tracks whether the editor currently has any content (for compact-when-empty UI)
+  const [hasContent, setHasContent] = useState(false);
 
   const ticketAttachments = Array.isArray(ticket?.attachments) ? ticket.attachments : [];
 
@@ -91,6 +95,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
 
   const setHtml = (html) => {
     if (editorRef.current) editorRef.current.innerHTML = html;
+    setHasContent(!isEmpty(html));
   };
   const getHtml = () => editorRef.current?.innerHTML || "";
 
@@ -179,6 +184,9 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       if (combinedAttachments.length > 0) {
         payload.attachments = combinedAttachments;
       }
+      if (subjectOverride && subjectOverride.trim()) {
+        payload.subject_override = subjectOverride.trim();
+      }
       await base44.functions.invoke("sendTicketEmail", payload);
 
       // 2. Only book the Cal.com slot AFTER a successful send (skip for internal emails).
@@ -208,6 +216,7 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
       setIncludeApplicant(true);
       setSelectedAttachmentIdxs([]);
       setDriveAttachments([]);
+      setSubjectOverride(null);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -236,9 +245,15 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
     }
   };
 
-  const handleClear = () => setHtml("");
+  const handleClear = () => {
+    setHtml("");
+    setSubjectOverride(null);
+  };
 
-  const handleTemplate = ({ body_html }) => setHtml(body_html);
+  const handleTemplate = ({ subject, body_html }) => {
+    setHtml(body_html);
+    if (subject) setSubjectOverride(subject);
+  };
   const handleApply = (html) => {
     setHtml(html);
     setShowDescribe(false);
@@ -380,6 +395,29 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           </button>
         )}
       </div>
+
+      {subjectOverride !== null && (
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold shrink-0">
+            Subject
+          </label>
+          <input
+            type="text"
+            value={subjectOverride}
+            onChange={(e) => setSubjectOverride(e.target.value)}
+            placeholder="Email subject"
+            className="flex-1 min-w-0 text-sm px-2.5 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-pink-300"
+          />
+          <button
+            type="button"
+            onClick={() => setSubjectOverride(null)}
+            className="text-gray-400 hover:text-gray-700"
+            title="Use default subject"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-1 lg:gap-1.5">
         <Button
@@ -585,7 +623,12 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           ref={editorRef}
           contentEditable
           data-placeholder="Write your reply..."
-          className={`prose prose-sm max-w-none p-3 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 ${isMobileFullscreen ? "min-h-24 max-h-48" : "min-h-32 max-h-80"}`}
+          onInput={(e) => setHasContent(!isEmpty(e.currentTarget.innerHTML))}
+          className={`prose prose-sm max-w-none p-3 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 ${
+            isMobileFullscreen
+              ? (hasContent ? "min-h-24 max-h-48" : "min-h-14 max-h-48")
+              : (hasContent ? "min-h-32 max-h-80" : "min-h-16 max-h-80")
+          }`}
           suppressContentEditableWarning
         />
         {currentUser?.signature_html && (

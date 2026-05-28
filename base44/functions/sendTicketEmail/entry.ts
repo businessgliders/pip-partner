@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override, attachments } = await req.json();
+    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override, attachments, subject_override } = await req.json();
 
     if (!ticket_id || !ticket_type || !body_html) {
       return Response.json({ error: 'Missing ticket_id, ticket_type or body_html' }, { status: 400 });
@@ -232,7 +232,16 @@ Deno.serve(async (req) => {
 
     const subjectTag = buildSubjectTag(ticket);
     let subject;
-    if (isInternal) {
+    if (subject_override && typeof subject_override === 'string' && subject_override.trim()) {
+      // Staff-provided subject (e.g. from a template). Strip any tag they may have
+      // pasted in and rebuild with the canonical tag so threading stays consistent.
+      const clean = subject_override
+        .replace(/^(Re:\s*)+/i, '')
+        .replace(/^\[(Ticket|Application|Internal) #?[^\]]*\]\s*/g, '')
+        .trim();
+      const prefix = lastReal ? 'Re: ' : '';
+      subject = safeSubjectInput(`${prefix}${subjectTag} ${clean}`);
+    } else if (isInternal) {
       const inquiryWord =
         ticket_type === 'FranchiseInquiry' ? 'Franchise Inquiry'
           : ticket_type === 'InfluencerApplication' ? 'Influencer Application'
