@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, List, Link as LinkIcon,
   Sparkles, Lightbulb, Wand2, Trash2, Send, X, Loader2, CalendarDays, Users,
-  Paperclip, FileText, Link2
+  Paperclip, FileText, Link2, Maximize2, Minimize2
 } from "lucide-react";
 import {
   Popover, PopoverTrigger, PopoverContent
@@ -31,7 +31,17 @@ const FROM_ALIASES = {
   FrontAdminApplication: "hire@pilatesinpinkstudio.com",
 };
 
-export default function EmailComposer({ ticket, ticketType, currentUser, onSent, onCancel, isMobileFullscreen }) {
+export default function EmailComposer({
+  ticket,
+  ticketType,
+  currentUser,
+  onSent,
+  onCancel,
+  isMobileFullscreen,
+  onRequestFullscreen,
+  isFullscreen,
+  editorHeightPx,
+}) {
   const editorRef = useRef(null);
   const [sending, setSending] = useState(false);
   const [polishing, setPolishing] = useState(false);
@@ -389,11 +399,23 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
             )}
           </div>
         </div>
-        {onCancel && (
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-700">
-            <X className="w-4 h-4" />
-          </button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {onRequestFullscreen && (
+            <button
+              onClick={onRequestFullscreen}
+              className="text-gray-400 hover:text-gray-700 p-1"
+              title={isFullscreen ? "Exit fullscreen" : "Open fullscreen"}
+              type="button"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+          )}
+          {onCancel && (
+            <button onClick={onCancel} className="text-gray-400 hover:text-gray-700 p-1" type="button">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {subjectOverride !== null && (
@@ -624,10 +646,15 @@ export default function EmailComposer({ ticket, ticketType, currentUser, onSent,
           contentEditable
           data-placeholder="Write your reply..."
           onInput={(e) => setHasContent(!isEmpty(e.currentTarget.innerHTML))}
+          style={editorHeightPx ? { height: `${editorHeightPx}px`, maxHeight: "none" } : undefined}
           className={`prose prose-sm max-w-none p-3 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 ${
-            isMobileFullscreen
-              ? (hasContent ? "min-h-24 max-h-48" : "min-h-14 max-h-48")
-              : (hasContent ? "min-h-32 max-h-80" : "min-h-16 max-h-80")
+            editorHeightPx
+              ? ""
+              : isFullscreen
+                ? "min-h-64 max-h-[60vh]"
+                : isMobileFullscreen
+                  ? (hasContent ? "min-h-24 max-h-48" : "min-h-14 max-h-48")
+                  : (hasContent ? "min-h-32 max-h-80" : "min-h-16 max-h-80")
           }`}
           suppressContentEditableWarning
         />

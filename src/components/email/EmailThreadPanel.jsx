@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Mail, ChevronDown, ChevronUp, X } from "lucide-react";
 import EmailMessageItem from "./EmailMessageItem";
 import EmailComposer from "./EmailComposer";
+import ComposerDragHandle from "./ComposerDragHandle";
 import { buildWelcomeHtml } from "./welcomeEmailHtml";
 
 const STAFF_DOMAINS = ["pilatesinpinkstudio.com", "pilatesinpink.ca"];
@@ -135,6 +136,11 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
   const containerRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
   const [composerOpen, setComposerOpen] = useState(false);
+  // Desktop composer editor height (in px) when user has resized via the drag handle.
+  // null = use the default responsive sizing baked into EmailComposer.
+  const [editorHeight, setEditorHeight] = useState(null);
+  // Desktop full-screen modal toggle for the entire thread + composer
+  const [fullscreen, setFullscreen] = useState(false);
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["email-messages", ticket.id],
@@ -312,15 +318,83 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
             {composerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
           </button>
           <div className={`${composerOpen ? "block" : "hidden"} md:block`}>
+            {/* Desktop-only drag handle to resize the composer editor */}
+            <div className="hidden md:block">
+              <ComposerDragHandle
+                currentHeight={editorHeight ?? 200}
+                onResize={setEditorHeight}
+                minHeight={80}
+                maxHeight={600}
+              />
+            </div>
             <EmailComposer
               ticket={ticket}
               ticketType={ticketType}
               currentUser={currentUser}
               onSent={handleSent}
+              onRequestFullscreen={() => setFullscreen(true)}
+              editorHeightPx={editorHeight}
             />
           </div>
         </div>
       </div>
+
+      {/* Desktop fullscreen modal — entire email thread + composer */}
+      {fullscreen && (
+        <div className="fixed inset-0 z-50 hidden md:flex bg-white flex-col">
+          <div className="flex items-center justify-between px-6 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-pink-600" />
+              <span className="font-semibold text-sm text-gray-800">Email Communications</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
+                {allMessages.length}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFullscreen(false)}
+              className="p-1.5 rounded-md hover:bg-white/60 text-gray-600"
+              title="Exit fullscreen"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30">
+            <div className="max-w-5xl mx-auto">
+              {allMessages.map((m) => {
+                const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+                const isUnread =
+                  !!userEmail &&
+                  m.direction === "inbound" &&
+                  !String(m.id || "").startsWith("__") &&
+                  !readBy.some((e) => (e || "").toLowerCase() === userEmail);
+                return (
+                  <EmailMessageItem
+                    key={m.id}
+                    message={m}
+                    isHighlighted={highlightMessageId === m.id}
+                    isUnread={isUnread}
+                    onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
+                    staffNameByEmail={staffNameByEmail}
+                  />
+                );
+              })}
+            </div>
+          </div>
+          <div className="shrink-0 border-t bg-white">
+            <div className="max-w-5xl mx-auto">
+              <EmailComposer
+                ticket={ticket}
+                ticketType={ticketType}
+                currentUser={currentUser}
+                onSent={handleSent}
+                onRequestFullscreen={() => setFullscreen(false)}
+                isFullscreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Full-screen mobile popup for email composer */}
       {composerOpen && (
