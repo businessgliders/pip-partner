@@ -513,115 +513,108 @@ export default function ApplicationBoard() {
               </div>
             </div>
 
-            <div className="hidden lg:flex flex-wrap items-center gap-3">
-              {/* Search */}
-              <div className="hidden md:block">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder="Search applications..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-11 w-64 backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={() => setMobileSearchDialog(true)}
-                className="md:hidden h-11 w-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
-              >
-                <Search className="w-4 h-4" />
-              </button>
+            <div className="hidden lg:flex flex-wrap items-center gap-3 max-w-7xl">
+               {/* Search */}
+               <div className="hidden md:block">
+                 <div className="relative">
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                   <Input
+                     placeholder="Search applications..."
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     className="pl-9 h-11 w-64 backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
+                   />
+                 </div>
+               </div>
+               <button
+                 onClick={() => setMobileSearchDialog(true)}
+                 className="md:hidden h-11 w-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
+               >
+                 <Search className="w-4 h-4" />
+               </button>
 
-              {/* View Filter */}
-              <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1 ml-3">
-                  <button
-                    onClick={() => setViewMode("status")}
-                    title="Board view"
-                    className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                      viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                    }`}
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                    <span className="hidden md:inline">Board</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode("table")}
-                    title="Table view"
-                    className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                      viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                    }`}
-                  >
-                    <Table2 className="w-4 h-4" />
-                    <span className="hidden md:inline">Table</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode("map")}
-                    title="Map view"
-                    className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                      viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                    }`}
-                  >
-                    <MapIcon className="w-4 h-4" />
-                    <span className="hidden md:inline">Map</span>
-                  </button>
-                </div>
+               {/* View Filter */}
+               <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1 ml-3">
+                   <button
+                     onClick={() => setViewMode("status")}
+                     title="Board view"
+                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                       viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                     }`}
+                   >
+                     <LayoutGrid className="w-4 h-4" />
+                     <span className="hidden md:inline">Board</span>
+                   </button>
+                   <button
+                     onClick={() => setViewMode("table")}
+                     title="Table view"
+                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                       viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                     }`}
+                   >
+                     <Table2 className="w-4 h-4" />
+                     <span className="hidden md:inline">Table</span>
+                   </button>
+                   <button
+                     onClick={() => setViewMode("map")}
+                     title="Map view"
+                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                       viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                     }`}
+                   >
+                     <MapIcon className="w-4 h-4" />
+                     <span className="hidden md:inline">Map</span>
+                   </button>
+                 </div>
 
-              {!showArchived && viewMode === "table" && (
-                <button
-                  onClick={() => {
-                    const rows = tickets.filter((t) => !t.archived && matchesSearch(t));
-                    downloadCsv(rows, activeTab);
-                  }}
-                  className="h-11 px-3 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg text-sm font-medium flex items-center gap-1.5"
-                  title="Export CSV"
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="hidden md:inline">Export</span>
-                </button>
-              )}
+               {!showArchived && viewMode === "table" && (
+                 <button
+                   onClick={() => {
+                     const rows = tickets.filter((t) => !t.archived && matchesSearch(t));
+                     downloadCsv(rows, activeTab);
+                   }}
+                   className="h-11 px-3 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg text-sm font-medium flex items-center gap-1.5"
+                   title="Export CSV"
+                 >
+                   <Download className="w-4 h-4" />
+                   <span className="hidden md:inline">Export</span>
+                 </button>
+               )}
 
-              {/* Archive */}
-              <button
-                onClick={() => setShowArchived((v) => !v)}
-                className={`h-11 w-11 rounded-xl border shadow-lg flex items-center justify-center backdrop-blur-md ${
-                  showArchived
-                    ? "bg-purple-500/80 border-purple-400/80 text-white"
-                    : "bg-white/70 border-white/80 text-gray-900 hover:bg-white/80"
-                }`}
-              >
-                <Archive className="w-4 h-4" />
-              </button>
+               {/* Archive */}
+               <button
+                 onClick={() => setShowArchived((v) => !v)}
+                 className={`h-11 w-11 rounded-xl border shadow-lg flex items-center justify-center backdrop-blur-md ${
+                   showArchived
+                     ? "bg-purple-500/80 border-purple-400/80 text-white"
+                     : "bg-white/70 border-white/80 text-gray-900 hover:bg-white/80"
+                 }`}
+               >
+                 <Archive className="w-4 h-4" />
+               </button>
 
-              {/* Spacer to push right items */}
-              <div className="flex-1 hidden lg:block" />
+               {/* Notification Bell */}
+               <NotificationCenter
+                 unreadMessages={unreadMessages}
+                 totalUnread={totalUnread}
+                 markAsRead={markAsRead}
+                 onSelect={(ticket, messageId, tabKey) => {
+                   if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                   // Reset filters so the ticket is visible underneath the modal
+                   setSearchQuery("");
+                   setHiddenColumns([]);
+                   setViewMode("status");
+                   setShowArchived(!!ticket?.archived);
+                   setHighlightedTicketId(ticket?.id || null);
+                   setTimeout(() => setHighlightedTicketId(null), 3000);
+                   setHighlightMessageId(messageId);
+                   setSelectedTicket(ticket);
+                 }}
+               />
 
-              {/* Notification Bell */}
-              <div className="pr-3">
-                <NotificationCenter
-                  unreadMessages={unreadMessages}
-                  totalUnread={totalUnread}
-                  markAsRead={markAsRead}
-                  onSelect={(ticket, messageId, tabKey) => {
-                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                    // Reset filters so the ticket is visible underneath the modal
-                    setSearchQuery("");
-                    setHiddenColumns([]);
-                    setViewMode("status");
-                    setShowArchived(!!ticket?.archived);
-                    setHighlightedTicketId(ticket?.id || null);
-                    setTimeout(() => setHighlightedTicketId(null), 3000);
-                    setHighlightMessageId(messageId);
-                    setSelectedTicket(ticket);
-                  }}
-                />
-              </div>
-
-              {/* User Switcher - desktop only */}
-              <div className="hidden lg:block">
-                <UserMenu />
-              </div>
-              </div>
+               {/* User Switcher - desktop only */}
+               <UserMenu />
+               </div>
               </div>
 
           {/* Mobile-only horizontal pill switcher */}
