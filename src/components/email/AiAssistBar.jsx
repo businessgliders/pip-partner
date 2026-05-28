@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, RefreshCw, Loader2 } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function AiAssistBar({
@@ -19,6 +19,34 @@ export default function AiAssistBar({
   const [cached, setCached] = useState(false);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [fetched, setFetched] = useState(false);
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollState = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    updateScrollState();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateScrollState);
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [suggestions]);
+
+  const scrollBy = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: "smooth" });
+  };
 
   const fetchSuggestions = async (force = false) => {
     setLoadingSuggest(true);
@@ -115,23 +143,45 @@ export default function AiAssistBar({
               Refresh
             </Button>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {suggestions.map((s, i) => (
+          <div className="relative">
+            {canScrollLeft && (
               <button
-                key={i}
-                onClick={() => onApply(s.body_html)}
-                className="flex-shrink-0 w-64 text-left bg-white border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all rounded-lg p-3"
+                type="button"
+                onClick={() => scrollBy(-1)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-purple-200 hover:border-purple-400 hover:bg-purple-50 rounded-full p-1 shadow-sm"
+                title="Scroll left"
               >
-                <div className="text-xs font-bold text-purple-700 mb-1.5">{s.label}</div>
-                <div
-                  className="text-xs text-gray-700 line-clamp-3"
-                  dangerouslySetInnerHTML={{ __html: s.body_html }}
-                />
+                <ChevronLeft className="w-4 h-4 text-purple-700" />
               </button>
-            ))}
-            {!loadingSuggest && suggestions.length === 0 && fetched && (
-              <div className="text-xs text-gray-500 italic">No suggestions returned.</div>
             )}
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => scrollBy(1)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-purple-200 hover:border-purple-400 hover:bg-purple-50 rounded-full p-1 shadow-sm"
+                title="Scroll right"
+              >
+                <ChevronRight className="w-4 h-4 text-purple-700" />
+              </button>
+            )}
+            <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-2 scroll-smooth">
+              {suggestions.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => onApply(s.body_html)}
+                  className="flex-shrink-0 w-64 text-left bg-white border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all rounded-lg p-3"
+                >
+                  <div className="text-xs font-bold text-purple-700 mb-1.5">{s.label}</div>
+                  <div
+                    className="text-xs text-gray-700 line-clamp-3"
+                    dangerouslySetInnerHTML={{ __html: s.body_html }}
+                  />
+                </button>
+              ))}
+              {!loadingSuggest && suggestions.length === 0 && fetched && (
+                <div className="text-xs text-gray-500 italic">No suggestions returned.</div>
+              )}
+            </div>
           </div>
         </div>
       )}
