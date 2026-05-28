@@ -42,6 +42,8 @@ export default function EmailComposer({
   onRequestFullscreen,
   isFullscreen,
   editorHeightPx,
+  draftHtml,
+  onDraftChange,
 }) {
   const navigate = useNavigate();
   const editorRef = useRef(null);
@@ -112,8 +114,19 @@ export default function EmailComposer({
   const setHtml = (html) => {
     if (editorRef.current) editorRef.current.innerHTML = html;
     setHasContent(!isEmpty(html));
+    onDraftChange?.(html);
   };
   const getHtml = () => editorRef.current?.innerHTML || "";
+
+  // Hydrate editor from external draft (e.g. when switching to/from fullscreen)
+  useEffect(() => {
+    if (draftHtml === undefined) return;
+    if (!editorRef.current) return;
+    if (editorRef.current.innerHTML === draftHtml) return;
+    editorRef.current.innerHTML = draftHtml || "";
+    setHasContent(!isEmpty(draftHtml || ""));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftHtml]);
 
   const exec = (cmd, val = null) => {
     document.execCommand(cmd, false, val);
@@ -620,62 +633,17 @@ export default function EmailComposer({
               isMobileFullscreen={isMobileFullscreen}
               boardKey={ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring'}
             />
-            {ticketAttachments.length > 0 && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 px-2 text-slate-700 border-slate-200 hover:bg-slate-50"
-                    title="Attach ticket files"
-                  >
-                    <Paperclip className="w-3.5 h-3.5 lg:mr-1.5" />
-                    <span className="hidden lg:inline">Attach</span>
-                    {selectedAttachmentIdxs.length > 0 && (
-                      <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-semibold">
-                        {selectedAttachmentIdxs.length}
-                      </span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-72 p-2 max-h-72 overflow-y-auto">
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
-                    Attach from ticket
-                  </p>
-                  {ticketAttachments.map((a, idx) => {
-                    const checked = selectedAttachmentIdxs.includes(idx);
-                    return (
-                      <label
-                        key={idx}
-                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
-                      >
-                        <Checkbox
-                          checked={checked}
-                          onCheckedChange={(v) => {
-                            setSelectedAttachmentIdxs((cur) =>
-                              v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
-                            );
-                          }}
-                        />
-                        {a.type === "link" ? (
-                          <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        ) : (
-                          <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        )}
-                        <span className="truncate text-sm flex-1">{a.label || a.url}</span>
-                      </label>
-                    );
-                  })}
-                </PopoverContent>
-              </Popover>
-            )}
           </div>
         </div>
         <div
           ref={editorRef}
           contentEditable
           data-placeholder="Write your reply..."
-          onInput={(e) => setHasContent(!isEmpty(e.currentTarget.innerHTML))}
+          onInput={(e) => {
+            const html = e.currentTarget.innerHTML;
+            setHasContent(!isEmpty(html));
+            onDraftChange?.(html);
+          }}
           style={editorHeightPx ? { height: `${editorHeightPx}px`, maxHeight: "none" } : undefined}
           className={`prose prose-sm max-w-none p-3 overflow-y-auto focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 ${
             editorHeightPx
@@ -684,7 +652,7 @@ export default function EmailComposer({
                 ? "min-h-32 max-h-[28vh]"
                 : isMobileFullscreen
                   ? (hasContent ? "min-h-24 max-h-48" : "min-h-14 max-h-48")
-                  : (hasContent ? "min-h-32 max-h-80" : "min-h-16 max-h-80")
+                  : (hasContent ? "min-h-32 max-h-48" : "min-h-16 max-h-48")
           }`}
           suppressContentEditableWarning
         />
@@ -705,6 +673,54 @@ export default function EmailComposer({
                 </button>
               </div>
               <div className="flex items-center gap-1">
+                {ticketAttachments.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5 relative"
+                        title="Attach ticket files"
+                      >
+                        <Paperclip className="w-3.5 h-3.5" />
+                        {selectedAttachmentIdxs.length > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-pink-600 text-white text-[10px] font-semibold flex items-center justify-center leading-none">
+                            {selectedAttachmentIdxs.length}
+                          </span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-72 p-2 max-h-72 overflow-y-auto">
+                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
+                        Attach from ticket
+                      </p>
+                      {ticketAttachments.map((a, idx) => {
+                        const checked = selectedAttachmentIdxs.includes(idx);
+                        return (
+                          <label
+                            key={idx}
+                            className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(v) => {
+                                setSelectedAttachmentIdxs((cur) =>
+                                  v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
+                                );
+                              }}
+                            />
+                            {a.type === "link" ? (
+                              <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            ) : (
+                              <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            )}
+                            <span className="truncate text-sm flex-1">{a.label || a.url}</span>
+                          </label>
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+                )}
                 <input
                   ref={fileInputRef}
                   type="file"

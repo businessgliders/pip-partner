@@ -161,6 +161,8 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
   }, [inlineEditorMax, editorHeight]);
   // Desktop full-screen modal toggle for the entire thread + composer
   const [fullscreen, setFullscreen] = useState(false);
+  // Shared composer draft so switching to/from fullscreen preserves content
+  const [draftHtml, setDraftHtml] = useState("");
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["email-messages", ticket.id],
@@ -351,9 +353,11 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
               ticket={ticket}
               ticketType={ticketType}
               currentUser={currentUser}
-              onSent={handleSent}
+              onSent={() => { setDraftHtml(""); handleSent(); }}
               onRequestFullscreen={() => setFullscreen(true)}
               editorHeightPx={editorHeight}
+              draftHtml={draftHtml}
+              onDraftChange={setDraftHtml}
             />
           </div>
         </div>
@@ -407,9 +411,11 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
                 ticket={ticket}
                 ticketType={ticketType}
                 currentUser={currentUser}
-                onSent={handleSent}
+                onSent={() => { setDraftHtml(""); handleSent(); }}
                 onRequestFullscreen={() => setFullscreen(false)}
                 isFullscreen
+                draftHtml={draftHtml}
+                onDraftChange={setDraftHtml}
               />
             </div>
           </div>
@@ -458,10 +464,13 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
                 ticketType={ticketType}
                 currentUser={currentUser}
                 onSent={() => {
+                  setDraftHtml("");
                   setComposerOpen(false);
                   handleSent();
                 }}
                 isMobileFullscreen
+                draftHtml={draftHtml}
+                onDraftChange={setDraftHtml}
               />
             </div>
           </div>
