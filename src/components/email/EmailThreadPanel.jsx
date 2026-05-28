@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Mail, ChevronDown, ChevronUp, X } from "lucide-react";
@@ -138,7 +138,7 @@ function buildIntakeSummary(ticket, ticketType) {
     .join("");
 }
 
-export default function EmailThreadPanel({ ticket, ticketType, currentUser, highlightMessageId, markAsRead }) {
+function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessageId, markAsRead }, ref) {
   const containerRef = useRef(null);
   const panelRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
@@ -207,6 +207,13 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     pendingCloseRef.current = closeFn;
     setConfirmOpen(true);
   };
+
+  // Expose a tryClose method so parent dialogs/modals can intercept their own
+  // close (backdrop click, Esc) and show our draft-confirm dialog first.
+  useImperativeHandle(ref, () => ({
+    tryClose: (closeFn) => requestClose(closeFn),
+    hasUnsavedDraft: () => !isHtmlEmpty(draftHtml) && draft.isDirty(),
+  }));
 
   const handleConfirmSave = async () => {
     setConfirmSaving(true);
@@ -576,3 +583,6 @@ export default function EmailThreadPanel({ ticket, ticketType, currentUser, high
     </>
   );
 }
+
+const EmailThreadPanel = forwardRef(EmailThreadPanelInner);
+export default EmailThreadPanel;

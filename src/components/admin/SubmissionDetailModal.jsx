@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -62,7 +62,23 @@ export default function SubmissionDetailModal({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const threadRef = useRef(null);
   if (!row) return null;
+
+  // Intercept modal close (backdrop, Esc, or close button) so that any unsaved
+  // composer draft prompts the save/discard dialog before the modal disappears.
+  const handleOpenChange = (next) => {
+    if (next) {
+      onOpenChange(next);
+      return;
+    }
+    const api = threadRef.current;
+    if (api?.hasUnsavedDraft?.()) {
+      api.tryClose(() => onOpenChange(false));
+      return;
+    }
+    onOpenChange(false);
+  };
 
   const ticketType = ENTITY_KEY_TO_NAME[tabKey];
   const entityName = ticketType;
@@ -139,7 +155,7 @@ export default function SubmissionDetailModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-7xl sm:max-w-2xl md:max-w-4xl lg:max-w-7xl xl:max-w-[81rem] max-h-[92vh] overflow-hidden p-0">
         <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-[3fr_2fr] max-h-[92vh]">
           {/* Left: Contact + Email Communications */}
@@ -319,6 +335,7 @@ export default function SubmissionDetailModal({
             <div className="flex-1 overflow-hidden p-4 bg-slate-50">
               {ticketType ? (
                 <EmailThreadPanel
+                  ref={threadRef}
                   ticket={row}
                   ticketType={ticketType}
                   currentUser={user}
