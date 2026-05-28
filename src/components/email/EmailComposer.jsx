@@ -469,7 +469,7 @@ export default function EmailComposer({
             const safeLabel = (label || url).replace(/[<>&]/g, (c) =>
               ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])
             );
-            const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
+            const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>: <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
             const current = getHtml();
             if (isEmpty(current)) {
               setHtml(`<p>${linkHtml}</p>`);

@@ -26,7 +26,7 @@ function formatTimeLabel(iso) {
 }
 
 const CAL_EVENT_LINKS = {
-  franchise: "https://cal.com/pilatesinpink/franchise-discovery-call",
+  franchise: "https://cal.com/pilatesinpink/franchise",
   hiring: "https://cal.com/pilatesinpink/hiring-interview",
 };
 
@@ -114,8 +114,7 @@ export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscree
               type="button"
               onClick={() => {
                 const url = CAL_EVENT_LINKS[boardKey] || CAL_EVENT_LINKS.hiring;
-                const label = boardKey === 'franchise' ? 'Book a Franchise Discovery Call' : 'Book an Interview';
-                onAddLink?.({ url, label });
+                onAddLink?.({ url, label: "Book a meeting using this link" });
                 setOpen(false);
               }}
               title="Insert Cal.com event-type link into the email"
