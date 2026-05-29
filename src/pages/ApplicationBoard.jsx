@@ -416,7 +416,7 @@ export default function ApplicationBoard() {
                 {showArchived ? (
                   <>{archivedTickets.length} archived applications</>
                 ) : (
-                  <>{activeCount} active applications · {firstColumnCount} in {firstColumn || "—"}</>
+                  <>{activeCount} active applications</>
                 )}
               </div>
 
@@ -502,8 +502,24 @@ export default function ApplicationBoard() {
                 <UserMenu />
               </div>
 
-              {/* User menu on mobile, top right */}
-              <div className="md:hidden">
+              {/* Notification bell + user menu on mobile, top right */}
+              <div className="md:hidden flex items-center gap-1">
+                <NotificationCenter
+                  unreadMessages={unreadMessages}
+                  totalUnread={totalUnread}
+                  markAsRead={markAsRead}
+                  onSelect={(ticket, messageId, tabKey) => {
+                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                    setSearchQuery("");
+                    setHiddenColumns([]);
+                    setViewMode("status");
+                    setShowArchived(!!ticket?.archived);
+                    setHighlightedTicketId(ticket?.id || null);
+                    setTimeout(() => setHighlightedTicketId(null), 3000);
+                    setHighlightMessageId(messageId);
+                    setSelectedTicket(ticket);
+                  }}
+                />
                 <UserMenu />
               </div>
             </div>
@@ -626,68 +642,63 @@ export default function ApplicationBoard() {
           <div className="flex gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden">
             {BOARD_TYPES.map((t) => {
               const isActive = activeTab === t.key;
-              const activeIndex = BOARD_TYPES.findIndex((b) => b.key === activeTab);
-              const isUnderActive = hasSteps && t.key === activeTab;
               return (
-                <div key={t.key} className="flex-1 flex flex-col gap-1.5 min-w-0">
-                  <button
-                    onClick={() => setActiveTab(t.key)}
-                    className={`w-full px-2 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                      isActive
-                        ? "bg-white text-gray-900 border-white shadow"
-                        : "bg-white/20 text-white border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                  {isUnderActive && !showArchived && effectiveViewMode === "status" && (() => {
-                    const stepTwoCount = (board.stepTwo || []).reduce(
-                      (acc, s) => acc + getTicketsByColumn(s).length,
-                      0
-                    );
-                    const stepOneCount = (board.stepOne || []).reduce(
-                      (acc, s) => acc + getTicketsByColumn(s).length,
-                      0
-                    );
-                    return (
-                      <div className="flex gap-3 border-b border-white/20">
-                        <button
-                          onClick={() => setBoardStep("one")}
-                          className={`flex-1 px-1 py-1 text-[10px] font-medium transition-all flex items-center justify-center gap-1 min-w-0 border-b-2 ${
-                            boardStep === "one"
-                              ? "text-white border-b-white"
-                              : "text-white/60 border-b-transparent hover:text-white/80"
-                          }`}
-                        >
-                          <span className="truncate">Step One</span>
-                          {stepOneCount > 0 && (
-                            <span className="flex-shrink-0 text-[9px] font-semibold">
-                              ({stepOneCount})
-                            </span>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => setBoardStep("two")}
-                          className={`flex-1 px-1 py-1 text-[10px] font-medium transition-all flex items-center justify-center gap-1 min-w-0 border-b-2 ${
-                            boardStep === "two"
-                              ? "text-white border-b-white"
-                              : "text-white/60 border-b-transparent hover:text-white/80"
-                          }`}
-                        >
-                          <span className="truncate">Step Two</span>
-                          {stepTwoCount > 0 && (
-                            <span className="flex-shrink-0 text-[9px] font-semibold">
-                              ({stepTwoCount})
-                            </span>
-                          )}
-                        </button>
-                      </div>
-                    );
-                  })()}
-                </div>
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  className={`flex-1 min-w-0 px-2 py-1.5 rounded-full text-[10px] sm:text-xs font-medium border transition-all whitespace-nowrap ${
+                    isActive
+                      ? "bg-white text-gray-900 border-white shadow"
+                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
+                  }`}
+                >
+                  {t.label}
+                </button>
               );
             })}
           </div>
+
+          {/* Mobile-only Step One / Step Two underline tabs (full width) */}
+          {hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
+            const stepTwoCount = (board.stepTwo || []).reduce(
+              (acc, s) => acc + getTicketsByColumn(s).length,
+              0
+            );
+            const stepOneCount = (board.stepOne || []).reduce(
+              (acc, s) => acc + getTicketsByColumn(s).length,
+              0
+            );
+            return (
+              <div className="flex mt-2 -mx-2 px-2 border-b border-white/20 lg:hidden">
+                <button
+                  onClick={() => setBoardStep("one")}
+                  className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
+                    boardStep === "one"
+                      ? "text-white border-b-white"
+                      : "text-white/60 border-b-transparent hover:text-white/80"
+                  }`}
+                >
+                  <span>Step One</span>
+                  {stepOneCount > 0 && (
+                    <span className="text-[10px] font-semibold">({stepOneCount})</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setBoardStep("two")}
+                  className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
+                    boardStep === "two"
+                      ? "text-white border-b-white"
+                      : "text-white/60 border-b-transparent hover:text-white/80"
+                  }`}
+                >
+                  <span>Step Two</span>
+                  {stepTwoCount > 0 && (
+                    <span className="text-[10px] font-semibold">({stepTwoCount})</span>
+                  )}
+                </button>
+              </div>
+            );
+          })()}
 
           {/* Legacy Step switcher block (now unused — kept hidden to avoid layout shift) */}
           {false && hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
