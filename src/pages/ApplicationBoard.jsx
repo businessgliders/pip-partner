@@ -941,23 +941,48 @@ export default function ApplicationBoard() {
             </div>
 
             {sidePanelStatuses.length > 0 && (
-              <ClosedSidePanel
-                statuses={sidePanelStatuses.map((s) => ({
-                  status: s,
-                  tickets: getTicketsByColumn(s),
-                  onArchiveSome: () => handleArchiveSome(s),
-                  onArchiveAll: () => setArchiveAllConfirmDialog({ status: s }),
-                }))}
-                onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                onArchiveChange={handleArchiveChange}
-                onTicketClick={(t) => setSelectedTicket(t)}
-                isLoading={isLoading}
-                highlightedTicketId={highlightedTicketId}
-                viewMode={effectiveViewMode}
-                statusOptions={board.statuses}
-                boardKey={board.key}
-                unreadCountByTicket={unreadCountByTicket}
-              />
+              <div className="hidden lg:block">
+                <ClosedSidePanel
+                  statuses={sidePanelStatuses.map((s) => ({
+                    status: s,
+                    tickets: getTicketsByColumn(s),
+                    onArchiveSome: () => handleArchiveSome(s),
+                    onArchiveAll: () => setArchiveAllConfirmDialog({ status: s }),
+                  }))}
+                  onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                  onArchiveChange={handleArchiveChange}
+                  onTicketClick={(t) => setSelectedTicket(t)}
+                  isLoading={isLoading}
+                  highlightedTicketId={highlightedTicketId}
+                  viewMode={effectiveViewMode}
+                  statusOptions={board.statuses}
+                  boardKey={board.key}
+                  unreadCountByTicket={unreadCountByTicket}
+                />
+              </div>
+            )}
+
+            {/* Mobile: Bottom-right floating panel for closed/ghosted */}
+            {sidePanelStatuses.length > 0 && (
+              <div className="lg:hidden fixed bottom-6 right-6 z-30 max-w-sm">
+                <ClosedSidePanel
+                  statuses={sidePanelStatuses.map((s) => ({
+                    status: s,
+                    tickets: getTicketsByColumn(s),
+                    onArchiveSome: () => handleArchiveSome(s),
+                    onArchiveAll: () => setArchiveAllConfirmDialog({ status: s }),
+                  }))}
+                  onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                  onArchiveChange={handleArchiveChange}
+                  onTicketClick={(t) => setSelectedTicket(t)}
+                  isLoading={isLoading}
+                  highlightedTicketId={highlightedTicketId}
+                  viewMode={effectiveViewMode}
+                  statusOptions={board.statuses}
+                  boardKey={board.key}
+                  unreadCountByTicket={unreadCountByTicket}
+                />
+              </div>
             )}
           </DragDropContext>
         )}
