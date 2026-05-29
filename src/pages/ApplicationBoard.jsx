@@ -99,6 +99,7 @@ export default function ApplicationBoard() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [boardStep, setBoardStep] = useState("one"); // "one" | "two" — only used when board defines stepOne/stepTwo
+  const [mobilePage, setMobilePage] = useState(0); // mobile-only swimlane pagination (2 columns per page)
   const swimlaneScrollRef = useRef(null);
 
   useEffect(() => {
@@ -107,7 +108,13 @@ export default function ApplicationBoard() {
     setShowArchived(false);
     setCleanupDismissed(false);
     setBoardStep("one");
+    setMobilePage(0);
   }, [activeTab]);
+
+  // Reset mobile pagination when the visible column set changes
+  useEffect(() => {
+    setMobilePage(0);
+  }, [boardStep, viewMode, showArchived]);
 
   const { data: rawTickets = [], isLoading } = useQuery({
     queryKey: ["app-board", board.entity],
@@ -830,64 +837,106 @@ export default function ApplicationBoard() {
                   hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
                 }`}
               >
-                {hasSteps ? (
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={boardStep}
-                      initial={{ x: boardStep === "two" ? "100%" : "-100%", opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
-                      transition={{ type: "tween", ease: "easeInOut", duration: 0.35 }}
-                      className="grid grid-cols-4 gap-1.5 md:gap-3 h-full lg:gap-6"
-                    >
-                      {columns.map((col) => (
-                        <div
-                          key={col}
-                          data-swimlane
-                          className="min-w-0 h-full"
-                        >
-                          <KanbanColumn
-                            status={col}
-                            tickets={getTicketsByColumn(col)}
-                            onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                            onArchiveChange={handleArchiveChange}
-                            onTicketClick={(t) => setSelectedTicket(t)}
-                            isLoading={isLoading}
-                            highlightedTicketId={highlightedTicketId}
-                            viewMode={effectiveViewMode}
-                            statusOptions={board.statuses}
-                            boardKey={board.key}
-                            unreadCountByTicket={unreadCountByTicket}
-                          />
-                        </div>
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                ) : (
-                  <div className="grid grid-cols-4 gap-1.5 md:gap-3 h-full lg:gap-6">
-                    {columns.map((col) => (
-                      <div
-                        key={col}
-                        data-swimlane
-                        className="min-w-0 h-full"
+                {(() => {
+                  const MOBILE_PAGE_SIZE = 2;
+                  const totalPages = Math.max(1, Math.ceil(columns.length / MOBILE_PAGE_SIZE));
+                  const safePage = Math.min(mobilePage, totalPages - 1);
+                  const mobileStart = safePage * MOBILE_PAGE_SIZE;
+                  const mobileColumns = columns.slice(mobileStart, mobileStart + MOBILE_PAGE_SIZE);
+                  const canPrev = safePage > 0;
+                  const canNext = safePage < totalPages - 1;
+
+                  const renderColumn = (col) => (
+                    <div key={col} data-swimlane className="min-w-0 h-full">
+                      <KanbanColumn
+                        status={col}
+                        tickets={getTicketsByColumn(col)}
+                        onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                        onArchiveChange={handleArchiveChange}
+                        onTicketClick={(t) => setSelectedTicket(t)}
+                        isLoading={isLoading}
+                        highlightedTicketId={highlightedTicketId}
+                        viewMode={effectiveViewMode}
+                        statusOptions={board.statuses}
+                        boardKey={board.key}
+                        unreadCountByTicket={unreadCountByTicket}
+                      />
+                    </div>
+                  );
+
+                  const desktopGrid = hasSteps ? (
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={boardStep}
+                        initial={{ x: boardStep === "two" ? "100%" : "-100%", opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
+                        transition={{ type: "tween", ease: "easeInOut", duration: 0.35 }}
+                        className="hidden lg:grid grid-cols-4 gap-6 h-full"
                       >
-                        <KanbanColumn
-                          status={col}
-                          tickets={getTicketsByColumn(col)}
-                          onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                          onArchiveChange={handleArchiveChange}
-                          onTicketClick={(t) => setSelectedTicket(t)}
-                          isLoading={isLoading}
-                          highlightedTicketId={highlightedTicketId}
-                          viewMode={effectiveViewMode}
-                          statusOptions={board.statuses}
-                          boardKey={board.key}
-                          unreadCountByTicket={unreadCountByTicket}
-                        />
+                        {columns.map(renderColumn)}
+                      </motion.div>
+                    </AnimatePresence>
+                  ) : (
+                    <div className="hidden lg:grid grid-cols-4 gap-6 h-full">
+                      {columns.map(renderColumn)}
+                    </div>
+                  );
+
+                  return (
+                    <>
+                      {desktopGrid}
+
+                      {/* Mobile/tablet: 2 columns per page with arrow nav */}
+                      <div className="lg:hidden h-full flex flex-col">
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.div
+                            key={`${boardStep}-${safePage}`}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
+                            className="grid grid-cols-2 gap-1.5 md:gap-3 flex-1 min-h-0"
+                          >
+                            {mobileColumns.map(renderColumn)}
+                          </motion.div>
+                        </AnimatePresence>
+                        {totalPages > 1 && (
+                          <div className="flex items-center justify-center gap-3 mt-2 flex-shrink-0">
+                            <button
+                              onClick={() => setMobilePage((p) => Math.max(0, p - 1))}
+                              disabled={!canPrev}
+                              className="h-8 w-8 rounded-full backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 shadow-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Previous columns"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <div className="flex items-center gap-1.5">
+                              {Array.from({ length: totalPages }).map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setMobilePage(i)}
+                                  className={`h-1.5 rounded-full transition-all ${
+                                    i === safePage ? "w-5 bg-white" : "w-1.5 bg-white/40"
+                                  }`}
+                                  title={`Page ${i + 1}`}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => setMobilePage((p) => Math.min(totalPages - 1, p + 1))}
+                              disabled={!canNext}
+                              className="h-8 w-8 rounded-full backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 shadow-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Next columns"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
