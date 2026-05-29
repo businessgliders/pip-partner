@@ -420,7 +420,7 @@ export default function ApplicationBoard() {
                 )}
               </div>
 
-              {/* Tablet-only (md → lg): View filter + search + bell where the count text used to be */}
+              {/* Tablet-only (md → lg): View filter + search + bell + user menu */}
               <div className="hidden md:flex lg:hidden items-center gap-2">
                 {!showArchived && (
                   <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
@@ -495,10 +495,11 @@ export default function ApplicationBoard() {
                     setSelectedTicket(ticket);
                   }}
                 />
+                <UserMenu />
               </div>
 
-              {/* User menu on mobile/tablet, top right */}
-              <div className="lg:hidden">
+              {/* User menu on mobile, top right */}
+              <div className="md:hidden lg:hidden">
                 <UserMenu />
               </div>
             </div>
