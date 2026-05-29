@@ -650,13 +650,13 @@ export default function ApplicationBoard() {
                       0
                     );
                     return (
-                      <div className="flex gap-1">
+                      <div className="flex gap-3 border-b border-white/20">
                         <button
                           onClick={() => setBoardStep("one")}
-                          className={`flex-1 px-1 py-0.5 rounded-full text-[10px] font-medium border transition-all flex items-center justify-center gap-1 min-w-0 ${
+                          className={`flex-1 px-1 py-1 text-[10px] font-medium transition-all flex items-center justify-center gap-1 min-w-0 border-b-2 ${
                             boardStep === "one"
-                              ? "bg-white/90 text-gray-900 border-white"
-                              : "bg-white/10 text-white border-white/30 hover:bg-white/15"
+                              ? "text-white border-b-white"
+                              : "text-white/60 border-b-transparent hover:text-white/80"
                           }`}
                         >
                           <span className="truncate">Step One</span>
@@ -668,10 +668,10 @@ export default function ApplicationBoard() {
                         </button>
                         <button
                           onClick={() => setBoardStep("two")}
-                          className={`flex-1 px-1 py-0.5 rounded-full text-[10px] font-medium border transition-all flex items-center justify-center gap-1 min-w-0 ${
+                          className={`flex-1 px-1 py-1 text-[10px] font-medium transition-all flex items-center justify-center gap-1 min-w-0 border-b-2 ${
                             boardStep === "two"
-                              ? "bg-white/90 text-gray-900 border-white"
-                              : "bg-white/10 text-white border-white/30 hover:bg-white/15"
+                              ? "text-white border-b-white"
+                              : "text-white/60 border-b-transparent hover:text-white/80"
                           }`}
                         >
                           <span className="truncate">Step Two</span>
