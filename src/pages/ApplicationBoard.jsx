@@ -420,8 +420,15 @@ export default function ApplicationBoard() {
                 )}
               </div>
 
-              {/* Tablet-only (md → lg): View filter + search + bell + user menu */}
-              <div className="hidden md:flex lg:hidden items-center gap-2">
+              {/* Tablet-only (md → lg): Search + View filter centered */}
+              <div className="hidden md:flex lg:hidden items-center justify-center gap-2 flex-1">
+                <button
+                  onClick={() => setMobileSearchDialog(true)}
+                  title="Search"
+                  className="h-10 w-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
                 {!showArchived && (
                   <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
                     <button
@@ -472,13 +479,10 @@ export default function ApplicationBoard() {
                     <span>Archived</span>
                   </button>
                 )}
-                <button
-                  onClick={() => setMobileSearchDialog(true)}
-                  title="Search"
-                  className="h-10 w-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
+              </div>
+
+              {/* Tablet-only: Notification bell + user menu (right side) */}
+              <div className="hidden md:flex lg:hidden items-center gap-2">
                 <NotificationCenter
                   unreadMessages={unreadMessages}
                   totalUnread={totalUnread}
@@ -499,7 +503,7 @@ export default function ApplicationBoard() {
               </div>
 
               {/* User menu on mobile, top right */}
-              <div className="md:hidden lg:hidden">
+              <div className="md:hidden">
                 <UserMenu />
               </div>
             </div>
