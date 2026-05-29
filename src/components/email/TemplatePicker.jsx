@@ -63,7 +63,7 @@ export default function TemplatePicker({ vars, onSelect, isMobileFullscreen }) {
                   })
                 }
               >
-                {t.name.replace(/^Franchise — /, "").replace(/^\d+\.\s*/, "")}
+                {t.name.replace(/^Franchise — /, "")}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
