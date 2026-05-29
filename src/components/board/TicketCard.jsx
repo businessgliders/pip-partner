@@ -102,6 +102,32 @@ export default function TicketCard({
     });
   })();
 
+  const scheduledTimeLabelMobile = (() => {
+    const startIso = ticket._cal_booking?.start || ticket.scheduled_call_time;
+    if (!startIso) return "";
+    const d = new Date(startIso);
+    if (isNaN(d.getTime())) return "";
+    const parts = d.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Toronto",
+    }).split(", ");
+    if (parts.length >= 3) {
+      return `${parts[0]}, ${parts[1]} ${parts[2]}`;
+    }
+    return d.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Toronto",
+    });
+  })();
+
   const baseCls = `relative overflow-hidden backdrop-blur-md bg-white/70 border-2 ${borderCls} rounded-xl p-2 md:p-4 group`;
   const stateCls = isDragging
     ? "shadow-2xl bg-white/95 cursor-grabbing ring-4 ring-white/60"
@@ -136,8 +162,8 @@ export default function TicketCard({
               <div className="text-xs font-semibold text-gray-900 truncate">
                 {name}
               </div>
-              {scheduledTimeLabel && (
-                <div className="text-[10px] text-emerald-700 mt-0.5 font-medium truncate">📅 {scheduledTimeLabel}</div>
+              {scheduledTimeLabelMobile && (
+                <div className="text-[10px] text-emerald-700 mt-0.5 font-medium truncate">📅 {scheduledTimeLabelMobile}</div>
               )}
             </div>
           </div>
