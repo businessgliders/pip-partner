@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Trash2, Archive } from "lucide-react";
 import TicketCard from "./TicketCard";
 import { getStatusMeta } from "./boardConfig";
 
@@ -90,20 +90,24 @@ export default function KanbanColumn({
                 <Sparkles className="w-3 h-3" /> Tidy Up
               </button>
             )}
-            {tickets.length > 0 && onArchiveSome && (
+            {tickets.length >= 5 && onArchiveSome && (
               <button
                 onClick={onArchiveSome}
-                className="text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
+                title="Clean Up"
+                className="text-[10px] p-1 lg:px-2 lg:py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40 inline-flex items-center gap-1"
               >
-                Clean Up
+                <Trash2 className="w-3 h-3" />
+                <span className="hidden lg:inline">Clean Up</span>
               </button>
             )}
-            {tickets.length > 0 && onArchiveAll && (
+            {tickets.length >= 5 && onArchiveAll && (
               <button
                 onClick={onArchiveAll}
-                className="text-[10px] px-2 py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40"
+                title="Archive All"
+                className="text-[10px] p-1 lg:px-2 lg:py-1 rounded-md bg-white/30 hover:bg-white/40 text-white border border-white/40 inline-flex items-center gap-1"
               >
-                Archive All
+                <Archive className="w-3 h-3" />
+                <span className="hidden lg:inline">Archive All</span>
               </button>
             )}
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white font-medium">
