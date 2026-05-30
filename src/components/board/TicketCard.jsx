@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { displayAppNumber } from "@/lib/appNumberDisplay";
+import FddCountdownPill from "./FddCountdownPill";
 
 const priorityBorderColors = {
   Low: "border-green-500",
@@ -165,6 +166,9 @@ export default function TicketCard({
               {scheduledTimeLabelMobile && (
                 <div className="text-[10px] text-emerald-700 mt-0.5 font-medium truncate">📅 {scheduledTimeLabelMobile}</div>
               )}
+              {boardKey === "franchise" && (
+                <div className="mt-1"><FddCountdownPill ticket={ticket} /></div>
+              )}
             </div>
           </div>
           <DropdownMenu>
@@ -216,11 +220,14 @@ export default function TicketCard({
                 </span>
               )}
               {boardKey === "franchise" ? (
-                (ticket.preferred_location || ticket.province || ticket.preferred_postal_code) && (
-                  <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
-                    📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province, ticket.preferred_postal_code].filter(Boolean).join(" · ")}
-                  </span>
-                )
+                <>
+                  {(ticket.preferred_location || ticket.province || ticket.preferred_postal_code) && (
+                    <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
+                      📍 {[toSentenceCase(ticket.preferred_location || ""), ticket.province, ticket.preferred_postal_code].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
+                  <div className="mt-1"><FddCountdownPill ticket={ticket} /></div>
+                </>
               ) : (boardKey === "instructor" || boardKey === "frontadmin") ? (
                 (ticket.preferred_studio || ticket.province || ticket.postal_code) && (
                   <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-white/80 text-gray-700 max-w-full truncate">
