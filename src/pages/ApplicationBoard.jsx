@@ -888,7 +888,7 @@ export default function ApplicationBoard() {
                       {desktopGrid}
 
                       {/* Mobile/tablet: 2 columns per page with arrow nav */}
-                      <div className="md:hidden h-full flex flex-col">
+                      <div className="lg:hidden h-full flex flex-col">
                         <AnimatePresence mode="wait" initial={false}>
                           <motion.div
                             key={`${boardStep}-${safePage}`}
