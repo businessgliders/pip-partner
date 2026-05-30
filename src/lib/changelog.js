@@ -11,18 +11,18 @@ export const CHANGELOG_ENTRIES = [
       "Live 14-day FDD review countdown pill on franchise tickets with color-coded urgency.",
   },
   {
-    id: "2026-05-29-a",
-    date: "May 29, 2026",
-    title: "Tablet kanban navigation",
-    description:
-      "Swimlane arrows now available on tablet view for easier column pagination.",
-  },
-  {
     id: "2026-05-28-a",
     date: "May 28, 2026",
     title: "FDD manual override",
     description:
       "Admins can manually start, reset, or clear the 14-day FDD waiting period.",
+  },
+  {
+    id: "2026-05-27-a",
+    date: "May 27, 2026",
+    title: "Franchise email templates",
+    description:
+      "Standardized three franchise email templates with mandatory attendance requirements.",
   },
 ];
 
