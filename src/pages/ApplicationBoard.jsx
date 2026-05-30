@@ -9,6 +9,7 @@ import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, H
 
 import UserMenu from "../components/dashboard/UserMenu";
 import NotificationCenter from "../components/admin/NotificationCenter";
+import ChangelogPopup from "../components/admin/ChangelogPopup";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import KanbanColumn from "../components/board/KanbanColumn";
@@ -490,6 +491,7 @@ export default function ApplicationBoard() {
 
               {/* Tablet-only: Notification bell + user menu (right side) */}
               <div className="hidden md:flex lg:hidden items-center gap-2">
+                <ChangelogPopup user={user} />
                 <NotificationCenter
                   unreadMessages={unreadMessages}
                   totalUnread={totalUnread}
@@ -511,6 +513,7 @@ export default function ApplicationBoard() {
 
               {/* Notification bell + user menu on mobile, top right */}
               <div className="md:hidden flex items-center gap-1">
+                <ChangelogPopup user={user} />
                 <NotificationCenter
                   unreadMessages={unreadMessages}
                   totalUnread={totalUnread}
@@ -620,6 +623,9 @@ export default function ApplicationBoard() {
                >
                  <Archive className="w-4 h-4" />
                </button>
+
+               {/* Changelog */}
+               <ChangelogPopup user={user} />
 
                {/* Notification Bell */}
                <NotificationCenter

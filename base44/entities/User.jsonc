@@ -5,6 +5,13 @@
     "signature_html": {
       "type": "string",
       "description": "Personal HTML signature appended to outgoing emails"
+    },
+    "last_read_changelog_id": {
+      "type": "string",
+      "description": "ID of the most recent changelog entry this user has marked as read"
     }
-  }
+  },
+  "required": [
+    "signature_html"
+  ]
 }
