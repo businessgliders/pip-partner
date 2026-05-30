@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Sparkles, Check } from "lucide-react";
+import { BookOpen, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog,
@@ -54,7 +54,7 @@ export default function ChangelogPopup({ user }) {
         title="What's new"
         className="relative h-10 w-10 lg:h-11 lg:w-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
       >
-        <Sparkles className="w-4 h-4" />
+        <BookOpen className="w-4 h-4" />
         {hasUnread && (
           <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-pink-500 border-2 border-white" />
         )}
@@ -65,7 +65,7 @@ export default function ChangelogPopup({ user }) {
           <div className="px-6 pt-6 pb-4 border-b border-slate-200 bg-gradient-to-br from-pink-50 to-white relative">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-pink-100 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-pink-600" />
+                <BookOpen className="w-4 h-4 text-pink-600" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-slate-900">What's new</h2>
