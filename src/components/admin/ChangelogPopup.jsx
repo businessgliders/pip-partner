@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Sparkles, X, Check } from "lucide-react";
+import { Sparkles, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog,
@@ -60,12 +60,6 @@ export default function ChangelogPopup({ user }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg p-0 overflow-hidden">
           <div className="px-6 pt-6 pb-4 border-b border-slate-200 bg-gradient-to-br from-pink-50 to-white relative">
-            <button
-              onClick={() => setOpen(false)}
-              className="absolute top-4 right-4 h-7 w-7 rounded-full hover:bg-white/80 flex items-center justify-center text-slate-500"
-            >
-              <X className="w-4 h-4" />
-            </button>
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-pink-100 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-pink-600" />
