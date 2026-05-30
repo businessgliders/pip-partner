@@ -27,14 +27,17 @@ export default function ChangelogPopup({ user }) {
   const hasUnread = LATEST_CHANGELOG_ID && lastReadId !== LATEST_CHANGELOG_ID;
 
   const handleMarkRead = async () => {
-    if (!LATEST_CHANGELOG_ID) return;
+    if (!LATEST_CHANGELOG_ID || !hasUnread) {
+      setOpen(false);
+      return;
+    }
     setMarking(true);
     try {
       await base44.auth.updateMe({ last_read_changelog_id: LATEST_CHANGELOG_ID });
       setLastReadId(LATEST_CHANGELOG_ID);
-      setOpen(false);
     } finally {
       setMarking(false);
+      setOpen(false);
     }
   };
 
@@ -108,11 +111,11 @@ export default function ChangelogPopup({ user }) {
             </span>
             <button
               onClick={handleMarkRead}
-              disabled={!hasUnread || marking}
+              disabled={marking}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-3.5 h-3.5" />
-              {marking ? "Saving..." : hasUnread ? "Mark as read" : "Read"}
+              {marking ? "Saving..." : hasUnread ? "Mark as read" : "Close"}
             </button>
           </div>
         </DialogContent>
