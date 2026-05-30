@@ -278,6 +278,11 @@
       "type": "integer",
       "default": 0,
       "description": "Number of failed PIN verification attempts"
+    },
+    "fdd_countdown_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Manual override: timestamp when the 14-day FDD review period was started by an admin. Takes priority over auto-detection from email replies."
     }
   },
   "required": [

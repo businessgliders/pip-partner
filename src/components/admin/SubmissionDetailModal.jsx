@@ -19,7 +19,7 @@ import StatusDropdown from "./StatusDropdown";
 import { BOARD_TYPES } from "../board/boardConfig";
 import { displayAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
-import FddCountdownBadge from "./FddCountdownBadge";
+import FddCountdownBadge from "./FddCountdownBadge.jsx";
 
 const ENTITY_KEY_TO_NAME = {
   franchise: "FranchiseInquiry",
@@ -178,7 +178,7 @@ export default function SubmissionDetailModal({
                       onChange={handleStatusChange}
                     />
                     <span className="text-xs text-slate-500">{formatDate(row.created_date)}</span>
-                    {tabKey === "franchise" && <FddCountdownBadge ticketId={row.id} />}
+                    {tabKey === "franchise" && <FddCountdownBadge ticketId={row.id} ticket={row} />}
                   </div>
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1 mt-6">
