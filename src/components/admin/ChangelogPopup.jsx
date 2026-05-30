@@ -78,7 +78,7 @@ export default function ChangelogPopup({ user }) {
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto px-6 py-4 space-y-4">
-            {CHANGELOG_ENTRIES.slice(0, 5).map((entry, idx) => (
+            {CHANGELOG_ENTRIES.slice(0, 3).map((entry, idx) => (
               <div key={entry.id} className="flex gap-3">
                 <div className="flex flex-col items-center pt-1">
                   <div
@@ -86,7 +86,7 @@ export default function ChangelogPopup({ user }) {
                       isNew(idx) ? "bg-pink-500" : "bg-slate-300"
                     }`}
                   />
-                  {idx < Math.min(4, CHANGELOG_ENTRIES.length - 1) && (
+                  {idx < Math.min(2, CHANGELOG_ENTRIES.length - 1) && (
                     <div className="w-px flex-1 bg-slate-200 mt-1" />
                   )}
                 </div>
