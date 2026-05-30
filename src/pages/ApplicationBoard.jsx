@@ -970,7 +970,7 @@ export default function ApplicationBoard() {
 
             {/* Mobile: Bottom-right floating panel for closed/ghosted */}
             {sidePanelStatuses.length > 0 && (
-              <div className="lg:hidden fixed bottom-6 right-6 z-30 max-w-sm">
+              <div className="block lg:hidden">
                 <ClosedSidePanel
                   statuses={sidePanelStatuses.map((s) => ({
                     status: s,
