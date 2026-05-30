@@ -61,7 +61,7 @@ export default function ChangelogPopup({ user }) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden">
+        <DialogContent className="max-w-lg p-0 overflow-hidden [&>:first-child]:bg-black/0 [&>:first-child]:backdrop-blur-sm">
           <div className="px-6 pt-6 pb-4 border-b border-slate-200 bg-gradient-to-br from-pink-50 to-white relative">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-pink-100 flex items-center justify-center">
