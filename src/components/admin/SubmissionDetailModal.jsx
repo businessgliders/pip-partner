@@ -19,7 +19,7 @@ import StatusDropdown from "./StatusDropdown";
 import { BOARD_TYPES } from "../board/boardConfig";
 import { displayAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
-import FddCountdownBadge from "./FddCountdownBadge.jsx";
+import FddCountdownBadge from "./FddCountdownBadge";
 
 const ENTITY_KEY_TO_NAME = {
   franchise: "FranchiseInquiry",
