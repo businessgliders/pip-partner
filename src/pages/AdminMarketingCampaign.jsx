@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { Star, Sparkles, Loader2, X, Download } from "lucide-react";
 import JSZip from "jszip";
 import BackToHome from "../components/BackToHome";
+import AdminFavicon from "../components/AdminFavicon";
 import CreativeCard from "../components/marketing/CreativeCard";
 import CreativeModal from "../components/marketing/CreativeModal";
 import { AD_FORMATS, CATEGORY_LABELS, CAMPAIGNS } from "../components/marketing/adFormats";
@@ -204,6 +205,7 @@ IMPORTANT — BRAND LOGO: Place the attached "Pilates in Pink" logo (the pink do
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
+      <AdminFavicon title="PIP Partner — Campaign" />
       <BackToHome to="/Settings/Marketing" label="Marketing" />
 
       <div className="max-w-7xl mx-auto px-6 py-14">

@@ -10,6 +10,7 @@ import { Plus, Trash2, Save, X, FileText } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import BackToHome from "../components/BackToHome";
+import AdminFavicon from "../components/AdminFavicon";
 
 const CATEGORIES = ["General", "Franchise", "Influencer", "Hiring", "Follow-up", "Other"];
 const VARS = [
@@ -56,6 +57,7 @@ export default function AdminSettingsTemplates() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <AdminFavicon title="PIP Partner — Templates" />
       <BackToHome to="/Settings" label="Settings" />
       <div className="max-w-6xl mx-auto px-6 py-10">
         <div className="mb-6 flex items-center justify-between">

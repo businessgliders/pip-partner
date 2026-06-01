@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Mail, Loader2, CheckCircle2, AlertCircle, Plug, Unplug, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import AdminFavicon from "../components/AdminFavicon";
 
 const CONNECTOR_ID = "6a17b6076b79e4d2d3fa4a55";
 
@@ -96,6 +97,7 @@ export default function FranchiseMailbox() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
+      <AdminFavicon title="PIP Partner — Franchise Mailbox" />
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">

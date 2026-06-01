@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Megaphone, ArrowUpRight, Lock } from "lucide-react";
 import BackToHome from "../components/BackToHome";
+import AdminFavicon from "../components/AdminFavicon";
 import { CAMPAIGNS } from "../components/marketing/adFormats";
 
 export default function AdminMarketing() {
@@ -14,6 +15,7 @@ export default function AdminMarketing() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
+      <AdminFavicon title="PIP Partner — Marketing" />
       <BackToHome to="/Settings" label="Settings" />
 
       <div className="max-w-5xl mx-auto px-6 py-14">

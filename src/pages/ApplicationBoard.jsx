@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Archive, Search, ChevronLeft, ChevronRight, Settings as SettingsIcon, Home as HomeIcon, ChevronsRight, ChevronsLeft } from "lucide-react";
 
+import AdminFavicon from "../components/AdminFavicon";
 import UserMenu from "../components/dashboard/UserMenu";
 import NotificationCenter from "../components/admin/NotificationCenter";
 import ChangelogPopup from "../components/admin/ChangelogPopup";
@@ -385,6 +386,7 @@ export default function ApplicationBoard() {
         backgroundAttachment: "fixed",
       }}
     >
+      <AdminFavicon title="PIP Partner — Application Board" />
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"

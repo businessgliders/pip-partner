@@ -5,6 +5,7 @@ import { Save } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import BackToHome from "../components/BackToHome";
+import AdminFavicon from "../components/AdminFavicon";
 
 export default function AdminSettingsSignature() {
   const [signature, setSignature] = useState("");
@@ -28,6 +29,7 @@ export default function AdminSettingsSignature() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <AdminFavicon title="PIP Partner — Signature" />
       <BackToHome to="/Settings" label="Settings" />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="mb-6">

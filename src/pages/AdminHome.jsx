@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Inbox, Megaphone, FileText, PenLine } from "lucide-react";
 import BackToHome from "../components/BackToHome";
+import AdminFavicon from "../components/AdminFavicon";
 
 const TILES = [
   {
@@ -40,6 +41,7 @@ export default function AdminHome() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
+      <AdminFavicon title="PIP Partner — Settings" />
       <BackToHome />
 
       <div className="max-w-6xl mx-auto px-6 py-14">
