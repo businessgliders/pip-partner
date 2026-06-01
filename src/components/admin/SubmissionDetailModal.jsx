@@ -16,6 +16,7 @@ import AttachmentsSection from "./AttachmentsSection";
 import ResendBookingEmailsButton from "./ResendBookingEmailsButton";
 import { StatusBadge, fullName, locationLabel, formatDate } from "./SubmissionsTable";
 import StatusDropdown from "./StatusDropdown";
+import SubmitterCalBookingsPopover from "./SubmitterCalBookingsPopover";
 import { BOARD_TYPES } from "../board/boardConfig";
 import { displayAppNumber } from "@/lib/appNumberDisplay";
 import LocationMapBanner from "./LocationMapBanner";
@@ -182,20 +183,9 @@ export default function SubmissionDetailModal({
                   </div>
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1 mt-6">
-                  <a
-                    href="https://cal.com/pilatesinpink"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Open Cal.com"
-                    className="hidden lg:inline-flex items-center gap-1.5 lg:px-2.5 px-2 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
-                  >
-                    <img
-                      src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
-                      alt="Cal.com"
-                      className="w-4 h-4 rounded-sm"
-                    />
-                    <span className="hidden lg:inline">Cal.com</span>
-                  </a>
+                  <div className="hidden lg:block">
+                    <SubmitterCalBookingsPopover email={row.email} />
+                  </div>
                   {(() => {
                     const startIso = row._cal_booking?.start || row.scheduled_call_time;
                     if (!startIso) return null;
@@ -227,19 +217,9 @@ export default function SubmissionDetailModal({
                     return (
                       <div className="flex flex-col-reverse lg:flex-row items-start lg:items-center gap-2 lg:gap-1">
                         <div className="flex flex-row items-center gap-1">
-                          <a
-                            href="https://cal.com/pilatesinpink"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Open Cal.com"
-                            className="lg:hidden inline-flex items-center justify-center p-1.5 rounded-md border border-slate-200 hover:bg-slate-50"
-                          >
-                            <img
-                              src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/56863071a_images-1.png"
-                              alt="Cal.com"
-                              className="w-4 h-4 rounded-sm"
-                            />
-                          </a>
+                          <div className="lg:hidden">
+                            <SubmitterCalBookingsPopover email={row.email} />
+                          </div>
                           <Popover>
                             <PopoverTrigger asChild>
                               <button
