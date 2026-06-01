@@ -429,6 +429,7 @@ export default function SubmissionDetailModal({
                 assignedTo={row.assigned_to}
                 onAssign={handleAssign}
                 accentColor={accentColor}
+                defaultExpanded={user?.role !== "admin"}
               />
 
               <AttachmentsSection

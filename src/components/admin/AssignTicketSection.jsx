@@ -5,11 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { UserPlus, Check, ChevronDown, ChevronUp } from "lucide-react";
 
-export default function AssignTicketSection({ assignedTo, onAssign, accentColor }) {
+export default function AssignTicketSection({ assignedTo, onAssign, accentColor, defaultExpanded = false }) {
   const [selected, setSelected] = useState(assignedTo || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   const { data: adminUsers = [] } = useQuery({
     queryKey: ["admin-users"],
