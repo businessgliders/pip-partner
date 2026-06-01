@@ -628,11 +628,17 @@ export default function ApplicationBoard() {
                {!showArchived && viewMode === "table" && (
                  <button
                    onClick={() => {
+                     if (!isAdmin) return;
                      const rows = tickets.filter((t) => !t.archived && matchesSearch(t));
                      downloadCsv(rows, activeTab);
                    }}
-                   className="h-11 px-3 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg text-sm font-medium flex items-center gap-1.5"
-                   title="Export CSV"
+                   disabled={!isAdmin}
+                   className={`h-11 px-3 rounded-xl backdrop-blur-md border shadow-lg text-sm font-medium flex items-center gap-1.5 ${
+                     isAdmin
+                       ? "bg-white/70 border-white/80 text-gray-900 hover:bg-white/80"
+                       : "bg-white/30 border-white/40 text-gray-500 cursor-not-allowed opacity-50"
+                   }`}
+                   title={isAdmin ? "Export CSV" : "Export CSV — admin access only"}
                  >
                    <Download className="w-4 h-4" />
                    <span className="hidden md:inline">Export</span>
