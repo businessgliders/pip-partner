@@ -1,7 +1,7 @@
 // Fetches available slots from Cal.com for the configured event type.
 // Uses Cal.com API v2 (/v2/slots) which returns slots grouped by date.
 // Payload (optional): { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", timeZone: "America/Toronto" }
-// Defaults to the next 14 days starting tomorrow, in America/Toronto.
+// Defaults to the next 30 days starting tomorrow, in America/Toronto.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -60,12 +60,12 @@ Deno.serve(async (req) => {
 
     const timeZone = body.timeZone || 'America/Toronto';
 
-    // Default range: tomorrow → +14 days
+    // Default range: tomorrow → +30 days
     const today = new Date();
     const start = new Date(today);
     start.setDate(start.getDate() + 1);
     const end = new Date(today);
-    end.setDate(end.getDate() + 15);
+    end.setDate(end.getDate() + 31);
 
     const startDate = body.startDate || start.toISOString().slice(0, 10);
     const endDate = body.endDate || end.toISOString().slice(0, 10);

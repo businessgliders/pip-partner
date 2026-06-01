@@ -59,7 +59,7 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
     return Object.keys(slotsByDay)
       .filter((d) => Array.isArray(slotsByDay[d]) && slotsByDay[d].length > 0)
       .sort()
-      .slice(0, 5)
+      .slice(0, 30)
       .map(formatDayLabel);
   }, [slotsByDay]);
 
@@ -120,7 +120,7 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
         </div>
       ) : days.length === 0 ? (
         <div className="text-center py-8 text-[#b67651]/70">
-          No availability in the next two weeks. Please email us at <a href="mailto:franchise@pilatesinpinkstudio.com" className="underline">franchise@pilatesinpinkstudio.com</a>.
+          No availability in the next 30 days. Please email us at <a href="mailto:franchise@pilatesinpinkstudio.com" className="underline">franchise@pilatesinpinkstudio.com</a>.
         </div>
       ) : (
         <div className="space-y-6">
@@ -129,13 +129,13 @@ export default function SchedulePlaceholder({ onConfirm, isSubmitting, inquiryId
               <Calendar className="w-4 h-4 text-[#b67651]" />
               <Label>Select a day</Label>
             </div>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar -mx-1 px-1">
               {days.map((d) => (
                 <button
                   key={d.iso}
                   onClick={() => { setSelectedDay(d.iso); setSelectedSlot(null); }}
                   disabled={isSubmitting}
-                  className="p-3 rounded-xl border transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-3 rounded-xl border transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed shrink-0 min-w-[72px]"
                   style={{
                     borderColor: selectedDay === d.iso ? "#f1889b" : "rgba(247,177,189,0.4)",
                     background: selectedDay === d.iso ? "#fbe0e2" : "rgba(255,255,255,0.5)",
