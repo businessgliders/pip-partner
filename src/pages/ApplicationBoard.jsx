@@ -424,7 +424,12 @@ export default function ApplicationBoard() {
 
 
 
-      <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} boards={allowedBoards} />
+      <ProgramDock
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        boards={BOARD_TYPES}
+        allowedKeys={allowedBoards.map((b) => b.key)}
+      />
 
       <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full min-h-0" style={{ zIndex: 2 }}>
         <div className="mb-2 lg:mb-6 pb-1 lg:pb-0">
