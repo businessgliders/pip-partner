@@ -887,14 +887,19 @@ export default function ApplicationBoard() {
                     </div>
                   );
 
+                  // Note: we intentionally avoid wrapping the desktop grid in a
+                  // motion.div with `transform`-based animations — an ancestor
+                  // `transform` becomes the containing block for the dragging
+                  // card's `position: fixed`, which makes the portaled card
+                  // jump away from the cursor when drag starts.
                   const desktopGrid = hasSteps ? (
                     <AnimatePresence mode="wait" initial={false}>
                       <motion.div
                         key={boardStep}
-                        initial={{ x: boardStep === "two" ? "100%" : "-100%", opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: boardStep === "two" ? "-100%" : "100%", opacity: 0 }}
-                        transition={{ type: "tween", ease: "easeInOut", duration: 0.35 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
                         className="hidden lg:grid grid-cols-4 gap-6 h-full"
                       >
                         {columns.map(renderColumn)}

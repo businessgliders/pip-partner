@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,10 +7,10 @@ import TicketCard from "./TicketCard";
 import { getStatusMeta } from "./boardConfig";
 
 // Wraps a single Draggable card. While the user is dragging, the card is
-// portaled to <body> so it isn't clipped by the column's overflow. We capture
-// the rendered width/height from the source element right before the portal
-// takes over, so the card keeps its real size at the cursor (instead of
-// collapsing to content width and snapping to the top-left of the viewport).
+// portaled to <body> so it isn't clipped by the column's overflow and isn't
+// offset by ancestor transforms (e.g. the AnimatePresence motion.div on the
+// desktop grid). @hello-pangea/dnd handles position/size automatically via
+// draggableProps.style when the rendered node is a direct child of body.
 function DraggableTicket({
   dragProvided,
   dragSnapshot,
@@ -24,30 +24,13 @@ function DraggableTicket({
   boardKey,
   unreadCount,
 }) {
-  const sizeRef = useRef({ width: null, height: null });
-  const setRef = (node) => {
-    dragProvided.innerRef(node);
-    if (node && !dragSnapshot.isDragging) {
-      // Continuously refresh the captured size while idle so layout changes
-      // (resize, sidebar toggle, etc.) don't desync the dragging clone.
-      const rect = node.getBoundingClientRect();
-      sizeRef.current = { width: rect.width, height: rect.height };
-    }
-  };
-
-  const baseStyle = dragProvided.draggableProps.style || {};
-  const lockedStyle = dragSnapshot.isDragging && sizeRef.current.width
-    ? { width: sizeRef.current.width, height: sizeRef.current.height }
-    : {};
-
   const card = (
     <div
-      ref={setRef}
+      ref={dragProvided.innerRef}
       {...dragProvided.draggableProps}
       {...dragProvided.dragHandleProps}
       style={{
-        ...baseStyle,
-        ...lockedStyle,
+        ...dragProvided.draggableProps.style,
         touchAction: "pan-x pan-y",
       }}
     >
