@@ -69,12 +69,26 @@ const DETAIL_FIELDS = {
 export default function ApplicationBoard() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const allowedBoards = useMemo(
+    () => (isAdmin ? BOARD_TYPES : BOARD_TYPES.filter((b) => b.key === "influencer")),
+    [isAdmin]
+  );
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab");
-    return tabParam && BOARD_TYPES.find((b) => b.key === tabParam) ? tabParam : "franchise";
+    const defaultTab = isAdmin ? "franchise" : "influencer";
+    if (!isAdmin) return "influencer";
+    return tabParam && BOARD_TYPES.find((b) => b.key === tabParam) ? tabParam : defaultTab;
   });
+
+  // Force non-admins to influencer if they somehow ended up elsewhere
+  useEffect(() => {
+    if (!isAdmin && activeTab !== "influencer") setActiveTab("influencer");
+  }, [isAdmin, activeTab]);
+
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
+  const showMapView = board?.key === "franchise";
 
   const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead } = useUnreadMessages(user?.email);
 
@@ -110,6 +124,10 @@ export default function ApplicationBoard() {
     setCleanupDismissed(false);
     setBoardStep("one");
     setMobilePage(0);
+    // Map view is only available for franchise board
+    if (activeTab !== "franchise") {
+      setViewMode((v) => (v === "map" ? "status" : v));
+    }
   }, [activeTab]);
 
   // Reset mobile pagination when the visible column set changes
@@ -406,7 +424,7 @@ export default function ApplicationBoard() {
 
 
 
-      <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} />
+      <ProgramDock activeTab={activeTab} onTabChange={setActiveTab} boards={allowedBoards} />
 
       <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full min-h-0" style={{ zIndex: 2 }}>
         <div className="mb-2 lg:mb-6 pb-1 lg:pb-0">
@@ -457,15 +475,17 @@ export default function ApplicationBoard() {
                     >
                       <Table2 className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => setViewMode("map")}
-                      title="Map view"
-                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <MapIcon className="w-4 h-4" />
-                    </button>
+                    {showMapView && (
+                      <button
+                        onClick={() => setViewMode("map")}
+                        title="Map view"
+                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                          viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                        }`}
+                      >
+                        <MapIcon className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => setShowArchived((v) => !v)}
                       title="Archived"
@@ -586,16 +606,18 @@ export default function ApplicationBoard() {
                      <Table2 className="w-4 h-4" />
                      <span className="hidden md:inline">Table</span>
                    </button>
-                   <button
-                     onClick={() => setViewMode("map")}
-                     title="Map view"
-                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                       viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                     }`}
-                   >
-                     <MapIcon className="w-4 h-4" />
-                     <span className="hidden md:inline">Map</span>
-                   </button>
+                   {showMapView && (
+                     <button
+                       onClick={() => setViewMode("map")}
+                       title="Map view"
+                       className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                         viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                       }`}
+                     >
+                       <MapIcon className="w-4 h-4" />
+                       <span className="hidden md:inline">Map</span>
+                     </button>
+                   )}
                  </div>
 
                {!showArchived && viewMode === "table" && (
@@ -652,8 +674,8 @@ export default function ApplicationBoard() {
               </div>
 
           {/* Mobile-only horizontal pill switcher */}
-          <div className="flex gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden">
-            {BOARD_TYPES.map((t) => {
+          <div className={`flex gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden ${allowedBoards.length <= 1 ? "hidden" : ""}`}>
+            {allowedBoards.map((t) => {
               const isActive = activeTab === t.key;
               return (
                 <button

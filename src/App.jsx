@@ -17,6 +17,7 @@ import AdminSettingsSignature from './pages/AdminSettingsSignature';
 import ApplicationBoard from './pages/ApplicationBoard';
 import FranchiseMailbox from './pages/FranchiseMailbox';
 import AdminGate from './components/AdminGate';
+import BoardAccessGate from './components/BoardAccessGate';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -84,7 +85,7 @@ const AuthenticatedApp = () => {
       <Route path="/Settings/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
       <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
       <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
-      <Route path="/ApplicationBoard" element={<AdminGate><ApplicationBoard /></AdminGate>} />
+      <Route path="/ApplicationBoard" element={<BoardAccessGate><ApplicationBoard /></BoardAccessGate>} />
       <Route path="/FranchiseMailbox" element={<AdminGate><FranchiseMailbox /></AdminGate>} />
       <Route path="/AdminDashboard/*" element={<Navigate to="/Settings" replace />} />
       <Route path="*" element={<PageNotFound />} />
