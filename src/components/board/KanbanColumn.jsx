@@ -1,10 +1,73 @@
-import React from "react";
+import React, { useRef } from "react";
 import ReactDOM from "react-dom";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Trash2, Archive } from "lucide-react";
 import TicketCard from "./TicketCard";
 import { getStatusMeta } from "./boardConfig";
+
+// Wraps a single Draggable card. While the user is dragging, the card is
+// portaled to <body> so it isn't clipped by the column's overflow. We capture
+// the rendered width/height from the source element right before the portal
+// takes over, so the card keeps its real size at the cursor (instead of
+// collapsing to content width and snapping to the top-left of the viewport).
+function DraggableTicket({
+  dragProvided,
+  dragSnapshot,
+  ticket,
+  onStatusChange,
+  onArchiveChange,
+  onTicketClick,
+  highlightedTicketId,
+  viewMode,
+  statusOptions,
+  boardKey,
+  unreadCount,
+}) {
+  const sizeRef = useRef({ width: null, height: null });
+  const setRef = (node) => {
+    dragProvided.innerRef(node);
+    if (node && !dragSnapshot.isDragging) {
+      // Continuously refresh the captured size while idle so layout changes
+      // (resize, sidebar toggle, etc.) don't desync the dragging clone.
+      const rect = node.getBoundingClientRect();
+      sizeRef.current = { width: rect.width, height: rect.height };
+    }
+  };
+
+  const baseStyle = dragProvided.draggableProps.style || {};
+  const lockedStyle = dragSnapshot.isDragging && sizeRef.current.width
+    ? { width: sizeRef.current.width, height: sizeRef.current.height }
+    : {};
+
+  const card = (
+    <div
+      ref={setRef}
+      {...dragProvided.draggableProps}
+      {...dragProvided.dragHandleProps}
+      style={{
+        ...baseStyle,
+        ...lockedStyle,
+        touchAction: "pan-x pan-y",
+      }}
+    >
+      <TicketCard
+        ticket={ticket}
+        onStatusChange={onStatusChange}
+        onArchiveChange={onArchiveChange}
+        onClick={() => !dragSnapshot.isDragging && onTicketClick?.(ticket)}
+        isDragging={dragSnapshot.isDragging}
+        isHighlighted={highlightedTicketId === ticket.id}
+        viewMode={viewMode}
+        statusOptions={statusOptions}
+        boardKey={boardKey}
+        unreadCount={unreadCount}
+      />
+    </div>
+  );
+
+  return dragSnapshot.isDragging ? ReactDOM.createPortal(card, document.body) : card;
+}
 
 // Generic palettes keyed by column name (status or category). Falls back gracefully.
 const columnColors = {
@@ -138,33 +201,21 @@ export default function KanbanColumn({
             ) : (
               tickets.map((ticket, index) => (
                 <Draggable key={ticket._dragId || ticket.id} draggableId={ticket._dragId || ticket.id} index={index}>
-                  {(dragProvided, dragSnapshot) => {
-                    const card = (
-                      <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        {...dragProvided.dragHandleProps}
-                        style={{
-                          ...dragProvided.draggableProps.style,
-                          touchAction: "pan-x pan-y",
-                        }}
-                      >
-                        <TicketCard
-                          ticket={ticket}
-                          onStatusChange={onStatusChange}
-                          onArchiveChange={onArchiveChange}
-                          onClick={() => !dragSnapshot.isDragging && onTicketClick?.(ticket)}
-                          isDragging={dragSnapshot.isDragging}
-                          isHighlighted={highlightedTicketId === ticket.id}
-                          viewMode={viewMode}
-                          statusOptions={statusOptions}
-                          boardKey={boardKey}
-                          unreadCount={unreadCountByTicket[ticket.id] || 0}
-                        />
-                      </div>
-                    );
-                    return dragSnapshot.isDragging ? ReactDOM.createPortal(card, document.body) : card;
-                  }}
+                  {(dragProvided, dragSnapshot) => (
+                    <DraggableTicket
+                      dragProvided={dragProvided}
+                      dragSnapshot={dragSnapshot}
+                      ticket={ticket}
+                      onStatusChange={onStatusChange}
+                      onArchiveChange={onArchiveChange}
+                      onTicketClick={onTicketClick}
+                      highlightedTicketId={highlightedTicketId}
+                      viewMode={viewMode}
+                      statusOptions={statusOptions}
+                      boardKey={boardKey}
+                      unreadCount={unreadCountByTicket[ticket.id] || 0}
+                    />
+                  )}
                 </Draggable>
               ))
             )}
