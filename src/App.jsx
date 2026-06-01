@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Hire from './pages/Hire';
 import FrontAdmin from './pages/FrontAdmin';
+import InfluencerProgram from './pages/InfluencerProgram';
 import AdminHome from './pages/AdminHome';
 import AdminMarketing from './pages/AdminMarketing';
 import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
@@ -65,7 +66,7 @@ const AuthenticatedApp = () => {
         </LayoutWrapper>
       } />
       {Object.entries(Pages)
-        .filter(([path]) => path !== "Home")
+        .filter(([path]) => path !== "Home" && path !== "InfluencerProgram")
         .map(([path, Page]) => (
         <Route
           key={path}
@@ -77,6 +78,12 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Influencer" element={
+        <LayoutWrapper currentPageName="InfluencerProgram">
+          <InfluencerProgram />
+        </LayoutWrapper>
+      } />
+      <Route path="/InfluencerProgram" element={<Navigate to="/Influencer" replace />} />
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
       <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />

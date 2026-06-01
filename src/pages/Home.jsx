@@ -17,7 +17,7 @@ const TILES = [
     title: "Influencer Program",
     subtitle: "PARTNER WITH US",
     description: "Collaborate with Pilates in Pink™ as a brand ambassador and content creator.",
-    href: "/InfluencerProgram",
+    href: "/Influencer",
     icon: Users,
     image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/e135d00cf_generated_image.png",
   },
