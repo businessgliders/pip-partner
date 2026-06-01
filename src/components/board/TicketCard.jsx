@@ -171,6 +171,7 @@ export default function TicketCard({
               )}
             </div>
           </div>
+          {!isDragging && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -202,6 +203,7 @@ export default function TicketCard({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
         <div className="text-[10px] text-gray-500 mt-1 text-right">{new Date(ticket.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
       </div>
@@ -243,6 +245,7 @@ export default function TicketCard({
               )}
             </div>
           </div>
+          {!isDragging && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -274,6 +277,7 @@ export default function TicketCard({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
         <div className="flex items-center justify-between mt-3 gap-2">
           <span className="text-[11px] text-gray-600 whitespace-nowrap">{time}</span>

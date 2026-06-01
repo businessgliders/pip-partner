@@ -125,6 +125,7 @@ export default function KanbanColumn({
             className={`flex-1 overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-3 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10 transition-colors ${
               snapshot.isDraggingOver ? "bg-white/10" : ""
             }`}
+            style={{ position: "static" }}
           >
             {isLoading ? (
               <>
@@ -152,7 +153,7 @@ export default function KanbanColumn({
                           ticket={ticket}
                           onStatusChange={onStatusChange}
                           onArchiveChange={onArchiveChange}
-                          onClick={() => onTicketClick?.(ticket)}
+                          onClick={() => !dragSnapshot.isDragging && onTicketClick?.(ticket)}
                           isDragging={dragSnapshot.isDragging}
                           isHighlighted={highlightedTicketId === ticket.id}
                           viewMode={viewMode}
