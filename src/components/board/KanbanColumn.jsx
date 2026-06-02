@@ -136,7 +136,7 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col h-full min-h-0`}
+      className={`backdrop-blur-xl bg-gradient-to-b ${colCls} border rounded-2xl overflow-hidden shadow-xl flex flex-col min-h-0 h-[calc(100dvh-260px)] lg:h-full`}
     >
       <div className={`backdrop-blur-md ${headCls} border-b px-2 md:px-4 py-2 md:py-4 flex-shrink-0`}>
         <div className="flex items-center justify-between gap-1 md:gap-2">
