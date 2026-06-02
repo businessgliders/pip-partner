@@ -47,7 +47,7 @@ function DraggableTicket({
       {...dragProvided.dragHandleProps}
       style={{
         ...dragProvided.draggableProps.style,
-        touchAction: "auto",
+        zIndex: dragSnapshot.isDragging ? 9999 : "auto",
       }}
     >
       <TicketCard
