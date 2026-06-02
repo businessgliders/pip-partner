@@ -31,7 +31,9 @@ function DraggableTicket({
       {...dragProvided.dragHandleProps}
       style={{
         ...dragProvided.draggableProps.style,
-        touchAction: "pan-x pan-y",
+        // Allow native touch scrolling (vertical inside column, horizontal
+        // across swimlanes) instead of intercepting touches for drag.
+        touchAction: "auto",
       }}
     >
       <TicketCard
