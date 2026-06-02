@@ -1,10 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Trash2, Archive } from "lucide-react";
 import TicketCard from "./TicketCard";
 import { getStatusMeta } from "./boardConfig";
+
+// Drag-and-drop reordering is desktop-only. Below the `lg` breakpoint we
+// render the swimlane scroller, where vertical card-list scrolling and
+// horizontal lane swiping take priority over DnD. Detect that here so we
+// can skip the drag handle on touch viewports.
+function useIsTouchViewport() {
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1023px)");
+    const update = () => setIsTouch(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return isTouch;
+}
 
 // Wraps a single Draggable card. While the user is dragging, the card is
 // portaled to <body> so it isn't clipped by the column's overflow and isn't
@@ -24,15 +40,17 @@ function DraggableTicket({
   boardKey,
   unreadCount,
 }) {
+  const isTouch = useIsTouchViewport();
+
   const card = (
     <div
       ref={dragProvided.innerRef}
       {...dragProvided.draggableProps}
-      {...dragProvided.dragHandleProps}
+      // On touch viewports we drop dragHandleProps entirely so the lib's
+      // touch listeners never intercept the user's scroll gesture.
+      {...(isTouch ? {} : dragProvided.dragHandleProps)}
       style={{
         ...dragProvided.draggableProps.style,
-        // Allow native touch scrolling (vertical inside column, horizontal
-        // across swimlanes) instead of intercepting touches for drag.
         touchAction: "auto",
       }}
     >
