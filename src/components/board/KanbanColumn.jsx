@@ -40,15 +40,11 @@ function DraggableTicket({
   boardKey,
   unreadCount,
 }) {
-  const isTouch = useIsTouchViewport();
-
   const card = (
     <div
       ref={dragProvided.innerRef}
       {...dragProvided.draggableProps}
-      // On touch viewports we drop dragHandleProps entirely so the lib's
-      // touch listeners never intercept the user's scroll gesture.
-      {...(isTouch ? {} : dragProvided.dragHandleProps)}
+      {...dragProvided.dragHandleProps}
       style={{
         ...dragProvided.draggableProps.style,
         touchAction: "auto",
@@ -128,6 +124,9 @@ export default function KanbanColumn({
   boardKey,
   unreadCountByTicket = {},
 }) {
+  // Disable drag-and-drop on touch viewports so vertical swimlane scrolling
+  // and horizontal lane swipes work without the lib hijacking touch events.
+  const isTouch = useIsTouchViewport();
   const key = String(status).toLowerCase();
   const colCls = columnColors[key] || "from-white/30 to-white/10 border-white/30";
   const headCls = headerColors[key] || "bg-white/40 border-white/40";
@@ -203,7 +202,7 @@ export default function KanbanColumn({
               <div className="text-center text-white/60 text-sm py-8">No applications</div>
             ) : (
               tickets.map((ticket, index) => (
-                <Draggable key={ticket._dragId || ticket.id} draggableId={ticket._dragId || ticket.id} index={index}>
+                <Draggable key={ticket._dragId || ticket.id} draggableId={ticket._dragId || ticket.id} index={index} isDragDisabled={isTouch}>
                   {(dragProvided, dragSnapshot) => (
                     <DraggableTicket
                       dragProvided={dragProvided}
