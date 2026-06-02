@@ -77,7 +77,8 @@ export default function SwimlaneScroller({ children, className = "" }) {
 
       <div
         ref={scrollRef}
-        className={`flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain scroll-pl-4 -mx-4 pl-4 pr-4 pb-2 h-full ${className}`}
+        className={`flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain scroll-pl-4 -mx-4 pl-4 pr-4 pb-2 h-full ${className}`}
+        style={{ touchAction: "pan-x pan-y" }}
       >
         {React.Children.map(children, (child, i) =>
           child ? (
