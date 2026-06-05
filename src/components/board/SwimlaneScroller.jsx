@@ -84,7 +84,7 @@ export default function SwimlaneScroller({ children, className = "" }) {
             <div
               key={i}
               data-swimlane
-              className="flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] snap-start h-full"
+              className="flex-shrink-0 w-[78%] sm:w-[300px] md:w-[290px] snap-start h-full"
             >
               {child}
             </div>
