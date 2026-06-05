@@ -72,22 +72,24 @@ export default function ApplicationBoard() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const INFLUENCER_ONLY_EMAILS = ["info@pilatesinpinkstudio.com"];
+  const isInfluencerOnly = INFLUENCER_ONLY_EMAILS.includes((user?.email || "").toLowerCase());
   const allowedBoards = useMemo(
-    () => (isAdmin ? BOARD_TYPES : BOARD_TYPES.filter((b) => b.key === "influencer")),
-    [isAdmin]
+    () => (isInfluencerOnly ? BOARD_TYPES.filter((b) => b.key === "influencer") : BOARD_TYPES),
+    [isInfluencerOnly]
   );
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab");
-    const defaultTab = isAdmin ? "franchise" : "influencer";
-    if (!isAdmin) return "influencer";
+    const defaultTab = isInfluencerOnly ? "influencer" : "franchise";
+    if (isInfluencerOnly) return "influencer";
     return tabParam && BOARD_TYPES.find((b) => b.key === tabParam) ? tabParam : defaultTab;
   });
 
-  // Force non-admins to influencer if they somehow ended up elsewhere
+  // Force influencer-only users to influencer if they somehow ended up elsewhere
   useEffect(() => {
-    if (!isAdmin && activeTab !== "influencer") setActiveTab("influencer");
-  }, [isAdmin, activeTab]);
+    if (isInfluencerOnly && activeTab !== "influencer") setActiveTab("influencer");
+  }, [isInfluencerOnly, activeTab]);
 
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
   const showMapView = board?.key === "franchise";
