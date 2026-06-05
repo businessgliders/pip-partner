@@ -92,6 +92,23 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+
+      // Restrict access to @pilatesinpinkstudio.com email domain only
+      const ALLOWED_DOMAIN = '@pilatesinpinkstudio.com';
+      const email = (currentUser?.email || '').toLowerCase();
+      if (!email.endsWith(ALLOWED_DOMAIN)) {
+        // Sign out the unauthorized user without redirecting, then surface error
+        try { await base44.auth.logout(); } catch (_) {}
+        setUser(null);
+        setIsAuthenticated(false);
+        setAuthError({
+          type: 'domain_not_allowed',
+          message: 'Access is restricted to @pilatesinpinkstudio.com accounts.',
+        });
+        setIsLoadingAuth(false);
+        return;
+      }
+
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);

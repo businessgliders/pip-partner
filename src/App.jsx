@@ -56,6 +56,25 @@ const AuthenticatedApp = () => {
     return <UserNotRegisteredError />;
   }
 
+  if (authError && authError.type === 'domain_not_allowed') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 bg-slate-50">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-10 max-w-sm w-full text-center">
+          <h2 className="text-xl font-light text-slate-900 mb-2">Access Restricted</h2>
+          <p className="text-slate-500 text-sm mb-6">
+            Sign-in is limited to <span className="font-medium text-slate-700">@pilatesinpinkstudio.com</span> accounts. You've been signed out.
+          </p>
+          <a
+            href="/login"
+            className="inline-block w-full h-11 leading-[44px] rounded-xl bg-slate-900 text-white text-sm font-medium"
+          >
+            Try a different account
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   // Render the main app
   return (
     <Routes>
