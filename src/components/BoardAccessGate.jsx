@@ -40,7 +40,7 @@ export default function BoardAccessGate({ children }) {
           <h2 className="text-xl font-light text-slate-900 mb-1">Sign In</h2>
           <p className="text-slate-500 text-sm mb-6">Sign in with Google to continue.</p>
           <Button
-            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            onClick={() => { window.location.href = "/login"; }}
             className="w-full h-11 rounded-xl"
           >
             Sign in with Google

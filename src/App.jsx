@@ -7,6 +7,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Login from '@/pages/Login';
 import Hire from './pages/Hire';
 import FrontAdmin from './pages/FrontAdmin';
 import InfluencerProgram from './pages/InfluencerProgram';
@@ -35,7 +37,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -46,15 +48,12 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
+  // Handle "user not registered" — but DO NOT auto-redirect on auth_required;
+  // this app is public, so unauthenticated visitors must be able to view
+  // public routes (landing, /Influencer, /Instructor, /FrontAdmin, etc.).
+  // Protected routes use <ProtectedRoute /> to gate themselves individually.
+  if (authError && authError.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
   // Render the main app
@@ -86,14 +85,18 @@ const AuthenticatedApp = () => {
       <Route path="/InfluencerProgram" element={<Navigate to="/Influencer" replace />} />
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
-      <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
+      <Route path="/login" element={<Login />} />
+      {/* Protected routes — require a signed-in user */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
+        <Route path="/Settings/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
+        <Route path="/Settings/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
+        <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
+        <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
+        <Route path="/ApplicationBoard" element={<BoardAccessGate><ApplicationBoard /></BoardAccessGate>} />
+        <Route path="/FranchiseMailbox" element={<AdminGate><FranchiseMailbox /></AdminGate>} />
+      </Route>
       <Route path="/Settings/Submissions" element={<Navigate to="/ApplicationBoard?view=table" replace />} />
-      <Route path="/Settings/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
-      <Route path="/Settings/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
-      <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
-      <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
-      <Route path="/ApplicationBoard" element={<BoardAccessGate><ApplicationBoard /></BoardAccessGate>} />
-      <Route path="/FranchiseMailbox" element={<AdminGate><FranchiseMailbox /></AdminGate>} />
       <Route path="/AdminDashboard/*" element={<Navigate to="/Settings" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
