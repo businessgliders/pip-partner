@@ -6,6 +6,7 @@ Source of truth: https://github.com/businessgliders/pip-hub
 
 | Date       | Version | Files Synced                                           | Changes                                              |
 |------------|---------|--------------------------------------------------------|------------------------------------------------------|
+| 2026-06-06 | 0.1.2   | MasterKanbanColumn, MasterKanbanCard, index.jsx        | Theme-able classes + bareCard flag; portal z-index   |
 | 2026-06-06 | 0.1.1   | MasterKanbanColumn, index.jsx, + core lib              | Re-enable drag on touch; remove isDragDisabled gate  |
 | 2026-06-06 | 0.1.0   | Initial import (all 8 Master Kanban files)             | Baseline canonical Kanban                            |
 

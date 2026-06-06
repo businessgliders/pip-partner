@@ -19,20 +19,28 @@ export default function MasterKanbanCard({
   // card's border tints to the current swimlane's color while being dragged.
   // (Pass e.g. "border-pink-300" — only the border-* class is used.)
   dragBorderClasses,
+  // When true, skip the default white card chrome (bg / border / padding /
+  // shadow). Useful when the spoke's `renderContent` is itself a fully-styled
+  // card (e.g. a glassmorphic ticket). The wrapper still handles click,
+  // highlight ring, and the unread badge.
+  bareCard = false,
 }) {
   return (
     <div
       onClick={onClick}
       className={cn(
-        "relative bg-white rounded-xl border border-slate-200 p-3 shadow-sm cursor-pointer transition-all",
-        "hover:shadow-md hover:border-slate-300",
-        isDragging && "shadow-2xl border-2",
-        isDragging && (dragBorderClasses || "border-pink-300"),
-        isHighlighted && "ring-2 ring-pink-400 animate-pulse"
+        "relative cursor-pointer transition-all",
+        !bareCard && [
+          "bg-white rounded-xl border border-slate-200 p-3 shadow-sm",
+          "hover:shadow-md hover:border-slate-300",
+          isDragging && "shadow-2xl border-2",
+          isDragging && (dragBorderClasses || "border-pink-300"),
+        ],
+        isHighlighted && "ring-2 ring-pink-400 animate-pulse rounded-xl"
       )}
     >
       {unreadCount > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1.5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shadow">
+        <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1.5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center shadow z-10">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       )}

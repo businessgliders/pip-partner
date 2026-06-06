@@ -5,6 +5,18 @@
  * Bump on any breaking change to the public API of these components/hooks.
  *
  * Changelog:
+ *   0.1.2 — Make MasterKanbanColumn / MasterKanbanCard fully theme-able.
+ *           * MasterKanbanColumn: new optional class overrides
+ *             (titleClasses, countBadgeClasses, descriptionClasses,
+ *             emptyClasses, shellClasses, listClasses) + `bareCard` flag.
+ *             All default to the previous values — back-compatible.
+ *           * MasterKanbanCard: new `bareCard` prop disables the default
+ *             white card chrome so spokes whose renderContent is already
+ *             a fully styled card (e.g. glassmorphic) don't get double
+ *             card backgrounds.
+ *           * Dragged card now gets z-index 9999 inline (matches the
+ *             legacy ApplicationBoard portal pattern; prevents layering
+ *             surprises against blurred/overlay ancestors).
  *   0.1.1 — Re-enable drag on touch viewports.
  *           * MasterKanbanColumn no longer gates Draggable with
  *             useIsTouchViewport / isDragDisabled. Drag now works on
@@ -18,7 +30,7 @@
  *           + MasterKanbanColumn now accepts optional `description` per
  *             column (renders as a small subtitle under the title)
  */
-export const MASTER_KANBAN_VERSION = "0.1.1";
+export const MASTER_KANBAN_VERSION = "0.1.2";
 
 export { default as MasterKanbanBoard } from "./MasterKanbanBoard";
 export { default as MasterKanbanColumn } from "./MasterKanbanColumn";
