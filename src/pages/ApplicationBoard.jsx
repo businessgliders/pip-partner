@@ -15,6 +15,7 @@ import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import KanbanColumn from "../components/board/KanbanColumn";
 import SwimlaneScroller from "../components/board/SwimlaneScroller";
+import InfluencerKanbanGrid from "../components/board/InfluencerKanbanGrid";
 import ClosedSidePanel from "../components/board/ClosedSidePanel";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
@@ -871,6 +872,25 @@ export default function ApplicationBoard() {
                 }`}
               >
                 {(() => {
+                  // Influencer board uses the canonical MasterKanbanColumn
+                  // (presentational swap; same DragDropContext, side panel
+                  // and step switcher all unchanged).
+                  if (board.key === "influencer") {
+                    return (
+                      <InfluencerKanbanGrid
+                        columns={columns}
+                        getTicketsByColumn={getTicketsByColumn}
+                        isLoading={isLoading}
+                        highlightedTicketId={highlightedTicketId}
+                        unreadCountByTicket={unreadCountByTicket}
+                        onTicketClick={(t) => setSelectedTicket(t)}
+                        onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                        onArchiveChange={handleArchiveChange}
+                        statusOptions={board.statuses}
+                      />
+                    );
+                  }
+
                   const renderColumn = (col) => (
                     <div key={col} data-swimlane className="min-w-0 h-full">
                       <KanbanColumn
