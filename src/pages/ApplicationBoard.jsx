@@ -16,6 +16,8 @@ import { useAuth } from "@/lib/AuthContext";
 import KanbanColumn from "../components/board/KanbanColumn";
 import SwimlaneScroller from "../components/board/SwimlaneScroller";
 import InfluencerKanbanGrid from "../components/board/InfluencerKanbanGrid";
+import InstructorKanbanGrid from "../components/board/InstructorKanbanGrid";
+import FrontAdminKanbanGrid from "../components/board/FrontAdminKanbanGrid";
 import ClosedSidePanel from "../components/board/ClosedSidePanel";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
@@ -240,8 +242,12 @@ export default function ApplicationBoard() {
       return inCol && matchesSearch(t);
     });
     
-    // Sort "scheduled" status by call time (soonest upcoming first).
-    // Prefer the Cal.com booking start; fall back to scheduled_call_time.
+    // Sort "scheduled" status:
+    //   - If ANY ticket in the column has a manual_sort_index, respect the
+    //     user's manual order (set by intra-column drag). Tickets without
+    //     an index are pushed to the bottom and sub-sorted by call time.
+    //   - Otherwise fall back to auto-sort by call time (soonest first),
+    //     preferring the Cal.com booking start over scheduled_call_time.
     if (effectiveViewMode === "status" && column === "scheduled") {
       const getTime = (t) => {
         const calStart = t?._cal_booking?.start;
@@ -252,9 +258,18 @@ export default function ApplicationBoard() {
         }
         return Infinity; // no time → push to bottom
       };
+      const hasManual = filtered.some((t) => typeof t.manual_sort_index === "number");
+      if (hasManual) {
+        return filtered.slice().sort((a, b) => {
+          const ai = typeof a.manual_sort_index === "number" ? a.manual_sort_index : Infinity;
+          const bi = typeof b.manual_sort_index === "number" ? b.manual_sort_index : Infinity;
+          if (ai !== bi) return ai - bi;
+          return getTime(a) - getTime(b);
+        });
+      }
       return filtered.sort((a, b) => getTime(a) - getTime(b));
     }
-    
+
     return filtered;
   };
 
@@ -284,7 +299,32 @@ export default function ApplicationBoard() {
 
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
-    if (!destination || destination.droppableId === source.droppableId) return;
+    if (!destination) return;
+
+    // Same-column reorder — only meaningful for the "scheduled" lane today.
+    // Persist a manual_sort_index on each ticket in the new order so the
+    // auto-sort by call time no longer overrides the user's intent.
+    if (destination.droppableId === source.droppableId) {
+      if (
+        effectiveViewMode === "status" &&
+        source.droppableId === "scheduled" &&
+        source.index !== destination.index
+      ) {
+        const ordered = getTicketsByColumn("scheduled").slice();
+        const [moved] = ordered.splice(source.index, 1);
+        if (!moved) return;
+        ordered.splice(destination.index, 0, moved);
+        // Reindex with a step so future inserts have headroom.
+        ordered.forEach((t, i) => {
+          const next = (i + 1) * 1000;
+          if (t.manual_sort_index !== next) {
+            updateMutation.mutate({ id: t.id, data: { manual_sort_index: next } });
+          }
+        });
+      }
+      return;
+    }
+
     const ticket = tickets.find((t) => t.id === draggableId);
     if (!ticket) return;
 
@@ -872,12 +912,19 @@ export default function ApplicationBoard() {
                 }`}
               >
                 {(() => {
-                  // Influencer board uses the canonical MasterKanbanColumn
-                  // (presentational swap; same DragDropContext, side panel
-                  // and step switcher all unchanged).
-                  if (board.key === "influencer") {
+                  // Influencer / Instructor / Front Desk boards use the
+                  // canonical MasterKanbanColumn via per-board grids (same
+                  // DragDropContext, side panel and step switcher unchanged).
+                  // Franchise still uses the legacy KanbanColumn for now.
+                  const MASTER_GRIDS = {
+                    influencer: InfluencerKanbanGrid,
+                    instructor: InstructorKanbanGrid,
+                    frontadmin: FrontAdminKanbanGrid,
+                  };
+                  const MasterGrid = MASTER_GRIDS[board.key];
+                  if (MasterGrid) {
                     return (
-                      <InfluencerKanbanGrid
+                      <MasterGrid
                         columns={columns}
                         getTicketsByColumn={getTicketsByColumn}
                         isLoading={isLoading}

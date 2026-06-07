@@ -283,6 +283,10 @@
       "type": "string",
       "format": "date-time",
       "description": "Manual override: timestamp when the 14-day FDD review period was started by an admin. Takes priority over auto-detection from email replies."
+    },
+    "manual_sort_index": {
+      "type": "number",
+      "description": "Per-ticket sort position for manual reordering within a swimlane (currently used in the 'scheduled' column). When any ticket in a column has a manual_sort_index, the column uses it as the sort key instead of the auto-sort."
     }
   },
   "required": [
