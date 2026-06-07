@@ -81,10 +81,22 @@ export default function DarkGlassKanbanGrid({
     );
   };
 
+  // Desktop mirrors the mobile/tablet swimlane pattern exactly: flex row with
+  // explicit per-column widths via `calc()` so each column has a concrete CSS
+  // pixel width (just like mobile's `w-[78%]` / `w-[300px]`). This is what
+  // makes drag behave smoothly on mobile — @hello-pangea/dnd's pre-drag width
+  // snapshot is reliable when the parent column has a real pixel width rather
+  // than a CSS-Grid-track computed width.
+  const colWidth = `calc((100% - ${(columns.length - 1) * 24}px) / ${columns.length})`;
   const desktopGridInner = (
-    <div className="hidden lg:grid grid-cols-4 gap-6 h-full">
+    <div className="hidden lg:flex gap-6 h-full">
       {columns.map((col) => (
-        <div key={col} data-swimlane className="min-w-0 h-full">
+        <div
+          key={col}
+          data-swimlane
+          className="flex-shrink-0 min-w-0 h-full"
+          style={{ width: colWidth }}
+        >
           {columnFor(col)}
         </div>
       ))}
