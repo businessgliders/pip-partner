@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,13 @@ import InfluencerKanbanGrid from "../components/board/InfluencerKanbanGrid";
 import InstructorKanbanGrid from "../components/board/InstructorKanbanGrid";
 import FrontAdminKanbanGrid from "../components/board/FrontAdminKanbanGrid";
 import FranchiseKanbanGrid from "../components/board/FranchiseKanbanGrid";
-import ClosedSidePanel from "../components/board/ClosedSidePanel";
+import HostedSidePanel from "../components/board/HostedSidePanel";
+import StatusChangeDialog from "../components/board/StatusChangeDialog";
+
+// Toggle: when true, cross-column drops open a confirmation dialog that
+// captures `by_name` + `note` before applying the status change. When false,
+// drops commit immediately (current behavior).
+const STATUS_CHANGE_REQUIRES_DIALOG = false;
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
 import { ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
@@ -116,6 +123,17 @@ export default function ApplicationBoard() {
   const [alertDialog, setAlertDialog] = useState(null);
   const [archiveAllConfirmDialog, setArchiveAllConfirmDialog] = useState(null);
   const [boardStep, setBoardStep] = useState("one"); // "one" | "two" — only used when board defines stepOne/stepTwo
+
+  // Optimistic manual-reorder overrides: { ticketId: indexInColumn }.
+  // Set synchronously via flushSync in handleDragEnd so the new order paints
+  // in the same frame @hello-pangea/dnd clears its drag transforms — react-
+  // query's setQueryData does NOT flush synchronously, so without flushSync
+  // there's a visible snap-back flicker.
+  const [orderOverrides, setOrderOverrides] = useState({});
+
+  // Optional cross-column confirm dialog state (only used when
+  // STATUS_CHANGE_REQUIRES_DIALOG is true).
+  const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
   useEffect(() => {
     setSearchQuery("");
@@ -230,13 +248,34 @@ export default function ApplicationBoard() {
   };
 
   const getTicketsByColumn = (column) => {
-    return tickets.filter((t) => {
+    const inCol = tickets.filter((t) => {
       if (t.archived) return false;
-      const inCol = effectiveViewMode === "status"
+      const matchCol = effectiveViewMode === "status"
         ? t.status === column
         : (board.categoryField && t[board.categoryField] === column);
-      return inCol && matchesSearch(t);
+      return matchCol && matchesSearch(t);
     });
+
+    // Sort priority: orderOverrides → manual_sort_index → newest created first.
+    // This makes manual reorders sticky after persistence and recovers a clean
+    // chronological order for columns/tickets that have never been reordered.
+    const sorted = [...inCol].sort((a, b) => {
+      const ovA = orderOverrides[a.id];
+      const ovB = orderOverrides[b.id];
+      if (ovA != null || ovB != null) {
+        return (ovA ?? 1e9) - (ovB ?? 1e9);
+      }
+      const mA = a.manual_sort_index;
+      const mB = b.manual_sort_index;
+      const hasManual = mA != null || mB != null;
+      if (hasManual) {
+        return (mA ?? 1e9) - (mB ?? 1e9);
+      }
+      // Default: newest created first
+      return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+    });
+
+    return sorted;
   };
 
   const archivedTickets = useMemo(
@@ -263,23 +302,75 @@ export default function ApplicationBoard() {
     if (!cleanupDismissed && resolvedTickets.length > 6) setShowCleanupPopup(true);
   }, [resolvedTickets.length, cleanupDismissed]);
 
+  // Persist a manual reorder for a column: writes manual_sort_index on every
+  // ticket in `orderedIds` (parallel updates), then clears the optimistic
+  // overrides once the query refetches.
+  const persistColumnOrder = async (orderedIds) => {
+    await Promise.all(
+      orderedIds.map((id, idx) =>
+        base44.entities[board.entity].update(id, { manual_sort_index: idx })
+      )
+    );
+    await queryClient.invalidateQueries({ queryKey: ["app-board", board.entity] });
+    // Clear overrides after the fresh data arrives.
+    setOrderOverrides((prev) => {
+      const next = { ...prev };
+      orderedIds.forEach((id) => { delete next[id]; });
+      return next;
+    });
+  };
+
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
-    if (destination.droppableId === source.droppableId) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     const ticket = tickets.find((t) => t.id === draggableId);
     if (!ticket) return;
 
-    // Stock MasterKanban behaviour: commit the drop immediately, no dialog.
+    // ─── SAME COLUMN: manual reorder ──────────────────────────────────────
+    if (destination.droppableId === source.droppableId) {
+      const colTickets = getTicketsByColumn(source.droppableId);
+      const reordered = [...colTickets];
+      const [moved] = reordered.splice(source.index, 1);
+      reordered.splice(destination.index, 0, moved);
+
+      // flushSync forces the optimistic order to paint in the same frame
+      // @hello-pangea/dnd resets its drag transforms — without it the card
+      // briefly snaps back to its old slot.
+      const overrides = {};
+      reordered.forEach((t, idx) => { overrides[t.id] = idx; });
+      flushSync(() => {
+        setOrderOverrides((prev) => ({ ...prev, ...overrides }));
+      });
+
+      persistColumnOrder(reordered.map((t) => t.id));
+      return;
+    }
+
+    // ─── CROSS COLUMN: status change ──────────────────────────────────────
+    if (STATUS_CHANGE_REQUIRES_DIALOG) {
+      setPendingStatusChange({
+        ticket,
+        fromStatus: source.droppableId,
+        toStatus: destination.droppableId,
+      });
+      return;
+    }
+    commitStatusChange(ticket, destination.droppableId, "", "");
+  };
+
+  const commitStatusChange = (ticket, newStatus, note = "", byName = "") => {
     const history = Array.isArray(ticket.status_history) ? ticket.status_history : [];
     const updated = [
       ...history,
-      { status: destination.droppableId, note: "", by_name: "", timestamp: new Date().toISOString() },
+      { status: newStatus, note, by_name: byName, timestamp: new Date().toISOString() },
     ];
+    // Clear manual_sort_index on cross-column move so the card sorts by its
+    // new column's default order rather than carrying a stale position.
     updateMutation.mutate({
       id: ticket.id,
-      data: { status: destination.droppableId, status_history: updated },
+      data: { status: newStatus, status_history: updated, manual_sort_index: null },
     });
   };
 
@@ -878,50 +969,38 @@ export default function ApplicationBoard() {
               </div>
             </div>
 
-            {sidePanelStatuses.length > 0 && (
-              <div className="hidden lg:block">
-                <ClosedSidePanel
-                  statuses={sidePanelStatuses.map((s) => ({
-                    status: s,
-                    tickets: getTicketsByColumn(s),
-                    onArchiveSome: () => handleArchiveSome(s),
-                    onArchiveAll: () => setArchiveAllConfirmDialog({ status: s }),
-                  }))}
+            {/* Each back-office status gets its own slim side panel with a
+                vertical handle. Stacked vertically via verticalAlign so handles
+                don't overlap. (Replaces the legacy ClosedSidePanel that
+                grouped multiple statuses into a single wide panel.) */}
+            {sidePanelStatuses.map((s, idx) => {
+              const align =
+                sidePanelStatuses.length === 1
+                  ? "middle"
+                  : idx === 0
+                    ? "top"
+                    : idx === sidePanelStatuses.length - 1
+                      ? "bottom"
+                      : "middle";
+              return (
+                <HostedSidePanel
+                  key={s}
+                  status={s}
+                  tickets={getTicketsByColumn(s)}
+                  boardKey={board.key}
+                  verticalAlign={align}
+                  highlightedTicketId={highlightedTicketId}
+                  unreadCountByTicket={unreadCountByTicket}
+                  onTicketClick={(t) => setSelectedTicket(t)}
                   onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
                   onArchiveChange={handleArchiveChange}
-                  onTicketClick={(t) => setSelectedTicket(t)}
-                  isLoading={isLoading}
-                  highlightedTicketId={highlightedTicketId}
-                  viewMode={effectiveViewMode}
+                  onArchiveSome={() => handleArchiveSome(s)}
+                  onArchiveAll={() => setArchiveAllConfirmDialog({ status: s })}
                   statusOptions={board.statuses}
-                  boardKey={board.key}
-                  unreadCountByTicket={unreadCountByTicket}
-                />
-              </div>
-            )}
-
-            {/* Mobile: Bottom-right floating panel for closed/ghosted */}
-            {sidePanelStatuses.length > 0 && (
-              <div className="block lg:hidden">
-                <ClosedSidePanel
-                  statuses={sidePanelStatuses.map((s) => ({
-                    status: s,
-                    tickets: getTicketsByColumn(s),
-                    onArchiveSome: () => handleArchiveSome(s),
-                    onArchiveAll: () => setArchiveAllConfirmDialog({ status: s }),
-                  }))}
-                  onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                  onArchiveChange={handleArchiveChange}
-                  onTicketClick={(t) => setSelectedTicket(t)}
                   isLoading={isLoading}
-                  highlightedTicketId={highlightedTicketId}
-                  viewMode={effectiveViewMode}
-                  statusOptions={board.statuses}
-                  boardKey={board.key}
-                  unreadCountByTicket={unreadCountByTicket}
                 />
-              </div>
-            )}
+              );
+            })}
           </DragDropContext>
         )}
 
@@ -955,6 +1034,27 @@ export default function ApplicationBoard() {
         onOpenChange={(v) => { setShowCleanupPopup(v); if (!v) setCleanupDismissed(true); }}
         resolvedTickets={resolvedTickets}
         onMoveToClosed={handleTidyUpMove}
+      />
+
+      <StatusChangeDialog
+        open={!!pendingStatusChange}
+        onOpenChange={(v) => { if (!v) setPendingStatusChange(null); }}
+        ticketName={pendingStatusChange?.ticket?._display_name}
+        fromStatus={pendingStatusChange?.fromStatus}
+        toStatus={pendingStatusChange?.toStatus}
+        defaultByName={user?.full_name || ""}
+        onCancel={() => setPendingStatusChange(null)}
+        onConfirm={({ byName, note }) => {
+          if (pendingStatusChange?.ticket) {
+            commitStatusChange(
+              pendingStatusChange.ticket,
+              pendingStatusChange.toStatus,
+              note,
+              byName
+            );
+          }
+          setPendingStatusChange(null);
+        }}
       />
 
       <SubmissionDetailModal

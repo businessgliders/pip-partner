@@ -44,6 +44,7 @@ function DraggableCardWrapper({ provided, snapshot, children }) {
   return (
     <div
       ref={setRefs}
+      data-dnd-card
       {...provided.draggableProps}
       {...provided.dragHandleProps}
       style={{
@@ -99,7 +100,7 @@ export default function MasterKanbanColumn({
   // v0.1.2 — opt-in theming overrides (all default to previous hard-coded values,
   // so existing callsites are unaffected)
   shellClasses = "flex-shrink-0 w-[42vw] md:w-72 lg:w-80 h-full flex flex-col rounded-2xl border bg-gradient-to-b backdrop-blur-sm transition-opacity",
-  listClasses = "flex-1 p-3 space-y-2 min-h-32 overflow-y-auto transition-colors",
+  listClasses = "flex-1 p-3 space-y-2 min-h-32 overflow-y-auto kanban-scroll transition-colors",
   titleClasses = "text-sm font-semibold text-slate-800",
   countBadgeClasses = "text-xs font-medium text-slate-600 bg-white/60 rounded-full px-2 py-0.5",
   descriptionClasses = "text-[11px] text-slate-600/80 mt-0.5 leading-snug",

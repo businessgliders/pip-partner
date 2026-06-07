@@ -15,7 +15,7 @@ const SHELL_CLASSES =
   "backdrop-blur-xl border rounded-2xl overflow-hidden shadow-xl flex flex-col min-h-0 h-[calc(100dvh-260px)] lg:h-[calc(100vh-220px)] bg-gradient-to-b transition-opacity";
 
 const LIST_CLASSES =
-  "flex-1 overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-3 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10 transition-colors";
+  "flex-1 overflow-y-auto kanban-scroll p-2 md:p-3 space-y-2 md:space-y-3 transition-colors";
 
 const TITLE_CLASSES = "text-white font-semibold capitalize text-xs md:text-base truncate";
 const COUNT_BADGE_CLASSES =
@@ -125,7 +125,7 @@ export default function DarkGlassKanbanGrid({
   );
 
   return (
-    <>
+    <div className="board-height-wrap h-full">
       {desktopGrid}
 
       {/* Mobile/tablet horizontal swimlane scroller */}
@@ -140,6 +140,6 @@ export default function DarkGlassKanbanGrid({
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
