@@ -16,7 +16,7 @@ import InfluencerKanbanGrid from "../components/board/InfluencerKanbanGrid";
 import InstructorKanbanGrid from "../components/board/InstructorKanbanGrid";
 import FrontAdminKanbanGrid from "../components/board/FrontAdminKanbanGrid";
 import FranchiseKanbanGrid from "../components/board/FranchiseKanbanGrid";
-import ClosedSidePanel from "../components/board/ClosedSidePanel.jsx";
+import ClosedSidePanel from "../components/board/ClosedSidePanel";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
 import { ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
