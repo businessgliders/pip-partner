@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
-import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Archive, Search, Settings as SettingsIcon, Home as HomeIcon, ChevronsRight, ChevronsLeft } from "lucide-react";
 
@@ -13,11 +12,10 @@ import NotificationCenter from "../components/admin/NotificationCenter";
 import ChangelogPopup from "../components/admin/ChangelogPopup";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
-import KanbanColumn from "../components/board/KanbanColumn";
-import SwimlaneScroller from "../components/board/SwimlaneScroller";
 import InfluencerKanbanGrid from "../components/board/InfluencerKanbanGrid";
 import InstructorKanbanGrid from "../components/board/InstructorKanbanGrid";
 import FrontAdminKanbanGrid from "../components/board/FrontAdminKanbanGrid";
+import FranchiseKanbanGrid from "../components/board/FranchiseKanbanGrid";
 import ClosedSidePanel from "../components/board/ClosedSidePanel";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
@@ -242,32 +240,35 @@ export default function ApplicationBoard() {
       return inCol && matchesSearch(t);
     });
     
-    // Sort "scheduled" status:
-    //   - If ANY ticket in the column has a manual_sort_index, respect the
-    //     user's manual order (set by intra-column drag). Tickets without
-    //     an index are pushed to the bottom and sub-sorted by call time.
-    //   - Otherwise fall back to auto-sort by call time (soonest first),
-    //     preferring the Cal.com booking start over scheduled_call_time.
-    if (effectiveViewMode === "status" && column === "scheduled") {
-      const getTime = (t) => {
-        const calStart = t?._cal_booking?.start;
-        if (calStart) return new Date(calStart).getTime();
-        if (t?.scheduled_call_time) {
-          const parsed = new Date(t.scheduled_call_time).getTime();
-          if (!isNaN(parsed)) return parsed;
-        }
-        return Infinity; // no time → push to bottom
-      };
-      const hasManual = filtered.some((t) => typeof t.manual_sort_index === "number");
-      if (hasManual) {
-        return filtered.slice().sort((a, b) => {
-          const ai = typeof a.manual_sort_index === "number" ? a.manual_sort_index : Infinity;
-          const bi = typeof b.manual_sort_index === "number" ? b.manual_sort_index : Infinity;
-          if (ai !== bi) return ai - bi;
-          return getTime(a) - getTime(b);
-        });
+    // Generic manual-sort: if ANY ticket in this column has a
+    // manual_sort_index (set via intra-column drag), respect that order.
+    // Tickets without an index fall to the bottom; the column's natural
+    // auto-sort (call-time for "scheduled", -created_date otherwise from
+    // the query) is used as the tiebreaker.
+    const getSchedTime = (t) => {
+      const calStart = t?._cal_booking?.start;
+      if (calStart) return new Date(calStart).getTime();
+      if (t?.scheduled_call_time) {
+        const parsed = new Date(t.scheduled_call_time).getTime();
+        if (!isNaN(parsed)) return parsed;
       }
-      return filtered.sort((a, b) => getTime(a) - getTime(b));
+      return Infinity;
+    };
+    const isScheduledLane = effectiveViewMode === "status" && column === "scheduled";
+    const hasManual = filtered.some((t) => typeof t.manual_sort_index === "number");
+
+    if (hasManual) {
+      return filtered.slice().sort((a, b) => {
+        const ai = typeof a.manual_sort_index === "number" ? a.manual_sort_index : Infinity;
+        const bi = typeof b.manual_sort_index === "number" ? b.manual_sort_index : Infinity;
+        if (ai !== bi) return ai - bi;
+        if (isScheduledLane) return getSchedTime(a) - getSchedTime(b);
+        return 0; // preserve existing query order (-created_date)
+      });
+    }
+
+    if (isScheduledLane) {
+      return filtered.sort((a, b) => getSchedTime(a) - getSchedTime(b));
     }
 
     return filtered;
@@ -301,16 +302,12 @@ export default function ApplicationBoard() {
     const { destination, source, draggableId } = result;
     if (!destination) return;
 
-    // Same-column reorder — only meaningful for the "scheduled" lane today.
+    // Same-column reorder — works on every lane on every board.
     // Persist a manual_sort_index on each ticket in the new order so the
-    // auto-sort by call time no longer overrides the user's intent.
+    // column's default auto-sort no longer overrides the user's intent.
     if (destination.droppableId === source.droppableId) {
-      if (
-        effectiveViewMode === "status" &&
-        source.droppableId === "scheduled" &&
-        source.index !== destination.index
-      ) {
-        const ordered = getTicketsByColumn("scheduled").slice();
+      if (source.index !== destination.index) {
+        const ordered = getTicketsByColumn(source.droppableId).slice();
         const [moved] = ordered.splice(source.index, 1);
         if (!moved) return;
         ordered.splice(destination.index, 0, moved);
@@ -912,85 +909,32 @@ export default function ApplicationBoard() {
                 }`}
               >
                 {(() => {
-                  // Influencer / Instructor / Front Desk boards use the
-                  // canonical MasterKanbanColumn via per-board grids (same
-                  // DragDropContext, side panel and step switcher unchanged).
-                  // Franchise still uses the legacy KanbanColumn for now.
+                  // All boards route through MasterKanbanColumn via per-board
+                  // grids that share DarkGlassKanbanGrid for the glassmorphic
+                  // skin. Franchise additionally fades between Step One / Step
+                  // Two via `animateKey`. DragDropContext, side panel and step
+                  // switcher all remain handled by ApplicationBoard.
                   const MASTER_GRIDS = {
                     influencer: InfluencerKanbanGrid,
                     instructor: InstructorKanbanGrid,
                     frontadmin: FrontAdminKanbanGrid,
+                    franchise: FranchiseKanbanGrid,
                   };
                   const MasterGrid = MASTER_GRIDS[board.key];
-                  if (MasterGrid) {
-                    return (
-                      <MasterGrid
-                        columns={columns}
-                        getTicketsByColumn={getTicketsByColumn}
-                        isLoading={isLoading}
-                        highlightedTicketId={highlightedTicketId}
-                        unreadCountByTicket={unreadCountByTicket}
-                        onTicketClick={(t) => setSelectedTicket(t)}
-                        onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                        onArchiveChange={handleArchiveChange}
-                        statusOptions={board.statuses}
-                      />
-                    );
-                  }
-
-                  const renderColumn = (col) => (
-                    <div key={col} data-swimlane className="min-w-0 h-full">
-                      <KanbanColumn
-                        status={col}
-                        tickets={getTicketsByColumn(col)}
-                        onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                        onArchiveChange={handleArchiveChange}
-                        onTicketClick={(t) => setSelectedTicket(t)}
-                        isLoading={isLoading}
-                        highlightedTicketId={highlightedTicketId}
-                        viewMode={effectiveViewMode}
-                        statusOptions={board.statuses}
-                        boardKey={board.key}
-                        unreadCountByTicket={unreadCountByTicket}
-                      />
-                    </div>
-                  );
-
-                  // Note: we intentionally avoid wrapping the desktop grid in a
-                  // motion.div with `transform`-based animations — an ancestor
-                  // `transform` becomes the containing block for the dragging
-                  // card's `position: fixed`, which makes the portaled card
-                  // jump away from the cursor when drag starts.
-                  const desktopGrid = hasSteps ? (
-                    <AnimatePresence mode="wait" initial={false}>
-                      <motion.div
-                        key={boardStep}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="hidden lg:grid grid-cols-4 gap-6 h-full"
-                      >
-                        {columns.map(renderColumn)}
-                      </motion.div>
-                    </AnimatePresence>
-                  ) : (
-                    <div className="hidden lg:grid grid-cols-4 gap-6 h-full">
-                      {columns.map(renderColumn)}
-                    </div>
-                  );
-
+                  if (!MasterGrid) return null;
                   return (
-                    <>
-                      {desktopGrid}
-
-                      {/* Mobile/tablet: horizontal swimlane scroller with auto-hiding chevrons */}
-                      <div className="lg:hidden h-full">
-                        <SwimlaneScroller>
-                          {columns.map(renderColumn)}
-                        </SwimlaneScroller>
-                      </div>
-                    </>
+                    <MasterGrid
+                      columns={columns}
+                      getTicketsByColumn={getTicketsByColumn}
+                      isLoading={isLoading}
+                      highlightedTicketId={highlightedTicketId}
+                      unreadCountByTicket={unreadCountByTicket}
+                      onTicketClick={(t) => setSelectedTicket(t)}
+                      onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
+                      onArchiveChange={handleArchiveChange}
+                      statusOptions={board.statuses}
+                      animateKey={hasSteps ? boardStep : undefined}
+                    />
                   );
                 })()}
               </div>

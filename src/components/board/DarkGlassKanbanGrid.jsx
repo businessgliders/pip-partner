@@ -1,4 +1,5 @@
 import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { MasterKanbanColumn } from "@/components/master-kanban";
 import TicketCard from "./TicketCard";
 import { getStatusMeta } from "./boardConfig";
@@ -36,6 +37,9 @@ export default function DarkGlassKanbanGrid({
   statusOptions,
   columnColors,
   headerColors,
+  // Optional: when provided, fades the desktop grid between key values
+  // (used by Franchise to animate between Step One / Step Two).
+  animateKey,
 }) {
   const renderCardContent = (ticket) => (
     <TicketCard
@@ -77,16 +81,40 @@ export default function DarkGlassKanbanGrid({
     );
   };
 
+  const desktopGridInner = (
+    <div className="hidden lg:grid grid-cols-4 gap-6 h-full">
+      {columns.map((col) => (
+        <div key={col} data-swimlane className="min-w-0 h-full">
+          {columnFor(col)}
+        </div>
+      ))}
+    </div>
+  );
+
+  // Note: we intentionally avoid wrapping in a motion.div with transform
+  // animations — an ancestor `transform` becomes the containing block for
+  // the dragging card's `position: fixed`, making the portaled card jump
+  // away from the cursor. Opacity-only fade is safe.
+  const desktopGrid = animateKey ? (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={animateKey}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="hidden lg:block h-full"
+      >
+        {desktopGridInner}
+      </motion.div>
+    </AnimatePresence>
+  ) : (
+    desktopGridInner
+  );
+
   return (
     <>
-      {/* Desktop grid */}
-      <div className="hidden lg:grid grid-cols-4 gap-6 h-full">
-        {columns.map((col) => (
-          <div key={col} data-swimlane className="min-w-0 h-full">
-            {columnFor(col)}
-          </div>
-        ))}
-      </div>
+      {desktopGrid}
 
       {/* Mobile/tablet horizontal swimlane scroller */}
       <div className="lg:hidden h-full flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain pb-2 -mx-4 pl-4 pr-4">
