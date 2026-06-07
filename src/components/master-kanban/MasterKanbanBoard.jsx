@@ -28,6 +28,11 @@ export default function MasterKanbanBoard({
   renderCardContent,
   getActions,
   className,
+  // v0.1.3 — bounded height on the scroll row so each column's inner list
+  // scrolls independently (sticky column headers, content doesn't push the
+  // whole page). Defaults tuned by pip-events (140px desktop / 120px mobile based
+  // on actual header heights). Override per-app if your chrome is taller/shorter.
+  boardHeightClasses = "h-[calc(100dvh-140px)] md:h-[calc(100dvh-120px-56px-env(safe-area-inset-bottom,0px))]",
 }) {
   const { ref, canScrollLeft, canScrollRight, scrollBy } = useHorizontalScroll();
 
@@ -57,7 +62,13 @@ export default function MasterKanbanBoard({
       )}
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div ref={ref} className="flex gap-4 overflow-x-auto pb-4 px-2 scroll-smooth snap-x">
+        <div
+          ref={ref}
+          className={cn(
+            "flex gap-4 overflow-x-auto pb-4 px-2 scroll-smooth snap-x",
+            boardHeightClasses
+          )}
+        >
           {columns.map((col) => {
             const actions = getActions?.(col.status) || {};
             return (
