@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,24 +8,37 @@ import { cn } from "@/lib/utils";
 import MasterKanbanCard from "./MasterKanbanCard";
 
 /**
- * DraggableCardWrapper — locks the card's natural width inline while dragging.
+ * DraggableCardWrapper — bulletproof drag positioning, independent of
+ * ancestor containing blocks.
  *
- * When portaled to <body>, the card loses its column flex parent and would
- * collapse to its intrinsic content width. We measure the natural width while
- * NOT dragging (via ResizeObserver) and re-apply it via inline style during
- * drag so the portaled clone keeps its column width.
+ * Problem: @hello-pangea/dnd positions the dragged card with
+ * `position: fixed; top: <px>; left: <px>; transform: translate(dx, dy)`.
+ * The `top`/`left` values are the card's original location at drag start
+ * — but they resolve against whatever the nearest containing block is.
+ * If ANY ancestor has `transform`, `filter`, `backdrop-filter`,
+ * `perspective`, `will-change: transform/filter`, or `contain: paint/layout`,
+ * it becomes the containing block instead of the viewport — and the card
+ * appears in the wrong place (commonly snapped to the top-left). Portaling
+ * to <body> doesn't help because dnd's `top`/`left` were computed assuming
+ * one containing block but now resolve against another.
  *
- * Note: cursor alignment is handled by @hello-pangea/dnd itself. For that to
- * work, the column shell MUST NOT have any property that creates a
- * containing block for `position: fixed` descendants (`backdrop-filter`,
- * `transform`, `filter`, `perspective`, `will-change`, `contain`). See
- * DarkGlassKanbanGrid SHELL_CLASSES — `backdrop-blur` is intentionally
- * omitted on dark-glass boards because of this constraint.
+ * Fix: when dragging, we IGNORE dnd's `top`/`left`/`transform` entirely
+ * and position the card ourselves in viewport coordinates:
+ *   - Capture the card's `getBoundingClientRect()` at drag start.
+ *   - Listen to `pointermove` and compute the new top-left based on the
+ *     cursor's delta from where it was when drag started.
+ *   - Apply `position: fixed; top: 0; left: 0; transform: translate(...)`
+ *     directly, which always resolves correctly because we don't rely on
+ *     ancestor coordinate spaces.
  */
 function DraggableCardWrapper({ provided, snapshot, children }) {
   const wrapperRef = useRef(null);
+  // Width while idle, used during drag so the portaled clone keeps its size.
   const [lockedWidth, setLockedWidth] = useState(null);
+  // Drag state: { originLeft, originTop, cursorStartX, cursorStartY, dx, dy }
+  const [dragPos, setDragPos] = useState(null);
 
+  // Measure natural width while NOT dragging.
   useEffect(() => {
     if (!wrapperRef.current || snapshot.isDragging) return;
     const el = wrapperRef.current;
@@ -41,10 +54,68 @@ function DraggableCardWrapper({ provided, snapshot, children }) {
     }
   }, [snapshot.isDragging]);
 
+  // Drive viewport-correct positioning while dragging.
+  useLayoutEffect(() => {
+    if (!snapshot.isDragging) {
+      setDragPos(null);
+      return;
+    }
+    if (!wrapperRef.current) return;
+
+    // Capture origin rect BEFORE we override styles (it's still in normal
+    // position because dnd hasn't applied its transform on first render).
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const origin = { originLeft: rect.left, originTop: rect.top };
+
+    let cursorStart = null;
+    setDragPos({ ...origin, dx: 0, dy: 0 });
+
+    const handleMove = (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      if (cursorStart == null) {
+        cursorStart = { x, y };
+        return;
+      }
+      setDragPos({
+        ...origin,
+        dx: x - cursorStart.x,
+        dy: y - cursorStart.y,
+      });
+    };
+
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    window.addEventListener("touchmove", (e) => {
+      if (e.touches && e.touches[0]) {
+        handleMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+      }
+    }, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+    };
+  }, [snapshot.isDragging]);
+
   const setRefs = (node) => {
     wrapperRef.current = node;
     provided.innerRef(node);
   };
+
+  // While dragging, override dnd's position with our viewport-correct one.
+  const dragStyle =
+    snapshot.isDragging && dragPos
+      ? {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          transform: `translate3d(${dragPos.originLeft + dragPos.dx}px, ${dragPos.originTop + dragPos.dy}px, 0)`,
+          width: lockedWidth ? `${lockedWidth}px` : undefined,
+          margin: 0,
+          zIndex: 9999,
+          pointerEvents: "none",
+          transition: "none",
+        }
+      : null;
 
   return (
     <div
@@ -54,8 +125,7 @@ function DraggableCardWrapper({ provided, snapshot, children }) {
       {...provided.dragHandleProps}
       style={{
         ...provided.draggableProps.style,
-        zIndex: snapshot.isDragging ? 9999 : "auto",
-        ...(snapshot.isDragging && lockedWidth ? { width: `${lockedWidth}px` } : null),
+        ...(dragStyle || { zIndex: "auto" }),
       }}
     >
       {children}
