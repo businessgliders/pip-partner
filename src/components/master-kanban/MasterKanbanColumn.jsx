@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,6 +6,56 @@ import { Button } from "@/components/ui/button";
 import { Archive, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MasterKanbanCard from "./MasterKanbanCard";
+
+/**
+ * DraggableCardWrapper — locks the card's natural width inline while dragging.
+ *
+ * Why: when a card is portaled to <body> during drag (see L168 below), it
+ * loses the column's flex parent. If @hello-pangea/dnd's pre-drag width
+ * snapshot is unreliable (backdrop-filter ancestors, late-loading fonts,
+ * width inherited from `align-items: stretch`), the portaled card collapses
+ * to ~0 width and snaps to top-left. Measuring the natural width while
+ * NOT dragging and re-applying it via inline style during drag fixes that.
+ */
+function DraggableCardWrapper({ provided, snapshot, children }) {
+  const wrapperRef = useRef(null);
+  const [lockedWidth, setLockedWidth] = useState(null);
+
+  useEffect(() => {
+    if (!wrapperRef.current || snapshot.isDragging) return;
+    const el = wrapperRef.current;
+    const measure = () => {
+      const w = el.getBoundingClientRect().width;
+      if (w > 0) setLockedWidth(w);
+    };
+    measure();
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(measure);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+  }, [snapshot.isDragging]);
+
+  const setRefs = (node) => {
+    wrapperRef.current = node;
+    provided.innerRef(node);
+  };
+
+  return (
+    <div
+      ref={setRefs}
+      {...provided.draggableProps}
+      {...provided.dragHandleProps}
+      style={{
+        ...provided.draggableProps.style,
+        zIndex: snapshot.isDragging ? 9999 : "auto",
+        ...(snapshot.isDragging && lockedWidth ? { width: `${lockedWidth}px` } : null),
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 /**
  * MasterKanbanColumn — generic kanban column.
@@ -142,14 +192,9 @@ export default function MasterKanbanColumn({
                 <Draggable key={ticket.id} draggableId={ticket.id} index={index}>
                   {(provided, snapshot) => {
                     const child = (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          zIndex: snapshot.isDragging ? 9999 : "auto",
-                        }}
+                      <DraggableCardWrapper
+                        provided={provided}
+                        snapshot={snapshot}
                       >
                         <MasterKanbanCard
                           ticket={ticket}
@@ -161,7 +206,7 @@ export default function MasterKanbanColumn({
                           dragBorderClasses={headerClasses}
                           bareCard={bareCard}
                         />
-                      </div>
+                      </DraggableCardWrapper>
                     );
                     // Portal dragged item to body — escapes blurred/clipped ancestors
                     // and keeps the pointer aligned in viewport coordinates.
