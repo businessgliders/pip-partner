@@ -19,7 +19,7 @@ import FranchiseKanbanGrid from "../components/board/FranchiseKanbanGrid";
 import ClosedSidePanel from "../components/board/ClosedSidePanel";
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
-import { StatusChangeDialog, ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
+import { ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
 import { BOARD_TYPES, displayName } from "../components/board/boardConfig";
 import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
@@ -100,7 +100,6 @@ export default function ApplicationBoard() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [highlightMessageId, setHighlightMessageId] = useState(null);
   const [highlightedTicketId, setHighlightedTicketId] = useState(null);
-  const [dragNoteDialog, setDragNoteDialog] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState(() => {
@@ -154,7 +153,6 @@ export default function ApplicationBoard() {
           ...t,
           _display_name: displayName(t),
           _category: board.categoryField ? (t[board.categoryField] || "") : "",
-          _dragId: t.id,
           _cal_booking: emailKey ? calBookings[emailKey] || null : null,
         };
       }),
@@ -232,46 +230,13 @@ export default function ApplicationBoard() {
   };
 
   const getTicketsByColumn = (column) => {
-    const filtered = tickets.filter((t) => {
+    return tickets.filter((t) => {
       if (t.archived) return false;
       const inCol = effectiveViewMode === "status"
         ? t.status === column
         : (board.categoryField && t[board.categoryField] === column);
       return inCol && matchesSearch(t);
     });
-    
-    // Generic manual-sort: if ANY ticket in this column has a
-    // manual_sort_index (set via intra-column drag), respect that order.
-    // Tickets without an index fall to the bottom; the column's natural
-    // auto-sort (call-time for "scheduled", -created_date otherwise from
-    // the query) is used as the tiebreaker.
-    const getSchedTime = (t) => {
-      const calStart = t?._cal_booking?.start;
-      if (calStart) return new Date(calStart).getTime();
-      if (t?.scheduled_call_time) {
-        const parsed = new Date(t.scheduled_call_time).getTime();
-        if (!isNaN(parsed)) return parsed;
-      }
-      return Infinity;
-    };
-    const isScheduledLane = effectiveViewMode === "status" && column === "scheduled";
-    const hasManual = filtered.some((t) => typeof t.manual_sort_index === "number");
-
-    if (hasManual) {
-      return filtered.slice().sort((a, b) => {
-        const ai = typeof a.manual_sort_index === "number" ? a.manual_sort_index : Infinity;
-        const bi = typeof b.manual_sort_index === "number" ? b.manual_sort_index : Infinity;
-        if (ai !== bi) return ai - bi;
-        if (isScheduledLane) return getSchedTime(a) - getSchedTime(b);
-        return 0; // preserve existing query order (-created_date)
-      });
-    }
-
-    if (isScheduledLane) {
-      return filtered.sort((a, b) => getSchedTime(a) - getSchedTime(b));
-    }
-
-    return filtered;
   };
 
   const archivedTickets = useMemo(
@@ -301,41 +266,20 @@ export default function ApplicationBoard() {
   const handleDragEnd = (result) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
-
-    // Same-column reorder — works on every lane on every board.
-    // Persist a manual_sort_index on each ticket in the new order so the
-    // column's default auto-sort no longer overrides the user's intent.
-    if (destination.droppableId === source.droppableId) {
-      if (source.index !== destination.index) {
-        const ordered = getTicketsByColumn(source.droppableId).slice();
-        const [moved] = ordered.splice(source.index, 1);
-        if (!moved) return;
-        ordered.splice(destination.index, 0, moved);
-        // Reindex with a step so future inserts have headroom.
-        ordered.forEach((t, i) => {
-          const next = (i + 1) * 1000;
-          if (t.manual_sort_index !== next) {
-            updateMutation.mutate({ id: t.id, data: { manual_sort_index: next } });
-          }
-        });
-      }
-      return;
-    }
+    if (destination.droppableId === source.droppableId) return;
 
     const ticket = tickets.find((t) => t.id === draggableId);
     if (!ticket) return;
 
-    if (effectiveViewMode === "category") {
-      if (!board.categoryField) return;
-      updateMutation.mutate({ id: ticket.id, data: { [board.categoryField]: destination.droppableId } });
-      return;
-    }
-
-    setDragNoteDialog({
-      ticket,
-      ticketName: ticket._display_name,
-      from: source.droppableId,
-      to: destination.droppableId,
+    // Stock MasterKanban behaviour: commit the drop immediately, no dialog.
+    const history = Array.isArray(ticket.status_history) ? ticket.status_history : [];
+    const updated = [
+      ...history,
+      { status: destination.droppableId, note: "", by_name: "", timestamp: new Date().toISOString() },
+    ];
+    updateMutation.mutate({
+      id: ticket.id,
+      data: { status: destination.droppableId, status_history: updated },
     });
   };
 
@@ -343,12 +287,6 @@ export default function ApplicationBoard() {
     const history = Array.isArray(ticket.status_history) ? ticket.status_history : [];
     const updated = [...history, { status: newStatus, note, by_name: byName, timestamp: new Date().toISOString() }];
     updateMutation.mutate({ id: ticket.id, data: { status: newStatus, status_history: updated } });
-  };
-
-  const handleDragConfirm = ({ name, note }) => {
-    if (!dragNoteDialog) return;
-    handleStatusChange(dragNoteDialog.ticket, dragNoteDialog.to, note, name);
-    setDragNoteDialog(null);
   };
 
   const handleArchiveSome = async (targetStatus) => {
@@ -993,12 +931,6 @@ export default function ApplicationBoard() {
         </div>
       </div>
 
-      <StatusChangeDialog
-        open={!!dragNoteDialog}
-        payload={dragNoteDialog}
-        onConfirm={handleDragConfirm}
-        onCancel={() => setDragNoteDialog(null)}
-      />
       <ConfirmDialog
         isOpen={!!archiveAllConfirmDialog}
         title={`Archive all ${archiveAllConfirmDialog?.status || "closed"} applications?`}
