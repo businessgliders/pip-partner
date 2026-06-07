@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
-import { Archive, Search } from "lucide-react";
+import { Archive, Search, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import AdminFavicon from "../components/AdminFavicon";
 import UserMenu from "../components/dashboard/UserMenu";
@@ -13,6 +13,7 @@ import ChangelogPopup from "../components/admin/ChangelogPopup";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
+import MasterSidePanel from "../components/board/MasterSidePanel";
 import TicketCard from "../components/board/TicketCard";
 import { getStatusMeta } from "../components/board/boardConfig";
 import { getColumnPalette } from "../components/board/KanbanGridPalettes";
@@ -120,6 +121,11 @@ export default function ApplicationBoard() {
   const [mobileSearchDialog, setMobileSearchDialog] = useState(false);
   const [alertDialog, setAlertDialog] = useState(null);
   const [archiveAllConfirmDialog, setArchiveAllConfirmDialog] = useState(null);
+  // Franchise-only: which "step" of the funnel is shown in the main row.
+  // Step one = early funnel (new → qualified). Step two = post-signing
+  // (site_selection → training). Closed / ghosted are always hosted side
+  // panels, never part of either step.
+  const [boardStep, setBoardStep] = useState("one");
   // Optimistic manual-reorder overrides: { ticketId: indexInColumn }.
   // Set synchronously via flushSync in handleDragEnd so the new order paints
   // in the same frame @hello-pangea/dnd clears its drag transforms — react-
@@ -190,11 +196,36 @@ export default function ApplicationBoard() {
     ? viewMode
     : (board.categoryField ? viewMode : "status");
 
-  // All statuses flow into the single horizontal Master Kanban — no
-  // side-panel split, no step-one/step-two switcher. The board scrolls.
+  // Hosted side-panel statuses (closed-style buckets) — rendered as slim
+  // vertical drawers anchored to the right edge of the board, NOT inside the
+  // horizontal scroll row. They stay live drop targets via the shared
+  // DragDropContext.
+  const SIDE_PANEL_STATUSES_BY_BOARD = {
+    franchise: ["closed", "ghosted"],
+    instructor: ["declined", "ghosted"],
+    frontadmin: ["declined", "ghosted"],
+    influencer: ["declined"],
+  };
+  const sidePanelStatuses = (SIDE_PANEL_STATUSES_BY_BOARD[board.key] || []).filter(
+    (s) => board.statuses.includes(s)
+  );
+
+  // Franchise has a two-step funnel. The vertical step toggle lets the user
+  // flip the main row between "Step One" (early funnel) and "Step Two" (post-
+  // signing). Closed / ghosted live in side panels regardless of step.
+  const hasSteps = Array.isArray(board.stepOne) && Array.isArray(board.stepTwo);
+
+  const stepColumns = hasSteps
+    ? (boardStep === "two" ? board.stepTwo : board.stepOne)
+    : null;
+
+  const mainStatusColumns = (stepColumns || allStatusColumns).filter(
+    (c) => !sidePanelStatuses.includes(c)
+  );
+
   const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
     ? []
-    : (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
+    : (effectiveViewMode === "status" ? mainStatusColumns : allCategoryColumns)
         .filter((c) => !hiddenColumns.includes(c));
 
   useEffect(() => {
@@ -792,6 +823,47 @@ export default function ApplicationBoard() {
           />
         ) : (
           <div className="board-height-wrap flex-1 min-h-0 mt-1 lg:mt-2">
+            {/* Mobile-only Step One / Step Two underline tabs (franchise only) */}
+            {hasSteps && effectiveViewMode === "status" && (() => {
+              const stepOneCount = (board.stepOne || []).reduce(
+                (acc, s) => acc + getTicketsByColumn(s).length,
+                0
+              );
+              const stepTwoCount = (board.stepTwo || []).reduce(
+                (acc, s) => acc + getTicketsByColumn(s).length,
+                0
+              );
+              return (
+                <div className="flex mb-2 -mx-2 px-2 border-b border-white/20 lg:hidden">
+                  <button
+                    onClick={() => setBoardStep("one")}
+                    className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
+                      boardStep === "one"
+                        ? "text-white border-b-white"
+                        : "text-white/60 border-b-transparent hover:text-white/80"
+                    }`}
+                  >
+                    <span>Step One</span>
+                    {stepOneCount > 0 && (
+                      <span className="text-[10px] font-semibold">({stepOneCount})</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setBoardStep("two")}
+                    className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
+                      boardStep === "two"
+                        ? "text-white border-b-white"
+                        : "text-white/60 border-b-transparent hover:text-white/80"
+                    }`}
+                  >
+                    <span>Step Two</span>
+                    {stepTwoCount > 0 && (
+                      <span className="text-[10px] font-semibold">({stepTwoCount})</span>
+                    )}
+                  </button>
+                </div>
+              );
+            })()}
             {(() => {
               const masterColumns = columns.map((col) => {
                 const meta = getStatusMeta(board.key, col);
@@ -817,28 +889,114 @@ export default function ApplicationBoard() {
                 };
                 handleDragEnd(rebuilt);
               };
+              // Map labelToKey for the translator AND build the side panels.
+              const renderTicketCard = (ticket) => (
+                <TicketCard
+                  ticket={ticket}
+                  onStatusChange={(t, newStatus) => handleStatusChange(t, newStatus)}
+                  onArchiveChange={handleArchiveChange}
+                  isDragging={false}
+                  isHighlighted={ticket.id === highlightedTicketId}
+                  viewMode="status"
+                  statusOptions={board.statuses}
+                  boardKey={board.key}
+                  unreadCount={unreadCountByTicket[ticket.id] || 0}
+                />
+              );
+
+              const sidePanelsNode = sidePanelStatuses.length > 0 && effectiveViewMode === "status" ? (
+                <>
+                  {sidePanelStatuses.map((s, idx) => {
+                    const meta = getStatusMeta(board.key, s);
+                    const palette = getColumnPalette(board.key, s);
+                    const align =
+                      sidePanelStatuses.length === 1
+                        ? "middle"
+                        : idx === 0
+                          ? "top"
+                          : idx === sidePanelStatuses.length - 1
+                            ? "bottom"
+                            : "middle";
+                    return (
+                      <MasterSidePanel
+                        key={s}
+                        statusKey={s}
+                        status={meta?.label || s}
+                        description={meta?.description}
+                        tickets={getTicketsByColumn(s)}
+                        colorClasses={palette.colorClasses}
+                        headerClasses={palette.headerClasses}
+                        highlightedTicketId={highlightedTicketId}
+                        unreadByTicket={unreadCountByTicket}
+                        onTicketClick={(t) => setSelectedTicket(t)}
+                        renderCardContent={renderTicketCard}
+                        onArchiveSome={() => handleArchiveSome(s)}
+                        onArchiveAll={() => setArchiveAllConfirmDialog({ status: s })}
+                        verticalAlign={align}
+                      />
+                    );
+                  })}
+                </>
+              ) : null;
+
+              // Franchise Step One / Step Two vertical handle (desktop).
+              const stepTwoCount = hasSteps
+                ? (board.stepTwo || []).reduce((acc, s) => acc + getTicketsByColumn(s).length, 0)
+                : 0;
+              const showStepBadge = hasSteps && boardStep === "one" && stepTwoCount > 0;
+              const stepOverlay = hasSteps && effectiveViewMode === "status" && !showArchived ? (
+                <button
+                  onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
+                  title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
+                  className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-30 flex-col items-center justify-center gap-1.5 px-2 py-4 rounded-l-xl backdrop-blur-md bg-white/20 border border-r-0 border-white/30 shadow-lg text-white hover:bg-white/30 transition-all ${
+                    boardStep === "one" ? "right-0" : "left-0"
+                  }`}
+                  style={{
+                    writingMode: "vertical-rl",
+                    transform: boardStep === "one"
+                      ? "translateY(-50%) rotate(180deg)"
+                      : "translateY(-50%)",
+                  }}
+                >
+                  <span className="text-[10px] font-semibold tracking-wider uppercase">
+                    {boardStep === "one" ? "Step Two" : "Step One"}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {boardStep === "one" ? (
+                      <ChevronsLeft className="w-4 h-4" />
+                    ) : (
+                      <ChevronsRight className="w-4 h-4" />
+                    )}
+                    {showStepBadge && (
+                      <span
+                        className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[8px] font-bold text-gray-900"
+                        style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
+                      >
+                        {stepTwoCount}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ) : null;
+
+              // Reserve right-edge gutter for side panels so the scroll row
+              // doesn't slide under them. When the step handle is visible on
+              // the LEFT (step two), reserve a small gutter there too.
+              const gutterRight = sidePanelStatuses.length > 0 || (hasSteps && boardStep === "one") ? "lg:pr-12" : "";
+              const gutterLeft = hasSteps && boardStep === "two" ? "lg:pl-12" : "";
+
               return (
                 <MasterKanbanBoard
-                  className="h-full"
+                  className={`h-full ${gutterRight} ${gutterLeft}`}
                   columns={masterColumns}
                   isLoading={isLoading}
                   highlightedTicketId={highlightedTicketId}
                   unreadByTicket={unreadCountByTicket}
                   onTicketClick={(t) => setSelectedTicket(t)}
                   onDragEnd={onDragEnd}
-                  renderCardContent={(ticket) => (
-                    <TicketCard
-                      ticket={ticket}
-                      onStatusChange={(t, newStatus) => handleStatusChange(t, newStatus)}
-                      onArchiveChange={handleArchiveChange}
-                      isDragging={false}
-                      isHighlighted={ticket.id === highlightedTicketId}
-                      viewMode="status"
-                      statusOptions={board.statuses}
-                      boardKey={board.key}
-                      unreadCount={unreadCountByTicket[ticket.id] || 0}
-                    />
-                  )}
+                  renderCardContent={renderTicketCard}
+                  sidePanels={sidePanelsNode}
+                  overlay={stepOverlay}
                   getActions={(label) => {
                     const statusKey = labelToKey[label];
                     // Bulk actions only appear on the resolved / closing-style columns.

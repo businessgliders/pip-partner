@@ -33,6 +33,13 @@ export default function MasterKanbanBoard({
   // whole page). Defaults tuned by pip-events (140px desktop / 120px mobile based
   // on actual header heights). Override per-app if your chrome is taller/shorter.
   boardHeightClasses = "h-[calc(100dvh-140px)] md:h-[calc(100dvh-120px-56px-env(safe-area-inset-bottom,0px))]",
+  // Optional slot rendered INSIDE DragDropContext, next to the scroll row.
+  // Used for hosted side panels (closed/ghosted) that need to be valid drop
+  // targets in the same drag context as the main columns.
+  sidePanels = null,
+  // Optional slot rendered INSIDE DragDropContext but outside the scroll row.
+  // Used for the franchise Step One / Step Two vertical toggle.
+  overlay = null,
 }) {
   const { ref, canScrollLeft, canScrollRight, scrollBy } = useHorizontalScroll();
 
@@ -117,6 +124,8 @@ export default function MasterKanbanBoard({
             );
           })}
         </div>
+        {sidePanels}
+        {overlay}
       </DragDropContext>
     </div>
   );
