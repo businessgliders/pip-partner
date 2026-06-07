@@ -1,36 +1,16 @@
-import React from "react";
-import { MasterKanbanColumn } from "@/components/master-kanban";
-import TicketCard from "./TicketCard";
-import { getStatusMeta } from "./boardConfig";
+import React, { useState } from "react";
+import { ChevronRight } from "lucide-react";
+import KanbanColumn from "./KanbanColumn";
+import { getStatusLabel } from "./boardConfig";
 
-// Side panel used by ApplicationBoard for "closed/declined" + "ghosted"
-// statuses. Renders each status as a MasterKanbanColumn with the same
-// dark-glass skin used by DarkGlassKanbanGrid, stacked vertically on
-// desktop and as a compact floating panel on mobile.
-
-const SHELL_CLASSES =
-  "backdrop-blur-xl border rounded-2xl overflow-hidden shadow-xl flex flex-col min-h-0 bg-gradient-to-b transition-opacity";
-const LIST_CLASSES =
-  "flex-1 overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-3 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10 transition-colors";
-const TITLE_CLASSES = "text-white font-semibold capitalize text-xs md:text-sm truncate";
-const COUNT_BADGE_CLASSES =
-  "text-[11px] px-2 py-0.5 rounded-full bg-white/30 border border-white/40 text-white font-medium";
-const DESCRIPTION_CLASSES =
-  "text-white/70 text-[10px] leading-tight mt-0.5 truncate hidden md:block";
-const EMPTY_CLASSES = "text-center text-white/60 text-xs py-4";
-
-// Neutral palette — closed/declined/ghosted all read as "archived-ish"
-const COLOR_CLASSES = {
-  closed: "from-slate-400/20 to-slate-300/20 border-slate-300/40",
-  declined: "from-rose-400/20 to-rose-300/20 border-rose-300/40",
-  ghosted: "from-zinc-400/20 to-zinc-300/20 border-zinc-300/40",
-};
-const HEADER_CLASSES = {
-  closed: "bg-slate-500/30 border-slate-400/40",
-  declined: "bg-rose-500/30 border-rose-400/40",
-  ghosted: "bg-zinc-500/30 border-zinc-400/40",
-};
-
+/**
+ * Glass-style slide-in side panel that hosts secondary swimlanes (closed/declined
+ * + ghosted), keeping them out of the main grid but a click away. Uses the
+ * existing KanbanColumn so DnD, status changes, and counts continue to work.
+ *
+ * Accepts `statuses`: [{ status, tickets, onArchiveSome?, onArchiveAll? }, ...]
+ * Columns are rendered side-by-side inside the panel.
+ */
 export default function ClosedSidePanel({
   statuses = [],
   onStatusChange,
@@ -38,55 +18,146 @@ export default function ClosedSidePanel({
   onTicketClick,
   isLoading,
   highlightedTicketId,
+  viewMode,
   statusOptions,
   boardKey,
-  unreadCountByTicket = {},
+  unreadCountByTicket,
 }) {
-  const renderCardContent = (ticket) => (
-    <TicketCard
-      ticket={ticket}
-      onStatusChange={onStatusChange}
-      onArchiveChange={onArchiveChange}
-      isDragging={false}
-      isHighlighted={ticket.id === highlightedTicketId}
-      viewMode="status"
-      statusOptions={statusOptions}
-      boardKey={boardKey}
-      unreadCount={unreadCountByTicket[ticket.id] || 0}
-    />
-  );
+  const [open, setOpen] = useState(false);
+
+  if (!statuses.length) return null;
+
+  // Panel width scales with number of columns
+  const panelWidth = statuses.length === 1 ? 380 : 380 + (statuses.length - 1) * 320;
+  const totalCount = statuses.reduce((sum, s) => sum + (s.tickets?.length || 0), 0);
+  const handleLabel = statuses.map((s) => getStatusLabel(boardKey, s.status)).join(" · ");
 
   return (
-    <div className="absolute bottom-4 right-4 lg:bottom-auto lg:top-0 lg:right-0 lg:h-full w-64 md:w-72 flex flex-col gap-3 z-10">
-      {statuses.map(({ status, tickets, onArchiveSome, onArchiveAll }) => {
-        const meta = getStatusMeta(boardKey, status);
-        return (
-          <div key={status} className="min-h-0 max-h-[40vh] lg:max-h-[calc(50vh-120px)] flex flex-col">
-            <MasterKanbanColumn
-              status={meta?.label || status}
-              tickets={tickets}
-              isLoading={isLoading}
-              highlightedTicketId={highlightedTicketId}
-              unreadByTicket={unreadCountByTicket}
-              onTicketClick={onTicketClick}
-              renderCardContent={renderCardContent}
-              colorClasses={COLOR_CLASSES[status] || "from-white/30 to-white/10 border-white/30"}
-              headerClasses={HEADER_CLASSES[status] || "bg-white/40 border-white/40"}
-              description={meta?.description}
-              emptyLabel="None"
-              onArchiveSome={tickets.length >= 5 ? onArchiveSome : undefined}
-              onArchiveAll={tickets.length >= 5 ? onArchiveAll : undefined}
-              shellClasses={SHELL_CLASSES}
-              listClasses={LIST_CLASSES}
-              titleClasses={TITLE_CLASSES}
-              countBadgeClasses={COUNT_BADGE_CLASSES}
-              descriptionClasses={DESCRIPTION_CLASSES}
-              emptyClasses={EMPTY_CLASSES}
-              bareCard
-            />
-          </div>
-        );
-      })}
-    </div>
+    <>
+      {/* Backdrop */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-[2px] lg:bg-black/20"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Handle — bottom-right pill on mobile/tablet, vertical right-edge on desktop */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="lg:hidden fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-xl bg-white/20 border border-white/30 shadow-lg hover:bg-white/30 transition-colors"
+        aria-label={`${open ? "Close" : "Open"} side panel`}
+      >
+        <ChevronRight
+          className="w-3.5 h-3.5 text-white"
+          style={{
+            transform: open ? "rotate(90deg)" : "rotate(-90deg)",
+            transition: "transform 300ms",
+          }}
+        />
+        <span className="text-[10px] tracking-[0.15em] font-semibold text-white uppercase">
+          {handleLabel} · {totalCount}
+        </span>
+      </button>
+
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 items-center gap-1.5 px-2 py-4 rounded-l-xl backdrop-blur-xl bg-white/20 border border-r-0 border-white/30 shadow-lg hover:bg-white/30 transition-colors"
+        style={{
+          writingMode: "vertical-rl",
+          textOrientation: "mixed",
+          transform: open
+            ? `translate(-${panelWidth}px, -50%)`
+            : "translate(0, -50%)",
+          transition: "transform 300ms ease-in-out, background-color 200ms",
+        }}
+        aria-label={`${open ? "Close" : "Open"} side panel`}
+      >
+        <ChevronRight
+          className="w-4 h-4 text-white"
+          style={{
+            transform: open ? "rotate(0deg)" : "rotate(180deg)",
+            transition: "transform 300ms",
+          }}
+        />
+        <span className="text-[10px] tracking-[0.2em] font-semibold text-white uppercase">
+          {handleLabel} · {totalCount}
+        </span>
+      </button>
+
+      {/* Mobile/tablet mini panel — bottom-right floating card */}
+      <aside
+        className="lg:hidden fixed bottom-16 right-4 z-40 flex flex-col"
+        style={{
+          width: "min(85vw, 360px)",
+          maxHeight: "70vh",
+          transform: open ? "translateY(0) scale(1)" : "translateY(8px) scale(0.96)",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+          transition: "transform 250ms ease-out, opacity 250ms ease-out",
+          transformOrigin: "bottom right",
+        }}
+      >
+        <div
+          className="flex-1 min-h-0 rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/30 shadow-2xl p-2 flex gap-2"
+        >
+          {statuses.map(({ status, tickets, onArchiveSome, onArchiveAll }) => (
+            <div key={status} className="flex-1 min-w-0">
+              <KanbanColumn
+                status={status}
+                tickets={tickets}
+                onStatusChange={onStatusChange}
+                onArchiveChange={onArchiveChange}
+                onTicketClick={onTicketClick}
+                isLoading={isLoading}
+                highlightedTicketId={highlightedTicketId}
+                onArchiveSome={onArchiveSome}
+                onArchiveAll={onArchiveAll}
+                viewMode={viewMode}
+                statusOptions={statusOptions}
+                boardKey={boardKey}
+                unreadCountByTicket={unreadCountByTicket}
+              />
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      {/* Desktop panel — full-height slide-in from right */}
+      <aside
+        className="hidden lg:flex fixed top-0 right-0 h-screen z-40 p-4 flex-col"
+        style={{
+          width: `${panelWidth}px`,
+          maxWidth: "95vw",
+          transform: open ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 300ms ease-in-out",
+        }}
+      >
+        <div
+          className="flex-1 min-h-0 rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/30 shadow-2xl p-3 flex gap-3"
+        >
+          {statuses.map(({ status, tickets, onArchiveSome, onArchiveAll }) => (
+            <div key={status} className="flex-1 min-w-0">
+              <KanbanColumn
+                status={status}
+                tickets={tickets}
+                onStatusChange={onStatusChange}
+                onArchiveChange={onArchiveChange}
+                onTicketClick={onTicketClick}
+                isLoading={isLoading}
+                highlightedTicketId={highlightedTicketId}
+                onArchiveSome={onArchiveSome}
+                onArchiveAll={onArchiveAll}
+                viewMode={viewMode}
+                statusOptions={statusOptions}
+                boardKey={boardKey}
+                unreadCountByTicket={unreadCountByTicket}
+              />
+            </div>
+          ))}
+        </div>
+      </aside>
+    </>
   );
 }
