@@ -36,8 +36,34 @@ export default function MasterKanbanBoard({
 }) {
   const { ref, canScrollLeft, canScrollRight, scrollBy } = useHorizontalScroll();
 
+  // Lock column scroll while any card is being dragged — prevents the swimlane
+  // from panning under the finger on touch devices. Cards still reorder
+  // normally (other cards push up/down to make space).
+  const handleDragStart = () => {
+    if (typeof document !== "undefined") document.body.classList.add("dnd-dragging");
+  };
+  const handleDragEnd = (result) => {
+    if (typeof document !== "undefined") document.body.classList.remove("dnd-dragging");
+    onDragEnd?.(result);
+  };
+
   return (
     <div className={cn("relative", className)}>
+      {/* Mirror mouse-drag exactly on touch: while a card is being dragged,
+          freeze every scroll container so ONLY the card moves with the
+          pointer (matches how mouse drag feels on desktop, where the page
+          and columns don't auto-pan). The library still re-orders cards
+          inside the list via placeholders. */}
+      <style>{`
+        body.dnd-dragging {
+          overflow: hidden !important;
+          overscroll-behavior: none;
+        }
+        body.dnd-dragging [data-kanban-list] {
+          overflow: hidden !important;
+          overscroll-behavior: contain;
+        }
+      `}</style>
       {/* Left arrow */}
       {canScrollLeft && (
         <button
@@ -61,7 +87,7 @@ export default function MasterKanbanBoard({
         </button>
       )}
 
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div
           ref={ref}
           className={cn(

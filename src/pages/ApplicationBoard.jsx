@@ -3,9 +3,8 @@ import { flushSync } from "react-dom";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DragDropContext } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
-import { Archive, Search, Settings as SettingsIcon, Home as HomeIcon, ChevronsRight, ChevronsLeft } from "lucide-react";
+import { Archive, Search } from "lucide-react";
 
 import AdminFavicon from "../components/AdminFavicon";
 import UserMenu from "../components/dashboard/UserMenu";
@@ -13,11 +12,10 @@ import NotificationCenter from "../components/admin/NotificationCenter";
 import ChangelogPopup from "../components/admin/ChangelogPopup";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
-import InfluencerKanbanGrid from "../components/board/InfluencerKanbanGrid";
-import InstructorKanbanGrid from "../components/board/InstructorKanbanGrid";
-import FrontAdminKanbanGrid from "../components/board/FrontAdminKanbanGrid";
-import FranchiseKanbanGrid from "../components/board/FranchiseKanbanGrid";
-import HostedSidePanel from "../components/board/HostedSidePanel";
+import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
+import TicketCard from "../components/board/TicketCard";
+import { getStatusMeta } from "../components/board/boardConfig";
+import { getColumnPalette } from "../components/board/KanbanGridPalettes";
 import StatusChangeDialog from "../components/board/StatusChangeDialog";
 
 // Toggle: when true, cross-column drops open a confirmation dialog that
@@ -122,8 +120,6 @@ export default function ApplicationBoard() {
   const [mobileSearchDialog, setMobileSearchDialog] = useState(false);
   const [alertDialog, setAlertDialog] = useState(null);
   const [archiveAllConfirmDialog, setArchiveAllConfirmDialog] = useState(null);
-  const [boardStep, setBoardStep] = useState("one"); // "one" | "two" — only used when board defines stepOne/stepTwo
-
   // Optimistic manual-reorder overrides: { ticketId: indexInColumn }.
   // Set synchronously via flushSync in handleDragEnd so the new order paints
   // in the same frame @hello-pangea/dnd clears its drag transforms — react-
@@ -140,7 +136,6 @@ export default function ApplicationBoard() {
     setHiddenColumns([]);
     setShowArchived(false);
     setCleanupDismissed(false);
-    setBoardStep("one");
     // Map view is only available for franchise board
     if (activeTab !== "franchise") {
       setViewMode((v) => (v === "map" ? "status" : v));
@@ -195,28 +190,11 @@ export default function ApplicationBoard() {
     ? viewMode
     : (board.categoryField ? viewMode : "status");
 
-  // The last status (closed / declined) and "ghosted" are rendered in a side
-  // panel, not in the main swimlane grid — so split them out here.
-  const SIDE_PANEL_KEYS = new Set(["ghosted"]);
-  const sidePanelStatuses = useMemo(() => {
-    if (effectiveViewMode !== "status") return [];
-    const last = allStatusColumns[allStatusColumns.length - 1];
-    const ghosted = allStatusColumns.filter((s) => SIDE_PANEL_KEYS.has(s) && s !== last);
-    return [last, ...ghosted].filter(Boolean);
-  }, [effectiveViewMode, allStatusColumns]);
-
-  // If the board defines stepOne/stepTwo, the main grid swaps between them.
-  const hasSteps = Array.isArray(board.stepOne) && Array.isArray(board.stepTwo);
-  const mainStatusColumns =
-    effectiveViewMode === "status"
-      ? (hasSteps
-          ? (boardStep === "one" ? board.stepOne : board.stepTwo)
-          : allStatusColumns.filter((s) => !sidePanelStatuses.includes(s)))
-      : allStatusColumns;
-
+  // All statuses flow into the single horizontal Master Kanban — no
+  // side-panel split, no step-one/step-two switcher. The board scrolls.
   const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
     ? []
-    : (effectiveViewMode === "status" ? mainStatusColumns : allCategoryColumns)
+    : (effectiveViewMode === "status" ? allStatusColumns : allCategoryColumns)
         .filter((c) => !hiddenColumns.includes(c));
 
   useEffect(() => {
@@ -777,91 +755,6 @@ export default function ApplicationBoard() {
             })}
           </div>
 
-          {/* Mobile-only Step One / Step Two underline tabs (full width) */}
-          {hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
-            const stepTwoCount = (board.stepTwo || []).reduce(
-              (acc, s) => acc + getTicketsByColumn(s).length,
-              0
-            );
-            const stepOneCount = (board.stepOne || []).reduce(
-              (acc, s) => acc + getTicketsByColumn(s).length,
-              0
-            );
-            return (
-              <div className="flex mt-2 -mx-2 px-2 border-b border-white/20 lg:hidden">
-                <button
-                  onClick={() => setBoardStep("one")}
-                  className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
-                    boardStep === "one"
-                      ? "text-white border-b-white"
-                      : "text-white/60 border-b-transparent hover:text-white/80"
-                  }`}
-                >
-                  <span>Step One</span>
-                  {stepOneCount > 0 && (
-                    <span className="text-[10px] font-semibold">({stepOneCount})</span>
-                  )}
-                </button>
-                <button
-                  onClick={() => setBoardStep("two")}
-                  className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
-                    boardStep === "two"
-                      ? "text-white border-b-white"
-                      : "text-white/60 border-b-transparent hover:text-white/80"
-                  }`}
-                >
-                  <span>Step Two</span>
-                  {stepTwoCount > 0 && (
-                    <span className="text-[10px] font-semibold">({stepTwoCount})</span>
-                  )}
-                </button>
-              </div>
-            );
-          })()}
-
-          {/* Legacy Step switcher block (now unused — kept hidden to avoid layout shift) */}
-          {false && hasSteps && !showArchived && effectiveViewMode === "status" && (() => {
-            const stepTwoCount = 0;
-            const stepOneCount = 0;
-            return (
-              <div className="flex gap-1.5 mt-2 -mx-2 px-2 hidden">
-                <button
-                  onClick={() => setBoardStep("one")}
-                  className={`flex-1 px-1.5 py-1 rounded-full text-[11px] font-medium border transition-all flex items-center justify-center gap-1 ${
-                    boardStep === "one"
-                      ? "bg-white/90 text-gray-900 border-white"
-                      : "bg-white/10 text-white border-white/30 hover:bg-white/15"
-                  }`}
-                >
-                  Step One
-                  {stepOneCount > 0 && (
-                    <span className={`min-w-[16px] h-[16px] px-0.5 rounded-full text-[9px] font-semibold flex items-center justify-center ${
-                      boardStep === "one" ? "bg-gray-900 text-white" : "bg-white/60 text-gray-900"
-                    }`}>
-                      {stepOneCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => setBoardStep("two")}
-                  className={`flex-1 px-1.5 py-1 rounded-full text-[11px] font-medium border transition-all flex items-center justify-center gap-1 ${
-                    boardStep === "two"
-                      ? "bg-white/90 text-gray-900 border-white"
-                      : "bg-white/10 text-white border-white/30 hover:bg-white/15"
-                  }`}
-                >
-                  {stepTwoCount > 0 ? (
-                    <>
-                      <span>{stepTwoCount}</span>
-                      <span>Step Two</span>
-                    </>
-                  ) : (
-                    "Step Two"
-                  )}
-                </button>
-              </div>
-            );
-          })()}
         </div>
 
         {showArchived ? (
@@ -898,121 +791,69 @@ export default function ApplicationBoard() {
             onTicketClick={(t) => setSelectedTicket(t)}
           />
         ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="relative flex-1 min-h-0 mt-1 lg:mt-2">
-
-              {hasSteps && (() => {
-                const stepTwoCount = (board.stepTwo || []).reduce(
-                  (acc, s) => acc + getTicketsByColumn(s).length,
-                  0
-                );
-                const showBadge = boardStep === "one" && stepTwoCount > 0;
-                return (
-                  <button
-                    onClick={() => setBoardStep((s) => (s === "one" ? "two" : "one"))}
-                    title={boardStep === "one" ? "Show Step Two" : "Back to Step One"}
-                    className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 flex-col items-center justify-center gap-1.5 px-2 py-4 rounded-l-xl backdrop-blur-md bg-white/20 border border-r-0 border-white/30 shadow-lg text-white hover:bg-white/30 transition-all ${
-                      boardStep === "one" ? "right-0" : "left-0"
-                    }`}
-                    style={{
-                      writingMode: "vertical-rl",
-                      transform: boardStep === "one"
-                        ? "translateY(-50%) rotate(180deg)"
-                        : "translateY(-50%)",
-                    }}
-                  >
-                    <span className="text-[10px] font-semibold tracking-wider uppercase">
-                      {boardStep === "one" ? "Step Two" : "Step One"}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {boardStep === "one" ? (
-                        <ChevronsLeft className="w-4 h-4" />
-                      ) : (
-                        <ChevronsRight className="w-4 h-4" />
-                      )}
-                      {showBadge && (
-                        <span
-                          className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[8px] font-bold text-gray-900"
-                          style={{ writingMode: "horizontal-tb", transform: "rotate(180deg)" }}
-                        >
-                          {stepTwoCount}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })()}
-
-              <div
-                className={`relative h-full min-h-0 overflow-hidden pb-2 lg:flex-1 ${
-                  hasSteps && boardStep === "two" ? "lg:pl-16 lg:pr-0" : "lg:pl-0 lg:pr-16"
-                }`}
-              >
-                {(() => {
-                  // All boards route through MasterKanbanColumn via per-board
-                  // grids that share DarkGlassKanbanGrid for the glassmorphic
-                  // skin. Franchise additionally fades between Step One / Step
-                  // Two via `animateKey`. DragDropContext, side panel and step
-                  // switcher all remain handled by ApplicationBoard.
-                  const MASTER_GRIDS = {
-                    influencer: InfluencerKanbanGrid,
-                    instructor: InstructorKanbanGrid,
-                    frontadmin: FrontAdminKanbanGrid,
-                    franchise: FranchiseKanbanGrid,
-                  };
-                  const MasterGrid = MASTER_GRIDS[board.key];
-                  if (!MasterGrid) return null;
-                  return (
-                    <MasterGrid
-                      columns={columns}
-                      getTicketsByColumn={getTicketsByColumn}
-                      isLoading={isLoading}
-                      highlightedTicketId={highlightedTicketId}
-                      unreadCountByTicket={unreadCountByTicket}
-                      onTicketClick={(t) => setSelectedTicket(t)}
-                      onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                      onArchiveChange={handleArchiveChange}
-                      statusOptions={board.statuses}
-                      animateKey={hasSteps ? boardStep : undefined}
-                    />
-                  );
-                })()}
-              </div>
-            </div>
-
-            {/* Each back-office status gets its own slim side panel with a
-                vertical handle. Stacked vertically via verticalAlign so handles
-                don't overlap. (Replaces the legacy ClosedSidePanel that
-                grouped multiple statuses into a single wide panel.) */}
-            {sidePanelStatuses.map((s, idx) => {
-              const align =
-                sidePanelStatuses.length === 1
-                  ? "middle"
-                  : idx === 0
-                    ? "top"
-                    : idx === sidePanelStatuses.length - 1
-                      ? "bottom"
-                      : "middle";
+          <div className="board-height-wrap flex-1 min-h-0 mt-1 lg:mt-2">
+            {(() => {
+              const masterColumns = columns.map((col) => {
+                const meta = getStatusMeta(board.key, col);
+                const palette = getColumnPalette(board.key, col);
+                return {
+                  status: meta?.label || col,
+                  statusKey: col,
+                  tickets: getTicketsByColumn(col),
+                  colorClasses: palette.colorClasses,
+                  headerClasses: palette.headerClasses,
+                  description: meta?.description,
+                  emptyLabel: "No applications",
+                };
+              });
+              // Translate Master's label-keyed onDragEnd back to the raw status key.
+              const labelToKey = Object.fromEntries(masterColumns.map((c) => [c.status, c.statusKey]));
+              const onDragEnd = (result) => {
+                if (!result?.destination) return handleDragEnd(result);
+                const rebuilt = {
+                  ...result,
+                  source: { ...result.source, droppableId: labelToKey[result.source.droppableId] || result.source.droppableId },
+                  destination: { ...result.destination, droppableId: labelToKey[result.destination.droppableId] || result.destination.droppableId },
+                };
+                handleDragEnd(rebuilt);
+              };
               return (
-                <HostedSidePanel
-                  key={s}
-                  status={s}
-                  tickets={getTicketsByColumn(s)}
-                  boardKey={board.key}
-                  verticalAlign={align}
-                  highlightedTicketId={highlightedTicketId}
-                  unreadCountByTicket={unreadCountByTicket}
-                  onTicketClick={(t) => setSelectedTicket(t)}
-                  onStatusChange={(ticket, newStatus) => handleStatusChange(ticket, newStatus)}
-                  onArchiveChange={handleArchiveChange}
-                  onArchiveSome={() => handleArchiveSome(s)}
-                  onArchiveAll={() => setArchiveAllConfirmDialog({ status: s })}
-                  statusOptions={board.statuses}
+                <MasterKanbanBoard
+                  className="h-full"
+                  columns={masterColumns}
                   isLoading={isLoading}
+                  highlightedTicketId={highlightedTicketId}
+                  unreadByTicket={unreadCountByTicket}
+                  onTicketClick={(t) => setSelectedTicket(t)}
+                  onDragEnd={onDragEnd}
+                  renderCardContent={(ticket) => (
+                    <TicketCard
+                      ticket={ticket}
+                      onStatusChange={(t, newStatus) => handleStatusChange(t, newStatus)}
+                      onArchiveChange={handleArchiveChange}
+                      isDragging={false}
+                      isHighlighted={ticket.id === highlightedTicketId}
+                      viewMode="status"
+                      statusOptions={board.statuses}
+                      boardKey={board.key}
+                      unreadCount={unreadCountByTicket[ticket.id] || 0}
+                    />
+                  )}
+                  getActions={(label) => {
+                    const statusKey = labelToKey[label];
+                    // Bulk actions only appear on the resolved / closing-style columns.
+                    const isClosingCol = ["closed", "ghosted", "declined"].includes(statusKey);
+                    if (!isClosingCol) return {};
+                    return {
+                      onArchiveSome: () => handleArchiveSome(statusKey),
+                      onArchiveAll: () => setArchiveAllConfirmDialog({ status: statusKey }),
+                    };
+                  }}
                 />
               );
-            })}
-          </DragDropContext>
+            })()}
+            <MasterKanbanGlassTheme />
+          </div>
         )}
 
         <div className="mt-2 mb-0 flex items-center justify-center gap-3 flex-shrink-0">
