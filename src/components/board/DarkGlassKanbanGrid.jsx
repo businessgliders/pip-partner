@@ -10,8 +10,14 @@ import { getStatusMeta } from "./boardConfig";
 // The parent passes a per-status palette (colorClasses + headerClasses) so
 // each board can pick its own column colors without forking this file.
 
+// NOTE: `backdrop-blur` is intentionally omitted here. `backdrop-filter`
+// creates a containing block for `position: fixed` descendants — when
+// @hello-pangea/dnd's dragged card is portaled to <body>, the SAME inline
+// top/left it computed (relative to the column's containing block) now
+// resolve against the viewport, snapping the card to the top-left of the
+// page. The translucent gradient + border already give the glass aesthetic.
 const SHELL_CLASSES =
-  "backdrop-blur-xl border rounded-2xl overflow-hidden shadow-xl flex flex-col min-h-0 h-[calc(100dvh-260px)] lg:h-[calc(100vh-220px)] bg-gradient-to-b transition-opacity";
+  "border rounded-2xl overflow-hidden shadow-xl flex flex-col min-h-0 h-[calc(100dvh-260px)] lg:h-[calc(100vh-220px)] bg-gradient-to-b transition-opacity";
 
 const LIST_CLASSES =
   "flex-1 overflow-y-auto kanban-scroll p-2 md:p-3 space-y-2 md:space-y-3 transition-colors";

@@ -10,12 +10,17 @@ import MasterKanbanCard from "./MasterKanbanCard";
 /**
  * DraggableCardWrapper — locks the card's natural width inline while dragging.
  *
- * Why: when a card is portaled to <body> during drag (see L168 below), it
- * loses the column's flex parent. If @hello-pangea/dnd's pre-drag width
- * snapshot is unreliable (backdrop-filter ancestors, late-loading fonts,
- * width inherited from `align-items: stretch`), the portaled card collapses
- * to ~0 width and snaps to top-left. Measuring the natural width while
- * NOT dragging and re-applying it via inline style during drag fixes that.
+ * When portaled to <body>, the card loses its column flex parent and would
+ * collapse to its intrinsic content width. We measure the natural width while
+ * NOT dragging (via ResizeObserver) and re-apply it via inline style during
+ * drag so the portaled clone keeps its column width.
+ *
+ * Note: cursor alignment is handled by @hello-pangea/dnd itself. For that to
+ * work, the column shell MUST NOT have any property that creates a
+ * containing block for `position: fixed` descendants (`backdrop-filter`,
+ * `transform`, `filter`, `perspective`, `will-change`, `contain`). See
+ * DarkGlassKanbanGrid SHELL_CLASSES — `backdrop-blur` is intentionally
+ * omitted on dark-glass boards because of this constraint.
  */
 function DraggableCardWrapper({ provided, snapshot, children }) {
   const wrapperRef = useRef(null);
