@@ -256,20 +256,31 @@ export default function ApplicationBoard() {
       return matchCol && matchesSearch(t);
     });
 
-    // Sort priority: orderOverrides → manual_sort_index → newest created first.
-    // This makes manual reorders sticky after persistence and recovers a clean
-    // chronological order for columns/tickets that have never been reordered.
+    // Sort priority:
+    //  1. orderOverrides (in-flight optimistic drag result)
+    //  2. manual_sort_index (any card dragged in this column → respect manual order)
+    //  3. newest created first (default)
+    //
+    // Once ANY card in the column carries a manual_sort_index, the column is
+    // considered "manually sorted" and we never auto-rearrange it. Cards
+    // without an index (e.g. brand-new submissions) sort to the top by
+    // created_date so newcomers appear naturally at the head of the column.
+    const columnIsManuallySorted = inCol.some(
+      (t) => orderOverrides[t.id] != null || t.manual_sort_index != null
+    );
+
     const sorted = [...inCol].sort((a, b) => {
-      const ovA = orderOverrides[a.id];
-      const ovB = orderOverrides[b.id];
-      if (ovA != null || ovB != null) {
-        return (ovA ?? 1e9) - (ovB ?? 1e9);
-      }
-      const mA = a.manual_sort_index;
-      const mB = b.manual_sort_index;
-      const hasManual = mA != null || mB != null;
-      if (hasManual) {
-        return (mA ?? 1e9) - (mB ?? 1e9);
+      if (columnIsManuallySorted) {
+        const ovA = orderOverrides[a.id];
+        const ovB = orderOverrides[b.id];
+        const aIdx = ovA != null ? ovA : a.manual_sort_index;
+        const bIdx = ovB != null ? ovB : b.manual_sort_index;
+        const aHas = aIdx != null;
+        const bHas = bIdx != null;
+        if (aHas && bHas) return aIdx - bIdx;
+        if (aHas) return 1;   // un-indexed (newer) goes to top
+        if (bHas) return -1;
+        return new Date(b.created_date || 0) - new Date(a.created_date || 0);
       }
       // Default: newest created first
       return new Date(b.created_date || 0) - new Date(a.created_date || 0);

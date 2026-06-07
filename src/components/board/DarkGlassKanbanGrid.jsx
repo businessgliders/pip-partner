@@ -1,5 +1,4 @@
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { MasterKanbanColumn } from "@/components/master-kanban";
 import TicketCard from "./TicketCard";
 import { getStatusMeta } from "./boardConfig";
@@ -103,25 +102,17 @@ export default function DarkGlassKanbanGrid({
     </div>
   );
 
-  // Note: we intentionally avoid wrapping in a motion.div with transform
-  // animations — an ancestor `transform` becomes the containing block for
-  // the dragging card's `position: fixed`, making the portaled card jump
-  // away from the cursor. Opacity-only fade is safe.
-  const desktopGrid = animateKey ? (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={animateKey}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="hidden lg:block h-full"
-      >
-        {desktopGridInner}
-      </motion.div>
-    </AnimatePresence>
-  ) : (
-    desktopGridInner
+  // IMPORTANT: do NOT wrap in framer-motion (AnimatePresence/motion.div).
+  // Even opacity-only animations cause framer-motion to write `transform`
+  // and `will-change` to the element, which (a) creates a containing block
+  // for the portaled `position: fixed` dragged card — making the cursor
+  // offset jump — and (b) interferes with @hello-pangea/dnd's width snapshot.
+  // We use a plain re-mount with a `key` to keep the Step One / Step Two
+  // swap clean. This matches the mobile path which has no animation wrapper.
+  const desktopGrid = (
+    <div key={animateKey || "static"} className="hidden lg:block h-full">
+      {desktopGridInner}
+    </div>
   );
 
   return (
