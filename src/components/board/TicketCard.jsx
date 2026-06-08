@@ -129,7 +129,7 @@ export default function TicketCard({
     });
   })();
 
-  const baseCls = `relative backdrop-blur-md bg-white/70 border-2 ${borderCls} rounded-xl p-2 md:p-4 group ${isDragging ? "overflow-visible" : "overflow-hidden"}`;
+  const baseCls = `relative backdrop-blur-md bg-transparent rounded-xl p-2 md:p-4 group ${isDragging ? "overflow-visible" : "overflow-hidden"}`;
   const stateCls = isDragging
     ? "shadow-2xl bg-white/95 cursor-grabbing ring-4 ring-white/60"
     : isHighlighted
