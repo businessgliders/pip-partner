@@ -31,8 +31,9 @@ import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
 import ProgramDock from "../components/board/ProgramDock";
-import { LayoutGrid, Table2, Download, Map as MapIcon } from "lucide-react";
+import { LayoutGrid, Table2, Download, Map as MapIcon, CalendarDays } from "lucide-react";
 import MapView from "../components/board/MapView";
+import CalendarView from "../components/board/CalendarView";
 
 const PRIMARY = "#f1889b";
 const LOGO_URL = "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c51835c8a_PiPPartner.png";
@@ -113,6 +114,7 @@ export default function ApplicationBoard() {
     const v = params.get("view");
     if (v === "table") return "table";
     if (v === "map") return "map";
+    if (v === "calendar") return "calendar";
     return "status";
   });
   const [hiddenColumns, setHiddenColumns] = useState([]);
@@ -191,8 +193,8 @@ export default function ApplicationBoard() {
     return Array.from(vals).sort();
   }, [board.categoryField, tickets]);
 
-  // "table" and "map" are always available; "category" requires categoryField
-  const effectiveViewMode = (viewMode === "table" || viewMode === "map")
+  // "table", "map", and "calendar" are always available; "category" requires categoryField
+  const effectiveViewMode = (viewMode === "table" || viewMode === "map" || viewMode === "calendar")
     ? viewMode
     : (board.categoryField ? viewMode : "status");
 
@@ -223,7 +225,7 @@ export default function ApplicationBoard() {
     (c) => !sidePanelStatuses.includes(c)
   );
 
-  const columns = (effectiveViewMode === "table" || effectiveViewMode === "map")
+  const columns = (effectiveViewMode === "table" || effectiveViewMode === "map" || effectiveViewMode === "calendar")
     ? []
     : (effectiveViewMode === "status" ? mainStatusColumns : allCategoryColumns)
         .filter((c) => !hiddenColumns.includes(c));
@@ -574,6 +576,15 @@ export default function ApplicationBoard() {
                       </button>
                     )}
                     <button
+                      onClick={() => setViewMode("calendar")}
+                      title="Calendar view"
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <CalendarDays className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => setShowArchived((v) => !v)}
                       title="Archived"
                       className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
@@ -705,6 +716,16 @@ export default function ApplicationBoard() {
                        <span className="hidden md:inline">Map</span>
                      </button>
                    )}
+                   <button
+                     onClick={() => setViewMode("calendar")}
+                     title="Calendar view"
+                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                       viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                     }`}
+                   >
+                     <CalendarDays className="w-4 h-4" />
+                     <span className="hidden md:inline">Calendar</span>
+                   </button>
                  </div>
 
                {!showArchived && viewMode === "table" && (
@@ -820,6 +841,12 @@ export default function ApplicationBoard() {
             tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
             accentColor={board.color}
             statusOrder={board.statuses}
+            onTicketClick={(t) => setSelectedTicket(t)}
+          />
+        ) : effectiveViewMode === "calendar" ? (
+          <CalendarView
+            tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
+            accentColor={board.color}
             onTicketClick={(t) => setSelectedTicket(t)}
           />
         ) : (
