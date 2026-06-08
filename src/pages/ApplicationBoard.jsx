@@ -201,9 +201,9 @@ export default function ApplicationBoard() {
   // horizontal scroll row. They stay live drop targets via the shared
   // DragDropContext.
   const SIDE_PANEL_STATUSES_BY_BOARD = {
-    franchise: ["closed", "ghosted"],
-    instructor: ["declined", "ghosted"],
-    frontadmin: ["declined", "ghosted"],
+    franchise: ["ghosted", "closed"],
+    instructor: ["ghosted", "declined"],
+    frontadmin: ["ghosted", "declined"],
     influencer: ["declined"],
   };
   const sidePanelStatuses = (SIDE_PANEL_STATUSES_BY_BOARD[board.key] || []).filter(
@@ -915,11 +915,13 @@ export default function ApplicationBoard() {
                     const align =
                       sidePanelStatuses.length === 1
                         ? "middle"
-                        : idx === 0
-                          ? "top"
-                          : idx === sidePanelStatuses.length - 1
-                            ? "bottom"
-                            : "middle";
+                        : sidePanelStatuses.length === 2
+                          ? (idx === 0 ? "center-top" : "center-bottom")
+                          : idx === 0
+                            ? "top"
+                            : idx === sidePanelStatuses.length - 1
+                              ? "bottom"
+                              : "middle";
                     return (
                       <MasterSidePanel
                         key={s}

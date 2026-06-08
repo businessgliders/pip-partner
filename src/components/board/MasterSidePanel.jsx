@@ -39,12 +39,26 @@ export default function MasterSidePanel({
 }) {
   const [expanded, setExpanded] = useState(false);
 
+  // Vertical positioning on the right edge.
+  // `center-top` / `center-bottom` stack two handles together around the
+  // viewport's vertical center (used when 2 side panels are present).
   const topClass =
     verticalAlign === "top"
       ? "top-4"
       : verticalAlign === "bottom"
         ? "bottom-4"
-        : "top-1/2 -translate-y-1/2";
+        : verticalAlign === "center-top" || verticalAlign === "center-bottom"
+          ? ""
+          : "top-1/2 -translate-y-1/2";
+
+  // 120px handle height + 4px gap between → each handle is offset by 62px from
+  // viewport center (half handle + half gap).
+  const inlineTop =
+    verticalAlign === "center-top"
+      ? { top: "calc(50% - 62px)", transform: "translateY(-100%)" }
+      : verticalAlign === "center-bottom"
+        ? { top: "calc(50% + 62px)", transform: "translateY(0)" }
+        : undefined;
 
   return (
     <div
@@ -52,6 +66,7 @@ export default function MasterSidePanel({
         "hidden lg:flex fixed right-0 z-30 items-stretch",
         topClass
       )}
+      style={inlineTop}
     >
       {/* Expanded drawer */}
       <div
