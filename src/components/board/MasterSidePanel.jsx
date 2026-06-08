@@ -61,26 +61,42 @@ export default function MasterSidePanel({
         )}
       >
         <div
+          data-kanban-side-panel
           className={cn(
-            "h-[60vh] max-h-[640px] flex flex-col rounded-2xl border bg-gradient-to-b backdrop-blur-sm shadow-xl mr-1",
+            "h-[60vh] max-h-[640px] flex flex-col rounded-2xl border bg-gradient-to-b shadow-xl mr-1 overflow-hidden",
             colorClasses
           )}
+          style={{
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            animation: "column-fade-in 0.4s ease-out",
+          }}
         >
           <div
             className={cn(
               "flex items-start justify-between px-4 py-3 border-b rounded-t-2xl gap-2",
               headerClasses
             )}
+            style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
           >
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-slate-800">{status}</h3>
-                <span className="text-xs font-medium text-slate-600 bg-white/60 rounded-full px-2 py-0.5">
+                <h3
+                  className="text-sm font-semibold"
+                  style={{ color: "white", textShadow: "0 1px 2px rgba(0,0,0,0.15)", letterSpacing: "0.01em" }}
+                >
+                  {status}
+                </h3>
+                <span
+                  className="text-xs font-bold rounded-full px-2 py-0.5"
+                  style={{ background: "rgba(255,255,255,0.4)", color: "white", backdropFilter: "blur(4px)" }}
+                >
                   {tickets.length}
                 </span>
               </div>
               {description && (
-                <p className="text-[11px] text-slate-600/80 mt-0.5 leading-snug">
+                <p className="text-[11px] mt-0.5 leading-snug" style={{ color: "rgba(255,255,255,0.8)" }}>
                   {description}
                 </p>
               )}
@@ -125,7 +141,10 @@ export default function MasterSidePanel({
                 )}
               >
                 {tickets.length === 0 ? (
-                  <div className="text-center text-xs text-slate-500 py-8">
+                  <div
+                    className="text-center text-xs py-8 font-medium"
+                    style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 2px rgba(0,0,0,0.1)" }}
+                  >
                     No items
                   </div>
                 ) : (

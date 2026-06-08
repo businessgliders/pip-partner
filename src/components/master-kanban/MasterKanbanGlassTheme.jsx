@@ -66,6 +66,16 @@ export default function MasterKanbanGlassTheme() {
         to   { opacity: 1; transform: translateY(0); }
       }
 
+      /* Side panel scrollbar — mirrors column scrollbar */
+      .board-height-wrap [data-kanban-side-panel] [data-kanban-list]::-webkit-scrollbar { width: 6px; }
+      .board-height-wrap [data-kanban-side-panel] [data-kanban-list]::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+      .board-height-wrap [data-kanban-side-panel] [data-kanban-list]::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.4); border-radius: 8px;
+      }
+      .board-height-wrap [data-kanban-side-panel] [data-kanban-list]::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.6);
+      }
+
       /* ===== Empty-state text ===== */
       .board-height-wrap [data-kanban-column] > div:last-child > div.text-center {
         color: rgba(255,255,255,0.85) !important;
