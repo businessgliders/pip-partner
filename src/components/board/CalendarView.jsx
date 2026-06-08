@@ -32,7 +32,7 @@ const colorFor = (status) => STATUS_HEX[String(status || "").toLowerCase()] || "
 export default function CalendarView({ tickets = [], onTicketClick, accentColor = "#f1889b" }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   // "submissions" plots by created_date; "meetings" plots by Cal.com booking start.
-  const [mode, setMode] = useState("submissions");
+  const [mode, setMode] = useState("meetings");
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
