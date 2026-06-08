@@ -96,14 +96,15 @@ export default function MasterKanbanGlassTheme() {
          Do NOT transition transform / position — DnD manipulates transform
          during drag + drop; a transition on it causes a slide-back flicker. */
       .board-height-wrap .bg-white {
-        background: transparent !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
+        background: #F5EFE4 !important;
+        border-color: #C9A961 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         padding: 0 !important;
-        transition: background-color 0.2s ease;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       }
       .board-height-wrap .bg-white:hover {
-        background: rgba(255,255,255,0.05) !important;
+        background: #FBF6EC !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
       }
 
       /* ===== Custom scrollbar inside columns ===== */
