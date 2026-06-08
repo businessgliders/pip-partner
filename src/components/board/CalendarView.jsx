@@ -3,7 +3,7 @@ import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths, startOfDay
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Video } from "lucide-react";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -31,6 +31,8 @@ const colorFor = (status) => STATUS_HEX[String(status || "").toLowerCase()] || "
 
 export default function CalendarView({ tickets = [], onTicketClick, accentColor = "#f1889b" }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  // "submissions" plots by created_date; "meetings" plots by Cal.com booking start.
+  const [mode, setMode] = useState("submissions");
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -39,17 +41,20 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
   const today = startOfDay(new Date());
 
-  // Group tickets by YYYY-MM-DD of their submission (created_date) for O(1) lookup.
+  // Group tickets by YYYY-MM-DD of either their submission or their Cal meeting,
+  // depending on mode. In "meetings" mode, only tickets with a _cal_booking appear.
   const ticketsByDay = useMemo(() => {
     const map = {};
     (tickets || []).forEach((t) => {
-      if (!t.created_date) return;
-      const key = format(new Date(t.created_date), "yyyy-MM-dd");
+      const dateSource =
+        mode === "meetings" ? t._cal_booking?.start : t.created_date;
+      if (!dateSource) return;
+      const key = format(new Date(dateSource), "yyyy-MM-dd");
       if (!map[key]) map[key] = [];
       map[key].push(t);
     });
     return map;
-  }, [tickets]);
+  }, [tickets, mode]);
 
   // Build a deduped status legend from what's actually visible this month.
   const visibleStatuses = useMemo(() => {
@@ -104,6 +109,42 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
           </button>
         </div>
 
+        {/* Mode toggle: Submissions vs Cal Meetings */}
+        <div
+          className="flex items-center justify-center gap-1 px-5 py-2"
+          style={{ borderBottom: "1px solid rgba(247,177,189,0.2)", background: "rgba(251,224,226,0.1)" }}
+        >
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-full"
+            style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(247,177,189,0.3)" }}
+          >
+            <button
+              onClick={() => setMode("submissions")}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+              style={
+                mode === "submissions"
+                  ? { background: accentColor, color: "white" }
+                  : { color: "#7a4a3a" }
+              }
+            >
+              <Calendar className="w-3 h-3" />
+              Submissions
+            </button>
+            <button
+              onClick={() => setMode("meetings")}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+              style={
+                mode === "meetings"
+                  ? { background: accentColor, color: "white" }
+                  : { color: "#7a4a3a" }
+              }
+            >
+              <Video className="w-3 h-3" />
+              Cal Meetings
+            </button>
+          </div>
+        </div>
+
         {/* Day-of-week headers */}
         <div className="grid grid-cols-7" style={{ borderBottom: "1px solid rgba(247,177,189,0.25)" }}>
           {DAYS.map((d) => (
@@ -155,11 +196,15 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
                 <div className="space-y-0.5">
                   {dayTickets.slice(0, 3).map((t) => {
                     const color = colorFor(t.status);
+                    const meetingTime =
+                      mode === "meetings" && t._cal_booking?.start
+                        ? format(new Date(t._cal_booking.start), "h:mma").toLowerCase()
+                        : null;
                     return (
                       <button
                         key={t.id}
                         onClick={() => onTicketClick?.(t)}
-                        title={`${t._display_name || t.email || "Application"} · ${t.status || ""}`}
+                        title={`${t._display_name || t.email || "Application"} · ${t.status || ""}${meetingTime ? ` · ${meetingTime}` : ""}`}
                         className="w-full flex items-center gap-1 px-1.5 py-0.5 rounded text-left transition-opacity hover:opacity-80"
                         style={{ background: `${color}22`, border: `1px solid ${color}44` }}
                       >
@@ -167,6 +212,14 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
                           className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                           style={{ background: color }}
                         />
+                        {meetingTime && (
+                          <span
+                            className="font-semibold flex-shrink-0"
+                            style={{ color, fontSize: "9px" }}
+                          >
+                            {meetingTime}
+                          </span>
+                        )}
                         <span
                           className="text-xs truncate font-medium"
                           style={{ color: "#6b4e4e", fontSize: "10px" }}
