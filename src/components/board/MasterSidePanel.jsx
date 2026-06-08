@@ -49,7 +49,7 @@ export default function MasterSidePanel({
   return (
     <div
       className={cn(
-        "hidden lg:flex absolute right-0 z-30 items-stretch",
+        "hidden lg:flex fixed right-0 z-30 items-stretch",
         topClass
       )}
     >
