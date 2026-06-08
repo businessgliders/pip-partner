@@ -198,7 +198,8 @@ export default function MasterSidePanel({
       </div>
 
       {/* Collapsed handle — drop target only when collapsed (otherwise the
-          expanded drawer owns the droppable for this status). */}
+          expanded drawer owns the droppable for this status).
+          Sized to mirror pip-events HostedSidePanel: 32×120, vertical label. */}
       {!expanded ? (
         <Droppable droppableId={statusKey}>
           {(dropProvided, dropSnapshot) => (
@@ -208,23 +209,23 @@ export default function MasterSidePanel({
               onClick={() => setExpanded(true)}
               title={`Show ${status}`}
               className={cn(
-                "flex flex-col items-center justify-center gap-1.5 px-2 py-4 rounded-l-xl backdrop-blur-md border border-r-0 shadow-lg text-white hover:bg-white/30 transition-all",
+                "flex flex-col items-center justify-center gap-1 rounded-l-2xl backdrop-blur-md border border-r-0 shadow-lg text-white hover:bg-white/30 transition-all",
                 dropSnapshot.isDraggingOver
                   ? "bg-white/40 border-white/60"
                   : "bg-white/20 border-white/30"
               )}
-              style={{ writingMode: "vertical-rl" }}
+              style={{ width: 32, height: 120 }}
             >
-              <span className="text-[10px] font-semibold tracking-wider uppercase">
+              <span
+                className="text-[10px] font-semibold tracking-wider uppercase"
+                style={{ writingMode: "vertical-rl" }}
+              >
                 {status}
               </span>
-              <div
-                className="flex items-center gap-1"
-                style={{ writingMode: "horizontal-tb" }}
-              >
-                <ChevronLeft className="w-4 h-4" />
+              <div className="flex items-center gap-1">
+                <ChevronLeft className="w-3.5 h-3.5" />
                 {tickets.length > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[8px] font-bold text-gray-900">
+                  <span className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[9px] font-bold text-gray-900">
                     {tickets.length}
                   </span>
                 )}
@@ -237,16 +238,19 @@ export default function MasterSidePanel({
         <button
           onClick={() => setExpanded(false)}
           title={`Hide ${status}`}
-          className="flex flex-col items-center justify-center gap-1.5 px-2 py-4 rounded-l-xl backdrop-blur-md bg-white/20 border border-r-0 border-white/30 shadow-lg text-white hover:bg-white/30 transition-all"
-          style={{ writingMode: "vertical-rl" }}
+          className="flex flex-col items-center justify-center gap-1 rounded-l-2xl backdrop-blur-md bg-white/20 border border-r-0 border-white/30 shadow-lg text-white hover:bg-white/30 transition-all"
+          style={{ width: 32, height: 120 }}
         >
-          <span className="text-[10px] font-semibold tracking-wider uppercase">
+          <span
+            className="text-[10px] font-semibold tracking-wider uppercase"
+            style={{ writingMode: "vertical-rl" }}
+          >
             {status}
           </span>
-          <div className="flex items-center gap-1" style={{ writingMode: "horizontal-tb" }}>
-            <ChevronRight className="w-4 h-4" />
+          <div className="flex items-center gap-1">
+            <ChevronRight className="w-3.5 h-3.5" />
             {tickets.length > 0 && (
-              <span className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[8px] font-bold text-gray-900">
+              <span className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[9px] font-bold text-gray-900">
                 {tickets.length}
               </span>
             )}
