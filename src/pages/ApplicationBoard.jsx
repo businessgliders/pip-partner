@@ -121,6 +121,7 @@ export default function ApplicationBoard() {
   const [showCleanupPopup, setShowCleanupPopup] = useState(false);
   const [cleanupDismissed, setCleanupDismissed] = useState(false);
   const [mobileSearchDialog, setMobileSearchDialog] = useState(false);
+  const [tabletSearchOpen, setTabletSearchOpen] = useState(false);
   const [alertDialog, setAlertDialog] = useState(null);
   const [archiveAllConfirmDialog, setArchiveAllConfirmDialog] = useState(null);
   // Franchise-only: which "step" of the funnel is shown in the main row.
@@ -526,24 +527,94 @@ export default function ApplicationBoard() {
               >
                 <img src={LOGO_URL} alt="Pilates in Pink" className="h-12 md:h-16 drop-shadow-xl hover:scale-105 transition-transform" />
               </Link>
-              {/* Mobile-only count text */}
-              <div className="text-white text-xs font-medium drop-shadow md:hidden">
-                {showArchived ? (
-                  <>{archivedTickets.length} archived applications</>
-                ) : (
-                  <>{activeCount} active applications</>
-                )}
-              </div>
+              {/* Mobile-only view switcher (icon-only) */}
+              {!showArchived && (
+                <div className="flex md:hidden items-center">
+                  <div className="h-9 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-0.5">
+                    <button
+                      onClick={() => setViewMode("status")}
+                      title="Board view"
+                      className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("table")}
+                      title="Table view"
+                      className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <Table2 className="w-3.5 h-3.5" />
+                    </button>
+                    {showMapView && (
+                      <button
+                        onClick={() => setViewMode("map")}
+                        title="Map view"
+                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                          viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                        }`}
+                      >
+                        <MapIcon className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setViewMode("calendar")}
+                      title="Calendar view"
+                      className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                        viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                      }`}
+                    >
+                      <CalendarDays className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setShowArchived(true)}
+                      title="Archived"
+                      className="h-7 w-7 rounded-lg flex items-center justify-center text-gray-700 hover:bg-white/60 transition-colors"
+                    >
+                      <Archive className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {showArchived && (
+                <div className="flex md:hidden">
+                  <button
+                    onClick={() => setShowArchived(false)}
+                    title="Back to board"
+                    className="h-9 px-3 rounded-xl backdrop-blur-md bg-purple-500/80 border border-purple-400/80 text-white shadow-lg flex items-center gap-1.5 text-xs"
+                  >
+                    <Archive className="w-3.5 h-3.5" />
+                    <span>Archived</span>
+                  </button>
+                </div>
+              )}
 
               {/* Tablet-only (md → lg): Search + View filter centered */}
               <div className="hidden md:flex lg:hidden items-center justify-center gap-2 flex-1">
-                <button
-                  onClick={() => setMobileSearchDialog(true)}
-                  title="Search"
-                  className="h-10 w-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
+                {tabletSearchOpen ? (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Input
+                      autoFocus
+                      placeholder="Search applications..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onBlur={() => { if (!searchQuery) setTabletSearchOpen(false); }}
+                      className="pl-9 pr-3 h-10 w-56 backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setTabletSearchOpen(true)}
+                    title="Search"
+                    className="h-10 w-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                )}
                 {!showArchived && (
                   <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
                     <button
@@ -631,7 +702,6 @@ export default function ApplicationBoard() {
 
               {/* Notification bell + user menu on mobile, top right */}
               <div className="md:hidden flex items-center gap-1">
-                <ChangelogPopup user={user} />
                 <NotificationCenter
                   unreadMessages={unreadMessages}
                   totalUnread={totalUnread}
