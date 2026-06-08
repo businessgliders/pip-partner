@@ -115,7 +115,7 @@ export default function MasterKanbanGlassTheme() {
         transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       }
       .board-height-wrap .bg-white:hover {
-        background: rgba(251, 246, 236, 0.55) !important;
+        background: rgba(245, 239, 228, 0.48) !important;
         box-shadow: 0 8px 24px rgba(0,0,0,0.14);
       }
 
