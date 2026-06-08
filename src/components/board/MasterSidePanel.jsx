@@ -39,25 +39,23 @@ export default function MasterSidePanel({
 }) {
   const [expanded, setExpanded] = useState(false);
 
-  // Vertical positioning on the right edge.
-  // `center-top` / `center-bottom` stack two handles together near the
-  // bottom-right of the viewport (used when 2 side panels are present).
-  // Handles are 120px tall and sit directly adjacent (no gap).
-  const topClass =
+  // Vertical positioning on the right edge at the bottom.
+  // Handles are 120px tall and stack vertically from bottom upward.
+  // `bottom-0` is the lowest (24px from bottom), `bottom-1` is 144px from bottom, etc.
+  const isBottomStack = verticalAlign?.startsWith("bottom-");
+  const stackIndex = isBottomStack ? parseInt(verticalAlign.split("-")[1]) : 0;
+  
+  const topClass = isBottomStack ? "" : (
     verticalAlign === "top"
       ? "top-4"
       : verticalAlign === "bottom"
         ? "bottom-4"
-        : verticalAlign === "center-top" || verticalAlign === "center-bottom"
-          ? ""
-          : "top-1/2 -translate-y-1/2";
+        : "top-1/2 -translate-y-1/2"
+  );
 
-  const inlineTop =
-    verticalAlign === "center-top"
-      ? { bottom: "144px" } // 24px footer gutter + 120px sibling handle
-      : verticalAlign === "center-bottom"
-        ? { bottom: "24px" }
-        : undefined;
+  const inlineTop = isBottomStack
+    ? { bottom: `${24 + stackIndex * 120}px` }
+    : undefined;
 
   return (
     <div

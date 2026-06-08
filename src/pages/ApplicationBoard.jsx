@@ -913,16 +913,9 @@ export default function ApplicationBoard() {
                   {sidePanelStatuses.map((s, idx) => {
                     const meta = getStatusMeta(board.key, s);
                     const palette = getColumnPalette(board.key, s);
-                    const align =
-                      sidePanelStatuses.length === 1
-                        ? "middle"
-                        : sidePanelStatuses.length === 2
-                          ? (idx === 0 ? "center-top" : "center-bottom")
-                          : idx === 0
-                            ? "top"
-                            : idx === sidePanelStatuses.length - 1
-                              ? "bottom"
-                              : "middle";
+                    // Position grabbers at bottom-right, stacked vertically
+                    // idx=0 is the topmost grabber, so offset it higher
+                    const align = `bottom-${idx}`;  // e.g. "bottom-0", "bottom-1"
                     return (
                       <MasterSidePanel
                         key={s}
