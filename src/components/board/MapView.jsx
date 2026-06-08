@@ -31,6 +31,10 @@ const HQ = {
 const ONTARIO_CENTER = { lat: 44.5, lng: -79.5 };
 const RADIUS_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45, 50];
 
+// Hard cap to keep the map lightweight. The board itself can hold hundreds of
+// tickets — plotting them all (with markers + listeners) freezes the page.
+const MAX_MAP_PINS = 100;
+
 // Approximate province centroids — used to fit bounds instantly while waiting
 // for geocoding to finish.
 const PROVINCE_CENTROIDS = {
@@ -104,15 +108,25 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
     return () => { mounted = false; };
   }, []);
 
-  // Tickets with a usable location query (exclude closed)
+  // Tickets with a usable location query (exclude closed). Capped to keep the
+  // map responsive — sorted newest-first so the cap drops the oldest tickets.
   const ticketsWithQuery = useMemo(
     () =>
       (tickets || [])
         .filter((t) => t.status !== "closed")
+        .slice()
+        .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
+        .slice(0, MAX_MAP_PINS)
         .map((t) => ({ ticket: t, query: buildQuery(t) }))
         .filter((x) => !!x.query),
     [tickets]
   );
+
+  const totalEligibleCount = useMemo(
+    () => (tickets || []).filter((t) => t.status !== "closed" && !!buildQuery(t)).length,
+    [tickets]
+  );
+  const cappedOut = Math.max(0, totalEligibleCount - ticketsWithQuery.length);
 
   // 1. Fetch API key + load Google Maps script
   useEffect(() => {
@@ -223,7 +237,14 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
     }
   };
 
-  // 4. Render markers + clipped polygons whenever tickets / radius / geocoded change
+  // Shared InfoWindow — one instance, not N. Massively cuts memory + listener
+  // overhead vs creating one InfoWindow per marker.
+  const sharedInfoRef = useRef(null);
+
+  // 4. Render markers whenever tickets / geocoded change.
+  // NOTE: per-ticket radius polygons were removed — they ran `clipCircleToLand`
+  // (heavy turf.js geometry) once per ticket, blocking the main thread for
+  // seconds and freezing the whole page. Only the HQ radius is clipped now.
   useEffect(() => {
     if (!mapInstance.current || !window.google) return;
 
@@ -232,30 +253,14 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
     overlaysRef.current = [];
     markersByTicketRef.current = {};
 
-    const bounds = new window.google.maps.LatLngBounds();
-    if (hqMarkerRef.current) bounds.extend(hqMarkerRef.current.getPosition());
-
-    // Add HQ radius polygon (clipped to land — can be one or multiple pieces)
-    const hqPaths = createCirclePolygonPaths({ lat: HQ.lat, lng: HQ.lng }, radiusKm);
-    if (hqPaths && hqPaths.length) {
-      const hqPoly = new window.google.maps.Polygon({
-        map: mapInstance.current,
-        paths: hqPaths,
-        strokeColor: "#ec4899",
-        strokeOpacity: 0.5,
-        strokeWeight: 1,
-        fillColor: "#ec4899",
-        fillOpacity: 0.2,
-        clickable: false,
-      });
-      overlaysRef.current.push(hqPoly);
+    if (!sharedInfoRef.current) {
+      sharedInfoRef.current = new window.google.maps.InfoWindow();
     }
 
     ticketsWithQuery.forEach(({ ticket, query }) => {
       const loc = geocoded[query];
       if (!loc) return;
       const position = { lat: loc.lat, lng: loc.lng };
-
       const markerColor = getStatusColor(ticket.status).hex;
 
       const marker = new window.google.maps.Marker({
@@ -273,44 +278,45 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       });
       markersByTicketRef.current[ticket.id] = { marker, position };
 
-      // Radius polygon for each ticket (clipped to land)
-      const ticketPaths = createCirclePolygonPaths(position, radiusKm);
-      if (ticketPaths && ticketPaths.length) {
-        const poly = new window.google.maps.Polygon({
-          map: mapInstance.current,
-          paths: ticketPaths,
-          strokeColor: markerColor,
-          strokeOpacity: 0.6,
-          strokeWeight: 1.5,
-          fillColor: markerColor,
-          fillOpacity: 0.18,
-          clickable: false,
-        });
-        overlaysRef.current.push(poly);
-      }
-
-      const info = new window.google.maps.InfoWindow({
-        content: `<div style="font-family:sans-serif;font-size:12px;max-width:240px">
+      marker.addListener("click", () => {
+        const content = `<div style="font-family:sans-serif;font-size:12px;max-width:240px">
           <div style="font-weight:700;margin-bottom:2px">${ticket._display_name || "Application"}</div>
           <div style="color:#475569;margin-bottom:2px">${ticket.email || ""}</div>
           <div style="color:#64748b">${loc.formatted || query}</div>
-          <div style="margin-top:6px;color:${accentColor};font-weight:600;cursor:pointer">Open application →</div>
-        </div>`,
-      });
-      marker.addListener("mouseover", () => info.open(mapInstance.current, marker));
-      marker.addListener("mouseout", () => info.close());
-      marker.addListener("click", () => {
-        if (onTicketClick) {
-          setTimeout(() => onTicketClick(ticket), 50);
-        }
+        </div>`;
+        sharedInfoRef.current.setContent(content);
+        sharedInfoRef.current.open(mapInstance.current, marker);
         setSelectedSidebarTicket(ticket.id);
+        if (onTicketClick) setTimeout(() => onTicketClick(ticket), 50);
       });
 
       overlaysRef.current.push(marker);
-      bounds.extend(position);
     });
+  }, [ticketsWithQuery, geocoded, onTicketClick]);
 
-  }, [ticketsWithQuery, geocoded, radiusKm, accentColor, onTicketClick, landReady]);
+  // Render the HQ radius polygon separately so changing radius doesn't rebuild
+  // every marker. This is the only clipped polygon on the map.
+  const hqPolyRef = useRef(null);
+  useEffect(() => {
+    if (!mapInstance.current || !window.google || !landReady) return;
+    if (hqPolyRef.current) {
+      hqPolyRef.current.setMap(null);
+      hqPolyRef.current = null;
+    }
+    const hqPaths = createCirclePolygonPaths({ lat: HQ.lat, lng: HQ.lng }, radiusKm);
+    if (hqPaths && hqPaths.length) {
+      hqPolyRef.current = new window.google.maps.Polygon({
+        map: mapInstance.current,
+        paths: hqPaths,
+        strokeColor: "#ec4899",
+        strokeOpacity: 0.5,
+        strokeWeight: 1,
+        fillColor: "#ec4899",
+        fillOpacity: 0.2,
+        clickable: false,
+      });
+    }
+  }, [radiusKm, landReady, loading]);
 
   // Auto-fit bounds as soon as any geocoded positions are available — runs
   // independently of polygon/land-mask rendering so the map zooms in quickly.
@@ -492,6 +498,9 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
               {noLocationCount > 0 && (
                 <span className="text-xs text-slate-400 ml-2">· {noLocationCount} with no postal code/location</span>
               )}
+              {cappedOut > 0 && (
+                <span className="text-xs text-slate-400 ml-2">· {cappedOut} older hidden (showing {MAX_MAP_PINS} most recent)</span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <label className="text-xs text-slate-600 font-medium">Radius:</label>
@@ -520,7 +529,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
               </div>
             ) : null}
             <div ref={mapRef} className="absolute inset-0" />
-            {!loading && !error && (geocoding || mappedCount < ticketsWithQuery.length) && ticketsWithQuery.length > 0 && (
+            {!loading && !error && geocoding && ticketsWithQuery.length > 0 && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm z-20 pointer-events-none animate-in fade-in duration-200">
                 <div className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl bg-white/90 shadow-xl border border-slate-200">
                   <div className="relative">
