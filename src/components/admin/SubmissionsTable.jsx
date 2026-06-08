@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
-import { ChevronDown, ChevronRight, Mail, Phone, MapPin, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp, ArrowUpDown, Mail, Phone, MapPin, ExternalLink } from "lucide-react";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700",
@@ -35,8 +35,62 @@ function Field({ label, value }) {
   );
 }
 
-export default function SubmissionsTable({ rows, columns, detailFields, accentColor = "#0f172a", accentBg = "#f8fafc", onRowClick }) {
+function getSortValue(col, row) {
+  if (typeof col.sortValue === "function") return col.sortValue(row);
+  return row[col.key];
+}
+
+function compareValues(a, b) {
+  const aEmpty = a === null || a === undefined || a === "";
+  const bEmpty = b === null || b === undefined || b === "";
+  if (aEmpty && bEmpty) return 0;
+  if (aEmpty) return 1;   // empties always sort last
+  if (bEmpty) return -1;
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  // Try date comparison
+  const ad = Date.parse(a);
+  const bd = Date.parse(b);
+  if (!isNaN(ad) && !isNaN(bd) && typeof a === "string" && typeof b === "string") {
+    return ad - bd;
+  }
+  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" });
+}
+
+export default function SubmissionsTable({ rows, columns, detailFields, accentColor = "#0f172a", accentBg = "#f8fafc", onRowClick, storageKey }) {
   const [expanded, setExpanded] = useState(null);
+  const sortStorageKey = storageKey ? `submissions-table-sort:${storageKey}` : null;
+
+  const [sort, setSort] = useState(() => {
+    if (!sortStorageKey || typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(sortStorageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
+  useEffect(() => {
+    if (!sortStorageKey || typeof window === "undefined") return;
+    try {
+      if (sort) window.localStorage.setItem(sortStorageKey, JSON.stringify(sort));
+      else window.localStorage.removeItem(sortStorageKey);
+    } catch { /* ignore */ }
+  }, [sort, sortStorageKey]);
+
+  const handleHeaderClick = (col) => {
+    setSort((prev) => {
+      if (!prev || prev.key !== col.key) return { key: col.key, dir: "asc" };
+      if (prev.dir === "asc") return { key: col.key, dir: "desc" };
+      return null; // third click clears
+    });
+  };
+
+  const sortedRows = useMemo(() => {
+    if (!sort || !rows) return rows;
+    const col = columns.find((c) => c.key === sort.key);
+    if (!col) return rows;
+    const out = [...rows].sort((a, b) => compareValues(getSortValue(col, a), getSortValue(col, b)));
+    return sort.dir === "desc" ? out.reverse() : out;
+  }, [rows, sort, columns]);
 
   if (!rows || rows.length === 0) {
     return (
@@ -54,15 +108,35 @@ export default function SubmissionsTable({ rows, columns, detailFields, accentCo
           <thead style={{ background: accentBg, borderBottom: `1px solid ${accentColor}30` }}>
             <tr>
               <th className="w-8"></th>
-              {columns.map((col) => (
-                <th key={col.key} className="text-left px-4 py-3 text-[11px] font-semibold tracking-wider uppercase" style={{ color: accentColor }}>
-                  {col.label}
-                </th>
-              ))}
+              {columns.map((col) => {
+                const isActive = sort?.key === col.key;
+                return (
+                  <th
+                    key={col.key}
+                    onClick={() => handleHeaderClick(col)}
+                    className="text-left px-4 py-3 text-[11px] font-semibold tracking-wider uppercase cursor-pointer select-none hover:bg-black/5 transition-colors"
+                    style={{ color: accentColor }}
+                    title={isActive ? (sort.dir === "asc" ? "Sorted A→Z (click for Z→A)" : "Sorted Z→A (click to clear)") : "Click to sort A→Z"}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      {isActive ? (
+                        sort.dir === "asc" ? (
+                          <ChevronUp className="w-3 h-3" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 opacity-30" />
+                      )}
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {sortedRows.map((row) => {
               const isOpen = expanded === row.id;
               return (
                 <React.Fragment key={row.id}>

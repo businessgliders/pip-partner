@@ -811,6 +811,7 @@ export default function ApplicationBoard() {
                 accentColor={board.color}
                 accentBg={board.bg}
                 onRowClick={(row) => setSelectedTicket(row)}
+                storageKey={board.key}
               />
             )}
           </div>

@@ -7,11 +7,11 @@ import { displayAppNumber } from "@/lib/appNumberDisplay";
 export const TABLE_COLUMN_CONFIG = {
   franchise: {
     columns: [
-      { key: "app_number", label: "Ticket #", render: (r) => <span className="font-medium text-slate-600">#{displayAppNumber(r, "franchise")}</span> },
-      { key: "name",     label: "Name",     render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span> },
+      { key: "app_number", label: "Ticket #", render: (r) => <span className="font-medium text-slate-600">#{displayAppNumber(r, "franchise")}</span>, sortValue: (r) => r.app_number ?? 0 },
+      { key: "name",     label: "Name",     render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span>, sortValue: (r) => fullName(r) },
       { key: "email",    label: "Email" },
-      { key: "location", label: "Location", render: (r) => locationLabel(r) },
-      { key: "capital",  label: "Capital",  render: (r) => r.available_capital || "—" },
+      { key: "location", label: "Location", render: (r) => locationLabel(r), sortValue: (r) => [r.preferred_location || r.location || r.city, r.province].filter(Boolean).join(" · ") },
+      { key: "capital",  label: "Capital",  render: (r) => r.available_capital || "—", sortValue: (r) => r.available_capital || "" },
       { key: "scheduled_call_time", label: "Call Booked", render: (r) => r.scheduled_call_time || <span className="text-slate-400">—</span> },
       { key: "status",   label: "Status",   render: (r) => <StatusBadge status={r.status} /> },
       { key: "created_date", label: "Submitted", render: (r) => <span className="text-slate-500 text-xs">{formatDate(r.created_date)}</span> },
@@ -43,7 +43,7 @@ export const TABLE_COLUMN_CONFIG = {
   },
   instructor: {
     columns: [
-      { key: "name",         label: "Name",      render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span> },
+      { key: "name",         label: "Name",      render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span>, sortValue: (r) => fullName(r) },
       { key: "email",        label: "Email" },
       { key: "preferred_studio", label: "Studio" },
       { key: "province",     label: "Province" },
@@ -58,7 +58,7 @@ export const TABLE_COLUMN_CONFIG = {
   },
   frontadmin: {
     columns: [
-      { key: "name",         label: "Name",      render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span> },
+      { key: "name",         label: "Name",      render: (r) => <span className="font-medium text-slate-800">{fullName(r)}</span>, sortValue: (r) => fullName(r) },
       { key: "email",        label: "Email" },
       { key: "preferred_studio", label: "Studio" },
       { key: "province",     label: "Province" },
