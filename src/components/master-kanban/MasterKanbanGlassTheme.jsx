@@ -92,20 +92,18 @@ export default function MasterKanbanGlassTheme() {
         backdrop-filter: blur(4px);
       }
 
-      /* ===== Translucent glassy cards =====
+      /* ===== Translucent glassy cards (warm cream/gold palette) =====
          Do NOT transition transform / position — DnD manipulates transform
          during drag + drop; a transition on it causes a slide-back flicker. */
       .board-height-wrap .bg-white {
-        background: rgba(255,255,255,0.55) !important;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-color: rgba(255,255,255,0.5) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        background: #E8D9C7 !important;
+        border-color: #C9A961 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       }
       .board-height-wrap .bg-white:hover {
-        background: rgba(255,255,255,0.75) !important;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        background: #F0E4D5 !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
       }
 
       /* ===== Custom scrollbar inside columns ===== */

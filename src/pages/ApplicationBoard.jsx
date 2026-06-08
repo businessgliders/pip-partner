@@ -836,7 +836,7 @@ export default function ApplicationBoard() {
                 0
               );
               return (
-                <div className="flex mt-1 -mx-2 px-2 border-b border-white/20 lg:hidden">
+                <div className="flex mb-2 -mx-2 px-2 border-b border-white/20 lg:hidden">
                   <button
                     onClick={() => setBoardStep("one")}
                     className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
