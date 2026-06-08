@@ -40,8 +40,9 @@ export default function MasterSidePanel({
   const [expanded, setExpanded] = useState(false);
 
   // Vertical positioning on the right edge.
-  // `center-top` / `center-bottom` stack two handles together around the
-  // viewport's vertical center (used when 2 side panels are present).
+  // `center-top` / `center-bottom` stack two handles together near the
+  // bottom-right of the viewport (used when 2 side panels are present).
+  // Handles are 120px tall and sit directly adjacent (no gap).
   const topClass =
     verticalAlign === "top"
       ? "top-4"
@@ -51,13 +52,11 @@ export default function MasterSidePanel({
           ? ""
           : "top-1/2 -translate-y-1/2";
 
-  // 120px handle height + 4px gap between → each handle is offset by 62px from
-  // viewport center (half handle + half gap).
   const inlineTop =
     verticalAlign === "center-top"
-      ? { top: "calc(50% - 62px)", transform: "translateY(-100%)" }
+      ? { bottom: "144px" } // 24px footer gutter + 120px sibling handle
       : verticalAlign === "center-bottom"
-        ? { top: "calc(50% + 62px)", transform: "translateY(0)" }
+        ? { bottom: "24px" }
         : undefined;
 
   return (
