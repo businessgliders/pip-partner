@@ -822,8 +822,10 @@ export default function ApplicationBoard() {
             onTicketClick={(t) => setSelectedTicket(t)}
           />
         ) : (
-          <div className="board-height-wrap flex-1 min-h-0 mt-1 lg:mt-2">
-            {/* Mobile-only Step One / Step Two underline tabs (franchise only) */}
+          <>
+            {/* Mobile-only Step One / Step Two underline tabs (franchise only).
+                Rendered OUTSIDE .board-height-wrap so they don't steal vertical
+                space from the swimlane viewport (which is height-locked). */}
             {hasSteps && effectiveViewMode === "status" && (() => {
               const stepOneCount = (board.stepOne || []).reduce(
                 (acc, s) => acc + getTicketsByColumn(s).length,
@@ -834,7 +836,7 @@ export default function ApplicationBoard() {
                 0
               );
               return (
-                <div className="flex mb-2 -mx-2 px-2 border-b border-white/20 lg:hidden">
+                <div className="flex mt-1 -mx-2 px-2 border-b border-white/20 lg:hidden">
                   <button
                     onClick={() => setBoardStep("one")}
                     className={`flex-1 px-1 py-1.5 text-[11px] font-medium transition-all flex items-center justify-center gap-1 border-b-2 -mb-px ${
@@ -864,6 +866,7 @@ export default function ApplicationBoard() {
                 </div>
               );
             })()}
+          <div className="board-height-wrap flex-1 min-h-0 mt-1 lg:mt-2">
             {(() => {
               const masterColumns = columns.map((col) => {
                 const meta = getStatusMeta(board.key, col);
@@ -1012,6 +1015,7 @@ export default function ApplicationBoard() {
             })()}
             <MasterKanbanGlassTheme />
           </div>
+          </>
         )}
 
         <div className="mt-2 mb-0 flex items-center justify-center gap-3 flex-shrink-0">
