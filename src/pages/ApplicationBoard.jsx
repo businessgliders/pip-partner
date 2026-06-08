@@ -549,17 +549,6 @@ export default function ApplicationBoard() {
                     >
                       <Table2 className="w-3.5 h-3.5" />
                     </button>
-                    {showMapView && (
-                      <button
-                        onClick={() => setViewMode("map")}
-                        title="Map view"
-                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                          viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                        }`}
-                      >
-                        <MapIcon className="w-3.5 h-3.5" />
-                      </button>
-                    )}
                     <button
                       onClick={() => setViewMode("calendar")}
                       title="Calendar view"
@@ -592,29 +581,21 @@ export default function ApplicationBoard() {
                 </div>
               )}
 
-              {/* Tablet-only (md → lg): Search + View filter centered */}
-              <div className="hidden md:flex lg:hidden items-center justify-center gap-2 flex-1">
-                {tabletSearchOpen ? (
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <Input
-                      autoFocus
-                      placeholder="Search applications..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onBlur={() => { if (!searchQuery) setTabletSearchOpen(false); }}
-                      className="pl-9 pr-3 h-10 w-56 backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
-                    />
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setTabletSearchOpen(true)}
-                    title="Search"
-                    className="h-10 w-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
-                  >
-                    <Search className="w-4 h-4" />
-                  </button>
-                )}
+              {/* Tablet-only (md → lg): Search bar (always visible) */}
+              <div className="hidden md:flex lg:hidden items-center gap-2 flex-1 justify-center px-3">
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Input
+                    placeholder="Search applications..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-3 h-10 w-full backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
+                  />
+                </div>
+              </div>
+
+              {/* Tablet-only: View switcher + Notification bell + user menu (right side) */}
+              <div className="hidden md:flex lg:hidden items-center gap-2">
                 {!showArchived && (
                   <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
                     <button
@@ -635,17 +616,6 @@ export default function ApplicationBoard() {
                     >
                       <Table2 className="w-4 h-4" />
                     </button>
-                    {showMapView && (
-                      <button
-                        onClick={() => setViewMode("map")}
-                        title="Map view"
-                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                          viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                        }`}
-                      >
-                        <MapIcon className="w-4 h-4" />
-                      </button>
-                    )}
                     <button
                       onClick={() => setViewMode("calendar")}
                       title="Calendar view"
@@ -676,10 +646,6 @@ export default function ApplicationBoard() {
                     <span>Archived</span>
                   </button>
                 )}
-              </div>
-
-              {/* Tablet-only: Notification bell + user menu (right side) */}
-              <div className="hidden md:flex lg:hidden items-center gap-2">
                 <ChangelogPopup user={user} />
                 <NotificationCenter
                   unreadMessages={unreadMessages}
