@@ -77,11 +77,6 @@ export default function MasterKanbanColumn({
               {tickets.length}
             </span>
           </div>
-          {description && (
-            <p className={descriptionClasses}>
-              {description}
-            </p>
-          )}
         </div>
 
         <div className="flex items-center gap-1">
