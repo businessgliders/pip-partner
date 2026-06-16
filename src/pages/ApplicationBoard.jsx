@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Archive, Search, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import AdminFavicon from "../components/AdminFavicon";
+import MigrationPopup from "../components/MigrationPopup";
 import UserMenu from "../components/dashboard/UserMenu";
 import NotificationCenter from "../components/admin/NotificationCenter";
 import ChangelogPopup from "../components/admin/ChangelogPopup";
@@ -470,6 +471,7 @@ export default function ApplicationBoard() {
       }}
     >
       <AdminFavicon title="PIP Partner — Application Board" />
+      {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"
