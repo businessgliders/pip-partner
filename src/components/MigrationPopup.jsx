@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
-const INBOX_URL = 'https://inbox.pilatesinpinkstudio.com/inbox#events';
+const INBOX_URL = 'https://inbox.pilatesinpinkstudio.com/inbox#influencer';
 const SHOWCASE_IMAGE = 'https://media.base44.com/images/public/69b4780e4278ece8feeae352/4fdbd3e5b_generated_image.png';
 const APP_ICON = 'https://media.base44.com/images/public/69841af9c747b033a60780f2/8796f5d2d_IMG_0093.png';
 
