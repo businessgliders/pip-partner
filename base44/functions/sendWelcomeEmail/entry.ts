@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const FROM_ALIASES = {
-  FranchiseInquiry: 'partner@pilatesinpinkstudio.com',
+  FranchiseInquiry: 'franchise@pilatesinpinkstudio.com',
   InfluencerApplication: 'partner@pilatesinpinkstudio.com',
   InstructorApplication: 'hire@pilatesinpinkstudio.com',
   FrontAdminApplication: 'hire@pilatesinpinkstudio.com',
