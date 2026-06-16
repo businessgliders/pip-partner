@@ -223,43 +223,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Not found' }, { status: 404 });
     }
 
-    const rawNumber = applicationData.app_number || '';
-    const appNumber = rawNumber ? formatAppNumber(rawNumber) : '';
-    const appTag = appNumber ? `[Application #${appNumber}] ` : '';
-    const html = buildHtml(applicationData, appNumber);
-
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
-
-    const safeReplyTo = isValidEmail(applicationData.email) ? applicationData.email : undefined;
-    const safeName = escapeHtml(applicationData.full_name).slice(0, 200);
-
-    // Allow admin-triggered test sends to a single staff recipient
-    let recipientList = OWNER_EMAILS;
-    let subjectPrefix = appTag;
+    // Influencer owner notifications are disabled — the Unified Inbox hub now
+    // owns the influencer intake flow end-to-end. Admin test sends still work
+    // so the team can verify the email template renders correctly.
     if (testRecipient && isValidEmail(testRecipient)) {
       const me = await base44.auth.me().catch(() => null);
       if (me?.role === 'admin') {
-        recipientList = [testRecipient];
-        subjectPrefix = `[TEST] ${appTag}`;
+        const rawNumber = applicationData.app_number || '';
+        const appNumber = rawNumber ? formatAppNumber(rawNumber) : '';
+        const appTag = appNumber ? `[Application #${appNumber}] ` : '';
+        const html = buildHtml(applicationData, appNumber);
+        const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+        const safeReplyTo = isValidEmail(applicationData.email) ? applicationData.email : undefined;
+        const safeName = escapeHtml(applicationData.full_name).slice(0, 200);
+        const result = await sendGmail({
+          accessToken,
+          to: testRecipient,
+          subject: `[TEST] ${appTag}New Influencer Application: ${safeName}`,
+          html,
+          replyTo: safeReplyTo,
+        });
+        return Response.json({ success: result.ok, results: [result] });
       }
     }
 
-    const results = await Promise.all(recipientList.map((to) => sendGmail({
-      accessToken,
-      to,
-      subject: `${subjectPrefix}New Influencer Application: ${safeName}`,
-      html,
-      replyTo: safeReplyTo,
-    })));
+    // Forward to the Unified Inbox hub — hub owns the email flow now.
+    await postToHub(applicationData);
 
-    const allOk = results.every((r) => r.ok);
-
-    // Forward to the Unified Inbox hub (skip on admin test sends).
-    if (!testRecipient) {
-      await postToHub(applicationData);
-    }
-
-    return Response.json({ success: allOk, results });
+    return Response.json({ success: true, skipped: 'owner notifications disabled' });
   } catch (error) {
     console.error('sendInfluencerApplicationEmail error', error);
     return Response.json({ error: error.message }, { status: 500 });
