@@ -3,14 +3,11 @@ import { flushSync } from "react-dom";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { Archive, Search, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import AdminFavicon from "../components/AdminFavicon";
 import MigrationPopup from "../components/MigrationPopup";
-import UserMenu from "../components/dashboard/UserMenu";
-import NotificationCenter from "../components/admin/NotificationCenter";
-import ChangelogPopup from "../components/admin/ChangelogPopup";
+import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
@@ -32,7 +29,6 @@ import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
 import BoardTabs from "../components/board/BoardTabs";
-import { LayoutGrid, Table2, Download, Map as MapIcon, CalendarDays, Inbox as InboxIcon } from "lucide-react";
 import MapView from "../components/board/MapView";
 import CalendarView from "../components/board/CalendarView";
 import InboxView from "../components/inbox/InboxView";
@@ -560,351 +556,34 @@ export default function ApplicationBoard() {
 
       <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full min-h-0" style={{ zIndex: 2 }}>
         <div className="mb-2 lg:mb-6 pb-1 lg:pb-0">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            {/* Top row: Logo + Count on mobile, Top row with buttons on desktop */}
-            <div className="flex items-center justify-between lg:gap-3 lg:flex-row">
-              <Link
-                to="/Settings"
-                onClick={() => { setShowArchived(false); setSearchQuery(""); setViewMode("status"); }}
-              >
-                <img src={LOGO_URL} alt="Pilates in Pink" className="h-12 md:h-16 drop-shadow-xl hover:scale-105 transition-transform" />
-              </Link>
-              {/* Mobile-only view switcher (icon-only) */}
-              {!showArchived && (
-                <div className="flex md:hidden items-center">
-                  <div className="h-9 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-0.5">
-                    {!isInfluencerOnly && activeTab !== "influencer" && (
-                      <button
-                        onClick={() => setViewMode("inbox")}
-                        title="Inbox view"
-                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                          viewMode === "inbox" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                        }`}
-                      >
-                        <InboxIcon className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setViewMode("status")}
-                      title="Board view"
-                      className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <LayoutGrid className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("calendar")}
-                      title="Calendar view"
-                      className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <CalendarDays className="w-3.5 h-3.5" />
-                    </button>
-                    {isInfluencerOnly && (
-                      <button
-                        onClick={() => setViewMode("table")}
-                        title="Table view"
-                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                          viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                        }`}
-                      >
-                        <Table2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setShowArchived(true)}
-                      title="Archived"
-                      className="h-7 w-7 rounded-lg flex items-center justify-center text-gray-700 hover:bg-white/60 transition-colors"
-                    >
-                      <Archive className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-              {showArchived && (
-                <div className="flex md:hidden">
-                  <button
-                    onClick={() => setShowArchived(false)}
-                    title="Back to board"
-                    className="h-9 px-3 rounded-xl backdrop-blur-md bg-purple-500/80 border border-purple-400/80 text-white shadow-lg flex items-center gap-1.5 text-xs"
-                  >
-                    <Archive className="w-3.5 h-3.5" />
-                    <span>Archived</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Tablet-only (md → lg): Search bar (always visible) */}
-              <div className="hidden md:flex lg:hidden items-center gap-2 flex-1 justify-center px-3">
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder="Search applications..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Tablet-only: View switcher + Notification bell + user menu (right side) */}
-              <div className="hidden md:flex lg:hidden items-center gap-2">
-                {!showArchived && (
-                  <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
-                    {!isInfluencerOnly && activeTab !== "influencer" && (
-                      <button
-                        onClick={() => setViewMode("inbox")}
-                        title="Inbox view"
-                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                          viewMode === "inbox" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                        }`}
-                      >
-                        <InboxIcon className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setViewMode("status")}
-                      title="Board view"
-                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("calendar")}
-                      title="Calendar view"
-                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <CalendarDays className="w-4 h-4" />
-                    </button>
-                    {isInfluencerOnly && (
-                      <button
-                        onClick={() => setViewMode("table")}
-                        title="Table view"
-                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                          viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                        }`}
-                      >
-                        <Table2 className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setShowArchived((v) => !v)}
-                      title="Archived"
-                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                        showArchived ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <Archive className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-                {showArchived && (
-                  <button
-                    onClick={() => setShowArchived(false)}
-                    title="Back to board"
-                    className="h-10 px-3 rounded-xl backdrop-blur-md bg-purple-500/80 border border-purple-400/80 text-white shadow-lg flex items-center gap-1.5 text-sm"
-                  >
-                    <Archive className="w-4 h-4" />
-                    <span>Archived</span>
-                  </button>
-                )}
-                <ChangelogPopup user={user} />
-                <NotificationCenter
-                  unreadMessages={unreadMessages}
-                  totalUnread={totalUnread}
-                  markAsRead={markAsRead}
-                  onSelect={(ticket, messageId, tabKey) => {
-                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                    setSearchQuery("");
-                    setHiddenColumns([]);
-                    // Keep current viewMode — the modal opens on top of whatever
-                    // view the user is on, including Inbox.
-                    setShowArchived(!!ticket?.archived);
-                    setHighlightedTicketId(ticket?.id || null);
-                    setTimeout(() => setHighlightedTicketId(null), 3000);
-                    setHighlightMessageId(messageId);
-                    setSelectedTicket(ticket);
-                  }}
-                />
-                <UserMenu />
-              </div>
-
-              {/* Notification bell + user menu on mobile, top right */}
-              <div className="md:hidden flex items-center gap-1">
-                <NotificationCenter
-                  unreadMessages={unreadMessages}
-                  totalUnread={totalUnread}
-                  markAsRead={markAsRead}
-                  onSelect={(ticket, messageId, tabKey) => {
-                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                    setSearchQuery("");
-                    setHiddenColumns([]);
-                    // Keep current viewMode — the modal opens on top of whatever
-                    // view the user is on, including Inbox.
-                    setShowArchived(!!ticket?.archived);
-                    setHighlightedTicketId(ticket?.id || null);
-                    setTimeout(() => setHighlightedTicketId(null), 3000);
-                    setHighlightMessageId(messageId);
-                    setSelectedTicket(ticket);
-                  }}
-                />
-                <UserMenu />
-              </div>
-            </div>
-
-            <div className="hidden lg:flex items-center gap-3">
-              <div className="text-white text-xs md:text-sm font-medium drop-shadow">
-                {showArchived ? (
-                  <>{archivedTickets.length} archived applications</>
-                ) : (
-                  <>{activeCount} active applications · {firstColumnCount} in {firstColumn || "—"}</>
-                )}
-              </div>
-            </div>
-
-            <div className="hidden lg:flex flex-wrap items-center gap-3 max-w-7xl lg:mr-16">
-               {/* Search */}
-               <div className="hidden md:block">
-                 <div className="relative">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                   <Input
-                     placeholder="Search applications..."
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                     className="pl-9 h-11 w-64 backdrop-blur-md bg-white/70 border-white/80 text-gray-900 rounded-xl shadow-lg"
-                   />
-                 </div>
-               </div>
-               <button
-                 onClick={() => setMobileSearchDialog(true)}
-                 className="md:hidden h-11 w-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
-               >
-                 <Search className="w-4 h-4" />
-               </button>
-
-               {/* View Filter */}
-               <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1 ml-3">
-                   {!isInfluencerOnly && activeTab !== "influencer" && (
-                     <button
-                       onClick={() => setViewMode("inbox")}
-                       title="Inbox view"
-                       className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                         viewMode === "inbox" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                       }`}
-                     >
-                       <InboxIcon className="w-4 h-4" />
-                       <span className="hidden md:inline">Inbox</span>
-                     </button>
-                   )}
-                   <button
-                     onClick={() => setViewMode("status")}
-                     title="Board view"
-                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                       viewMode === "status" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                     }`}
-                   >
-                     <LayoutGrid className="w-4 h-4" />
-                     <span className="hidden md:inline">Board</span>
-                   </button>
-                   <button
-                     onClick={() => setViewMode("calendar")}
-                     title="Calendar view"
-                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                       viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                     }`}
-                   >
-                     <CalendarDays className="w-4 h-4" />
-                     <span className="hidden md:inline">Calendar</span>
-                   </button>
-                   {showMapView && (
-                     <button
-                       onClick={() => setViewMode("map")}
-                       title="Map view"
-                       className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                         viewMode === "map" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                       }`}
-                     >
-                       <MapIcon className="w-4 h-4" />
-                       <span className="hidden md:inline">Map</span>
-                     </button>
-                   )}
-                   {isInfluencerOnly && (
-                     <button
-                       onClick={() => setViewMode("table")}
-                       title="Table view"
-                       className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                         viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                       }`}
-                     >
-                       <Table2 className="w-4 h-4" />
-                       <span className="hidden md:inline">Table</span>
-                     </button>
-                   )}
-                 </div>
-
-               {!showArchived && viewMode === "table" && (
-                 <button
-                   onClick={() => {
-                     if (!isAdmin) return;
-                     const rows = tickets.filter((t) => !t.archived && matchesSearch(t));
-                     downloadCsv(rows, activeTab);
-                   }}
-                   disabled={!isAdmin}
-                   className={`h-11 px-3 rounded-xl backdrop-blur-md border shadow-lg text-sm font-medium flex items-center gap-1.5 ${
-                     isAdmin
-                       ? "bg-white/70 border-white/80 text-gray-900 hover:bg-white/80"
-                       : "bg-white/30 border-white/40 text-gray-500 cursor-not-allowed opacity-50"
-                   }`}
-                   title={isAdmin ? "Export CSV" : "Export CSV — admin access only"}
-                 >
-                   <Download className="w-4 h-4" />
-                   <span className="hidden md:inline">Export</span>
-                 </button>
-               )}
-
-               {/* Archive */}
-               <button
-                 onClick={() => setShowArchived((v) => !v)}
-                 className={`h-11 w-11 rounded-xl border shadow-lg flex items-center justify-center backdrop-blur-md ${
-                   showArchived
-                     ? "bg-purple-500/80 border-purple-400/80 text-white"
-                     : "bg-white/70 border-white/80 text-gray-900 hover:bg-white/80"
-                 }`}
-               >
-                 <Archive className="w-4 h-4" />
-               </button>
-
-               {/* Changelog */}
-               <ChangelogPopup user={user} />
-
-               {/* Notification Bell */}
-               <NotificationCenter
-                 unreadMessages={unreadMessages}
-                 totalUnread={totalUnread}
-                 markAsRead={markAsRead}
-                 onSelect={(ticket, messageId, tabKey) => {
-                   if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                   // Keep current viewMode — modal opens on top of whatever view.
-                   setSearchQuery("");
-                   setHiddenColumns([]);
-                   setShowArchived(!!ticket?.archived);
-                   setHighlightedTicketId(ticket?.id || null);
-                   setTimeout(() => setHighlightedTicketId(null), 3000);
-                   setHighlightMessageId(messageId);
-                   setSelectedTicket(ticket);
-                 }}
-               />
-
-               {/* User Switcher - desktop only */}
-               <UserMenu />
-               </div>
-              </div>
+          <ApplicationBoardHeader
+            user={user}
+            isAdmin={isAdmin}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            isInfluencerOnly={isInfluencerOnly}
+            activeTab={activeTab}
+            showArchived={showArchived}
+            setShowArchived={setShowArchived}
+            showMapView={showMapView}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onMobileSearchOpen={() => setMobileSearchDialog(true)}
+            unreadMessages={unreadMessages}
+            totalUnread={totalUnread}
+            markAsRead={markAsRead}
+            setActiveTab={setActiveTab}
+            setHiddenColumns={setHiddenColumns}
+            setSelectedTicket={setSelectedTicket}
+            setHighlightedTicketId={setHighlightedTicketId}
+            setHighlightMessageId={setHighlightMessageId}
+            onExportCsv={() => {
+              if (!isAdmin) return;
+              const rows = tickets.filter((t) => !t.archived && matchesSearch(t));
+              downloadCsv(rows, activeTab);
+            }}
+            canExport={isAdmin}
+          />
 
           {/* Horizontal source tabs (replaces vertical ProgramDock) */}
           <BoardTabs
