@@ -64,46 +64,6 @@ const PROVINCE_CENTROIDS = {
   "Yukon": { lat: 64.2823, lng: -135.0000 },
 };
 
-// Persistent geocoding cache — survives page reloads.
-// Keyed by query string. Each entry: { value: {lat,lng}|null, ts: epoch_ms }.
-// Entries older than GEOCODE_CACHE_TTL_MS are ignored and re-fetched.
-const GEOCODE_CACHE_KEY = "pip:geocode-cache:v1";
-const GEOCODE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-function readGeocodeCache() {
-  try {
-    if (typeof window === "undefined") return {};
-    const raw = window.localStorage.getItem(GEOCODE_CACHE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    const now = Date.now();
-    const fresh = {};
-    Object.entries(parsed).forEach(([q, entry]) => {
-      if (entry && typeof entry.ts === "number" && now - entry.ts < GEOCODE_CACHE_TTL_MS) {
-        fresh[q] = entry.value;
-      }
-    });
-    return fresh;
-  } catch {
-    return {};
-  }
-}
-
-function writeGeocodeCache(updates) {
-  try {
-    if (typeof window === "undefined") return;
-    const raw = window.localStorage.getItem(GEOCODE_CACHE_KEY);
-    const existing = raw ? JSON.parse(raw) : {};
-    const now = Date.now();
-    Object.entries(updates).forEach(([q, value]) => {
-      existing[q] = { value, ts: now };
-    });
-    window.localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(existing));
-  } catch {
-    // Storage full or disabled — silently ignore.
-  }
-}
-
 // Cache the JS API loader across mounts
 let googleMapsPromise = null;
 function loadGoogleMaps(apiKey) {
@@ -146,7 +106,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [radiusKm, setRadiusKm] = useState(10);
-  const [geocoded, setGeocoded] = useState(() => readGeocodeCache()); // { query: {lat,lng} | null }
+  const [geocoded, setGeocoded] = useState({}); // { query: {lat,lng} | null }
   const [geocoding, setGeocoding] = useState(false);
   const [selectedSidebarTicket, setSelectedSidebarTicket] = useState(null);
   const [landReady, setLandReady] = useState(false);
@@ -265,19 +225,15 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       .invoke("geocodePostalCodes", { queries: unique })
       .then((resp) => {
         const results = resp?.data?.results || {};
-        // Make sure every requested query has an entry so we don't retry
-        // indefinitely for ones the geocoder couldn't resolve.
-        const merged = { ...results };
-        unique.forEach((q) => { if (!(q in merged)) merged[q] = null; });
-        setGeocoded((prev) => ({ ...prev, ...merged }));
-        writeGeocodeCache(merged);
+        setGeocoded((prev) => ({ ...prev, ...results }));
       })
       .catch(() => {
-        // Mark as null so we don't retry forever (and persist that)
-        const failed = {};
-        unique.forEach((q) => { failed[q] = null; });
-        setGeocoded((prev) => ({ ...prev, ...failed }));
-        writeGeocodeCache(failed);
+        // Mark as null so we don't retry forever
+        setGeocoded((prev) => {
+          const next = { ...prev };
+          unique.forEach((q) => { if (!(q in next)) next[q] = null; });
+          return next;
+        });
       })
       .finally(() => setGeocoding(false));
   }, [ticketsWithQuery, geocoded, loading, error]);
