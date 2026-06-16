@@ -29,8 +29,8 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
       }}
       className={`w-full text-left flex gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer ${
         active
-          ? "bg-white shadow-lg ring-2 ring-pink-300 border border-pink-200"
-          : "bg-white/70 hover:bg-white border border-transparent"
+          ? "bg-slate-100"
+          : "bg-white/70 hover:bg-white"
       }`}
     >
       <div className="relative shrink-0">

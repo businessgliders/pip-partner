@@ -21,17 +21,14 @@ export default function InboxStatusRail({
   const groups = statusGroupsFor(sourceKey);
 
   return (
-    <div className="flex flex-col gap-1 px-1 md:px-1.5 py-3 w-14 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
+    <div className="flex flex-col gap-1 px-1 md:px-1.5 py-3 w-14 md:w-16 shrink-0">
       {groups.map((group, gi) => (
         <React.Fragment key={gi}>
           {group.label && (
             <div
               className={`${gi === 0 ? "" : "mt-2 pt-2 border-t border-white/15"} mb-1 flex items-center justify-center`}
             >
-              <span
-                style={{ background: accent, color: "#fff" }}
-                className="px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider leading-none shadow-sm"
-              >
+              <span className="text-[9px] font-bold uppercase tracking-wider leading-none text-white/70">
                 {group.label}
               </span>
             </div>

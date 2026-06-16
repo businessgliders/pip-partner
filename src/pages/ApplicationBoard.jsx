@@ -600,6 +600,7 @@ export default function ApplicationBoard() {
             canExport={isAdmin}
             boards={allowedBoards}
             allowedKeys={allowedBoards.map((b) => b.key)}
+            currentViewMode={viewMode}
           />
         </div>
 

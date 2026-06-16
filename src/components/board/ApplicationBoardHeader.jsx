@@ -61,6 +61,7 @@ export default function ApplicationBoardHeader({
   canExport,
   boards,
   allowedKeys,
+  currentViewMode,
 }) {
   const handleNotificationSelect = (ticket, messageId, tabKey) => {
     if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
@@ -70,7 +71,12 @@ export default function ApplicationBoardHeader({
     setHighlightedTicketId(ticket?.id || null);
     setTimeout(() => setHighlightedTicketId(null), 3000);
     setHighlightMessageId(messageId);
-    setSelectedTicket(ticket);
+    // In Inbox view, opening a notification should keep us in Inbox and just
+    // select the conversation — no modal. In other views, open the detail
+    // modal as before.
+    if (currentViewMode !== "inbox") {
+      setSelectedTicket(ticket);
+    }
   };
 
   const showInbox = !isInfluencerOnly && activeTab !== "influencer";
@@ -173,9 +179,9 @@ export default function ApplicationBoardHeader({
       </Link>
 
       {/* Row 1 — center area. Mobile: view filter (source tabs live in the
-          bottom tab bar). Tablet+: source tabs (view filter goes in row 2 on
-          tablet, or in the right cluster on desktop). */}
-      <div className="flex-1 min-w-0 flex justify-center lg:justify-start overflow-x-auto hide-scrollbar">
+          bottom tab bar). Tablet+: source tabs sit immediately after the logo
+          (left-aligned, tight gap). */}
+      <div className="flex-1 min-w-0 flex justify-center md:justify-start overflow-x-auto hide-scrollbar md:-ml-1">
         <div className="flex md:hidden items-center gap-2">{viewFilterCluster}</div>
         <div className="hidden md:flex">
           <BoardTabs
@@ -187,9 +193,9 @@ export default function ApplicationBoardHeader({
         </div>
       </div>
 
-      {/* Row 1 — Search + Notif + User (always). View filter appended on desktop. */}
+      {/* Row 1 — View filter (tablet+) + Search + Notif + User */}
       <div className="flex items-center gap-2 shrink-0">
-        <div className="hidden lg:flex items-center gap-2">{viewFilterCluster}</div>
+        <div className="hidden md:flex items-center gap-2">{viewFilterCluster}</div>
 
         <button
           onClick={onMobileSearchOpen}
@@ -208,11 +214,6 @@ export default function ApplicationBoardHeader({
         <div className="pl-2 ml-1">
           <UserMenu />
         </div>
-      </div>
-
-      {/* Row 2 — View filter (tablet only: md to lg) */}
-      <div className="w-full hidden md:flex lg:hidden items-center justify-center gap-2">
-        {viewFilterCluster}
       </div>
     </header>
   );
