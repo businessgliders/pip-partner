@@ -30,7 +30,6 @@ export default function MigrationPopup() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          onClick={dismiss}
         >
           <motion.div
             className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden"
@@ -74,7 +73,7 @@ export default function MigrationPopup() {
                 organized, never miss a message.
               </p>
 
-              <div className="flex items-center justify-center gap-5">
+              <div className="flex items-center justify-center">
                 <button
                   onClick={handleTryNow}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
@@ -83,15 +82,8 @@ export default function MigrationPopup() {
                     boxShadow: '0 8px 20px rgba(232,108,132,0.35)',
                   }}
                 >
-                  Try now
+                  Let's Go
                   <ArrowRight className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={dismiss}
-                  className="text-sm font-semibold hover:opacity-70 transition-opacity"
-                  style={{ color: '#2a1a20' }}
-                >
-                  Continue existing
                 </button>
               </div>
             </div>
