@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Inbox, Megaphone, FileText, PenLine } from "lucide-react";
+import { Inbox, FileText, PenLine } from "lucide-react";
 import BackToHome from "../components/BackToHome";
 import AdminFavicon from "../components/AdminFavicon";
 
@@ -11,12 +11,6 @@ const TILES = [
     description: "Franchise, influencer, instructor & front desk applications",
     icon: Inbox,
     href: "/ApplicationBoard",
-  },
-  {
-    title: "Marketing",
-    description: "Campaign ad creatives",
-    icon: Megaphone,
-    href: "/Settings/Marketing",
   },
   {
     title: "Email Templates",
@@ -59,7 +53,7 @@ export default function AdminHome() {
           <h1 className="text-3xl md:text-4xl font-light text-white drop-shadow-sm">Settings</h1>
         </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
           {TILES.map((tile, i) => {
             const Icon = tile.icon;
             return (

@@ -13,8 +13,6 @@ import Hire from './pages/Hire';
 import FrontAdmin from './pages/FrontAdmin';
 import InfluencerProgram from './pages/InfluencerProgram';
 import AdminHome from './pages/AdminHome';
-import AdminMarketing from './pages/AdminMarketing';
-import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
 import AdminSettingsTemplates from './pages/AdminSettingsTemplates';
 import AdminSettingsSignature from './pages/AdminSettingsSignature';
 import ApplicationBoard from './pages/ApplicationBoard';
@@ -106,8 +104,6 @@ const AuthenticatedApp = () => {
       {/* Protected routes — require a signed-in user */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
-        <Route path="/Settings/Marketing" element={<AdminGate><AdminMarketing /></AdminGate>} />
-        <Route path="/Settings/Marketing/:slug" element={<AdminGate><AdminMarketingCampaign /></AdminGate>} />
         <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
         <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
         <Route path="/ApplicationBoard" element={<BoardAccessGate><ApplicationBoard /></BoardAccessGate>} />
