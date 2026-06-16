@@ -121,6 +121,49 @@ function buildHtml(applicationData, appNumber) {
   `;
 }
 
+// Forward the submission to the Unified Inbox hub (pink-app-hub). Fire-and-
+// forget — errors are logged but never block the user-facing email flow.
+async function postToHub(applicationData) {
+  const secret = Deno.env.get('SPOKE_INTAKE_SECRET');
+  if (!secret) {
+    console.warn('SPOKE_INTAKE_SECRET not set — skipping hub forward');
+    return;
+  }
+  const social = applicationData.instagram_handle || applicationData.tiktok_handle || '';
+  const payload = {
+    source_app: 'influencer',
+    name: applicationData.full_name || '',
+    email: applicationData.email || '',
+    phone: '',
+    subject: applicationData.content_style || 'Influencer Application',
+    form_data: {
+      company: '',
+      social_handle: social,
+      partnership_type: applicationData.content_style || '',
+      message: applicationData.why_partner || '',
+    },
+  };
+  try {
+    const res = await fetch(
+      'https://pink-app-hub.base44.app/api/apps/69841af9c747b033a60780f2/functions/spokeIntake',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-spoke-secret': secret,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Hub spokeIntake failed:', res.status, errText);
+    }
+  } catch (err) {
+    console.error('Hub spokeIntake error:', err.message);
+  }
+}
+
 async function sendGmail({ accessToken, to, subject, html, replyTo }) {
   const text = htmlToText(html);
   const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -210,6 +253,12 @@ Deno.serve(async (req) => {
     })));
 
     const allOk = results.every((r) => r.ok);
+
+    // Forward to the Unified Inbox hub (skip on admin test sends).
+    if (!testRecipient) {
+      await postToHub(applicationData);
+    }
+
     return Response.json({ success: allOk, results });
   } catch (error) {
     console.error('sendInfluencerApplicationEmail error', error);
