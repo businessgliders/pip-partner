@@ -7,6 +7,7 @@ import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
 import InboxStatusDropdown from "./InboxStatusDropdown";
+import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import {
   SOURCE_META,
   statusOrderFor,
@@ -229,6 +230,11 @@ export default function InboxView({
                   )}
                 </div>
                 <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
+                {/* Franchise FDD timer + Cal.com pills — mobile/tablet header
+                    (xl+ shows the full cluster inside the details panel). */}
+                {sourceKey === "franchise" && (
+                  <FranchiseMeetingPills ticket={selectedTicket} compact />
+                )}
                 {/* Horizontal toggle — tablet/desktop only (mobile uses the vertical strip). */}
                 <div className="hidden md:flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
                   <button

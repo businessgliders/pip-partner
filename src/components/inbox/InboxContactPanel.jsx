@@ -1,6 +1,7 @@
 import React from "react";
 import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink } from "lucide-react";
 import InboxStatusDropdown from "./InboxStatusDropdown";
+import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import {
   displayName,
   initials,
@@ -87,6 +88,17 @@ export default function InboxContactPanel({
             </span>
           )}
         </div>
+
+        {/* Franchise-only: FDD timer, Cal.com booking, meeting link, resend, Cal.com bookings.
+            Migrated here from SubmissionDetailModal so it lives in the inbox view too. */}
+        {sourceKey === "franchise" && (
+          <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
+              Meeting & Timeline
+            </div>
+            <FranchiseMeetingPills ticket={ticket} />
+          </div>
+        )}
 
         <div>
           {detailFields.map((f) => {

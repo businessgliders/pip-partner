@@ -105,15 +105,20 @@ export default function ApplicationBoardHeader({
             title="Inbox"
           />
         )}
-        <ViewIconButton
-          active={!showArchived && viewMode === "status"}
-          onClick={() => {
-            setShowArchived(false);
-            setViewMode("status");
-          }}
-          icon={LayoutGrid}
-          title="Board"
-        />
+        {/* Board view is hidden for franchise — Inbox is the primary view there.
+            The mode itself isn't removed (just the toggle) so any deep links
+            with ?view=status still work. */}
+        {activeTab !== "franchise" && (
+          <ViewIconButton
+            active={!showArchived && viewMode === "status"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("status");
+            }}
+            icon={LayoutGrid}
+            title="Board"
+          />
+        )}
         {activeTab !== "instructor" && activeTab !== "frontadmin" && (
           <ViewIconButton
             active={!showArchived && viewMode === "calendar"}
