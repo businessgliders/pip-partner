@@ -115,29 +115,32 @@ export default function InboxView({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0 flex gap-3 px-2 pb-3">
-        {/* Status rail (desktop+tablet) */}
-        <InboxStatusRail
-          sourceKey={sourceKey}
-          statuses={statuses}
-          active={statusFilter}
-          onChange={(s) => {
-            setStatusFilter(s);
-            setShowArchived(false);
-          }}
-          counts={statusCounts}
-          accent={accent}
-          archivedActive={showArchived}
-          onArchived={() => {
-            setShowArchived(true);
-            setStatusFilter(null);
-          }}
-          archivedCount={archivedCount}
-        />
+      <div className="flex-1 min-h-0 flex gap-2 md:gap-3 px-2 pb-3">
+        {/* Status rail — visible on mobile/tablet too; hidden only when a
+            conversation is opened on screens < lg (full-screen reading mode). */}
+        <div className={selectedTicket ? "hidden lg:flex" : "flex"}>
+          <InboxStatusRail
+            sourceKey={sourceKey}
+            statuses={statuses}
+            active={statusFilter}
+            onChange={(s) => {
+              setStatusFilter(s);
+              setShowArchived(false);
+            }}
+            counts={statusCounts}
+            accent={accent}
+            archivedActive={showArchived}
+            onArchived={() => {
+              setShowArchived(true);
+              setStatusFilter(null);
+            }}
+            archivedCount={archivedCount}
+          />
+        </div>
 
         {/* Thread list */}
         <div
-          className={`w-full lg:w-[340px] shrink-0 ${
+          className={`flex-1 min-w-0 lg:flex-none lg:w-[340px] ${
             selectedTicket ? "hidden lg:flex" : "flex"
           } flex-col min-h-0`}
         >

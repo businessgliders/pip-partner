@@ -77,15 +77,15 @@ export default function ApplicationBoardHeader({
   const showTable = isInfluencerOnly;
 
   return (
-    <header className="shrink-0 flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
-      {/* Logo */}
+    <header className="shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
+      {/* Logo — row 1 left on all sizes */}
       <Link
         to="/Settings"
         onClick={() => {
           setShowArchived(false);
           setSearchQuery("");
         }}
-        className="flex items-center shrink-0"
+        className="flex items-center shrink-0 order-1"
       >
         <img
           src={LOGO_URL}
@@ -94,8 +94,8 @@ export default function ApplicationBoardHeader({
         />
       </Link>
 
-      {/* Source tabs — left, right after logo */}
-      <div className="min-w-0 flex">
+      {/* Source tabs — row 2 below lg (w-full forces wrap), inline on lg+ */}
+      <div className="order-3 lg:order-2 w-full lg:w-auto lg:flex-1 min-w-0 flex justify-center lg:justify-start overflow-x-auto hide-scrollbar">
         <BoardTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -104,11 +104,8 @@ export default function ApplicationBoardHeader({
         />
       </div>
 
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Right: View filter + Search + Notif + User */}
-      <div className="flex items-center gap-2">
+      {/* Right: View filter + Search + Notif + User — row 1 right below lg */}
+      <div className="order-2 lg:order-3 ml-auto lg:ml-0 flex items-center gap-2">
         <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20">
           {showInbox && (
             <ViewIconButton
