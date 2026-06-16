@@ -224,9 +224,13 @@ export default function ApplicationBoardHeader({
             />
           </div>
 
-          {/* Tablet/Desktop row-1 cluster — view filter + search trigger + bell.
-              Hidden on mobile (those move to row 2). */}
-          <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Tablet row-1 cluster — view filter only (search + bell move to row 2). */}
+          <div className="hidden md:flex lg:hidden items-center gap-2 shrink-0">
+            {viewFilterCluster}
+          </div>
+
+          {/* Desktop row-1 cluster — view filter + search trigger + bell. */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
             {viewFilterCluster}
             {searchTrigger}
             {notifBell}
@@ -238,7 +242,7 @@ export default function ApplicationBoardHeader({
           </div>
         </div>
 
-        {/* ─── ROW 2 (mobile only) ──────────────────────────────────
+        {/* ─── ROW 2 (mobile) ──────────────────────────────────────
             View filter centred, with search + bell on the right.
         */}
         <div className="md:hidden mt-2 relative flex items-center min-h-[36px]">
@@ -249,6 +253,15 @@ export default function ApplicationBoardHeader({
             {searchTrigger}
             {notifBell}
           </div>
+        </div>
+
+        {/* ─── ROW 2 (tablet only) ─────────────────────────────────
+            Search trigger + bell on the right; row collapses cleanly
+            when search is expanded (HeaderSearchBar sits below).
+        */}
+        <div className="hidden md:flex lg:hidden mt-2 items-center justify-end gap-1">
+          {searchTrigger}
+          {notifBell}
         </div>
       </header>
 
