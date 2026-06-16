@@ -31,7 +31,7 @@ import { BOARD_TYPES, displayName } from "../components/board/boardConfig";
 import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
-import ProgramDock from "../components/board/ProgramDock";
+import BoardTabs from "../components/board/BoardTabs";
 import { LayoutGrid, Table2, Download, Map as MapIcon, CalendarDays, Inbox as InboxIcon } from "lucide-react";
 import MapView from "../components/board/MapView";
 import CalendarView from "../components/board/CalendarView";
@@ -556,12 +556,7 @@ export default function ApplicationBoard() {
 
 
 
-      <ProgramDock
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        boards={BOARD_TYPES}
-        allowedKeys={allowedBoards.map((b) => b.key)}
-      />
+
 
       <div className="max-w-7xl mx-auto relative flex flex-col flex-1 w-full min-h-0" style={{ zIndex: 2 }}>
         <div className="mb-2 lg:mb-6 pb-1 lg:pb-0">
@@ -911,25 +906,13 @@ export default function ApplicationBoard() {
                </div>
               </div>
 
-          {/* Mobile-only horizontal pill switcher */}
-          <div className={`flex gap-2 mt-6 mb-1 -mx-2 px-2 lg:hidden ${allowedBoards.length <= 1 ? "hidden" : ""}`}>
-            {allowedBoards.map((t) => {
-              const isActive = activeTab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setActiveTab(t.key)}
-                  className={`flex-1 min-w-0 px-2 py-1.5 rounded-full text-[10px] sm:text-xs font-medium border transition-all whitespace-nowrap ${
-                    isActive
-                      ? "bg-white text-gray-900 border-white shadow"
-                      : "bg-white/20 text-white border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Horizontal source tabs (replaces vertical ProgramDock) */}
+          <BoardTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            boards={allowedBoards}
+            allowedKeys={allowedBoards.map((b) => b.key)}
+          />
 
         </div>
 
