@@ -421,19 +421,19 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         </div>
 
         <div className="border-t bg-white">
-          {/* Mobile-only Reply button — opens the fullscreen thread + composer popup */}
+          {/* Mobile-only Reply button (< sm / 640px) — opens the fullscreen popup */}
           <button
             type="button"
             onClick={() => setComposerOpen(true)}
-            className="md:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+            className="sm:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
           >
             <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">
               Reply
             </span>
             <ChevronDown className="w-4 h-4 text-gray-500" />
           </button>
-          {/* Inline composer — md+ only (tablet/desktop keep it always mounted) */}
-          <div className="hidden md:block">
+          {/* Inline composer — tablet + desktop (sm+) keep it always mounted */}
+          <div className="hidden sm:block">
             <ComposerDragHandle
               currentHeight={editorHeight ?? 200}
               onResize={(h) => setEditorHeight(Math.min(h, inlineEditorMax))}
@@ -526,11 +526,11 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         saving={confirmSaving}
       />
 
-      {/* Mobile-only popup — entire thread + composer. Positioned to leave
+      {/* Mobile-only popup (< sm) — entire thread + composer. Positioned to leave
           the page header (top) and the bottom source tab bar visible. */}
       {composerOpen && (
         <div
-          className="fixed left-0 right-0 z-40 md:hidden bg-white flex flex-col shadow-2xl"
+          className="fixed left-0 right-0 z-40 sm:hidden bg-white flex flex-col shadow-2xl"
           style={{
             top: "calc(env(safe-area-inset-top, 0px) + 76px)",
             bottom: "calc(env(safe-area-inset-bottom, 0px) + 64px)",
