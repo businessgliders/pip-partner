@@ -26,9 +26,14 @@ export default function InboxStatusRail({
         <React.Fragment key={gi}>
           {group.label && (
             <div
-              className={`px-1 ${gi === 0 ? "" : "mt-1.5"} mb-0.5 text-[8px] font-semibold uppercase tracking-wider text-white/40 text-center`}
+              className={`${gi === 0 ? "" : "mt-2 pt-2 border-t border-white/15"} mb-1 flex items-center justify-center`}
             >
-              {group.label}
+              <span
+                style={{ background: accent, color: "#fff" }}
+                className="px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider leading-none shadow-sm"
+              >
+                {group.label}
+              </span>
             </div>
           )}
           {group.statuses.map((s) => {
