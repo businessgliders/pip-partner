@@ -8,7 +8,7 @@ import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
 import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
-import FddCountdownPill from "@/components/board/FddCountdownPill";
+import ConversationHeaderMeta from "./ConversationHeaderMeta";
 import {
   SOURCE_META,
   statusOrderFor,
@@ -210,59 +210,54 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              {/* Mobile/tablet header: back + container(name + #) + status + (tablet only) horizontal toggle */}
-              <div className="xl:hidden flex items-center gap-2 mb-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setSelectedId(null)}
-                  className="lg:hidden inline-flex items-center gap-1 text-xs text-white/80 hover:text-white shrink-0"
-                >
-                  <ArrowLeft className="w-4 h-4" /> List
-                </button>
-                {/* Backgrounded container behind client name + ticket # + (franchise) FDD pill */}
-                <div className="flex items-center gap-1.5 min-w-0 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur">
-                  <span className="text-sm font-semibold text-white truncate max-w-[140px] sm:max-w-[200px]">
+              {/* Conversation header — client name + status + meta rows.
+                  Mobile/tablet shows the full meta cluster; xl+ keeps it compact
+                  since the side detail panel hosts the extra context. */}
+              <div className="mb-2 p-2.5 rounded-xl bg-white/10 border border-white/20 backdrop-blur">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(null)}
+                    className="lg:hidden inline-flex items-center gap-1 text-xs text-white/80 hover:text-white shrink-0"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> List
+                  </button>
+                  <span className="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-[260px]">
                     {displayName(selectedTicket)}
                   </span>
-                  {selectedTicket.app_number && (
-                    <span className="text-[10px] text-white/60 shrink-0">
-                      #{selectedTicket.app_number}
-                    </span>
-                  )}
-                  {sourceKey === "franchise" && (
-                    <FddCountdownPill ticket={selectedTicket} />
-                  )}
+                  <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
+                  {/* Conv/Details toggle — tablet only */}
+                  <div className="hidden md:flex xl:hidden ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
+                    <button
+                      type="button"
+                      onClick={() => setMobileTab("conversation")}
+                      className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
+                        mobileTab === "conversation"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-white/75 hover:text-white"
+                      }`}
+                    >
+                      Conversation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobileTab("details")}
+                      className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
+                        mobileTab === "details"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-white/75 hover:text-white"
+                      }`}
+                    >
+                      Details
+                    </button>
+                  </div>
                 </div>
-                <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                {/* Franchise FDD timer + Cal.com pills — mobile/tablet header
-                    (xl+ shows the full cluster inside the details panel). */}
-                {sourceKey === "franchise" && (
-                  <FranchiseMeetingPills ticket={selectedTicket} compact />
-                )}
-                {/* Horizontal toggle — tablet/desktop only (mobile uses the vertical strip). */}
-                <div className="hidden md:flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
-                  <button
-                    type="button"
-                    onClick={() => setMobileTab("conversation")}
-                    className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
-                      mobileTab === "conversation"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-white/75 hover:text-white"
-                    }`}
-                  >
-                    Conversation
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMobileTab("details")}
-                    className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
-                      mobileTab === "details"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-white/75 hover:text-white"
-                    }`}
-                  >
-                    Details
-                  </button>
+                {/* Meta: #ticket · 📅 cal.com · FDD ; then 📍 location */}
+                <div className="mt-1.5 bg-white/85 rounded-lg px-2 py-1.5">
+                  <ConversationHeaderMeta
+                    ticket={selectedTicket}
+                    sourceKey={sourceKey}
+                  />
                 </div>
               </div>
 
