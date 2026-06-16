@@ -205,7 +205,7 @@ export default function ApplicationBoardHeader({
           markAsRead={markAsRead}
           onSelect={handleNotificationSelect}
         />
-        <div className="pl-2 ml-1 border-l border-white/20">
+        <div className="pl-2 ml-1">
           <UserMenu />
         </div>
       </div>
