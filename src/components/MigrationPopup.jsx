@@ -18,14 +18,14 @@ export default function MigrationPopup() {
   };
 
   const handleSwitchAccount = async () => {
-    // Hard log out, then send the user back through the Google login flow with
-    // a fresh prompt so they can pick a different account.
+    // Hard log out, then trigger Google OAuth directly (skipping the login
+    // page) and return to /ApplicationBoard after success.
     try {
       await base44.auth.logout();
     } catch (_) {
       // Swallow — even if the SDK call fails we still want to redirect.
     }
-    base44.auth.redirectToLogin(window.location.href);
+    base44.auth.loginWithProvider('google', `${window.location.origin}/ApplicationBoard`);
   };
 
   return (
