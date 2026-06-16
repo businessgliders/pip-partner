@@ -421,37 +421,27 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         </div>
 
         <div className="border-t bg-white">
-          <button
-            type="button"
-            onClick={() => setComposerOpen((v) => !v)}
-            className="md:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-          >
-            <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">Reply</span>
-            {composerOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-          </button>
-          <div className={`${composerOpen ? "block" : "hidden"} md:block`}>
-            {/* Desktop-only drag handle to resize the composer editor */}
-            <div className="hidden md:block">
-              <ComposerDragHandle
-                currentHeight={editorHeight ?? 200}
-                onResize={(h) => setEditorHeight(Math.min(h, inlineEditorMax))}
-                minHeight={80}
-                maxHeight={inlineEditorMax}
-              />
-            </div>
-            <EmailComposer
-              ticket={ticket}
-              ticketType={ticketType}
-              currentUser={currentUser}
-              onSent={handleSentAndClearDraft}
-              onRequestFullscreen={() => setFullscreen(true)}
-              editorHeightPx={editorHeight}
-              draftHtml={draftHtml}
-              onDraftChange={setDraftHtml}
-              draftStatus={draft.status}
-              draftLastSavedAt={draft.lastSavedAt}
+          {/* Desktop-only drag handle to resize the composer editor */}
+          <div className="hidden md:block">
+            <ComposerDragHandle
+              currentHeight={editorHeight ?? 200}
+              onResize={(h) => setEditorHeight(Math.min(h, inlineEditorMax))}
+              minHeight={80}
+              maxHeight={inlineEditorMax}
             />
           </div>
+          <EmailComposer
+            ticket={ticket}
+            ticketType={ticketType}
+            currentUser={currentUser}
+            onSent={handleSentAndClearDraft}
+            onRequestFullscreen={() => setFullscreen(true)}
+            editorHeightPx={editorHeight}
+            draftHtml={draftHtml}
+            onDraftChange={setDraftHtml}
+            draftStatus={draft.status}
+            draftLastSavedAt={draft.lastSavedAt}
+          />
         </div>
       </div>
 
@@ -525,61 +515,6 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         saving={confirmSaving}
       />
 
-      {/* Full-screen mobile popup for email composer */}
-      {composerOpen && (
-        <div className="fixed inset-0 z-50 md:hidden bg-white flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
-            <span className="font-semibold text-sm text-gray-800">Email Communications</span>
-            <button
-              type="button"
-              onClick={() => requestClose(() => setComposerOpen(false))}
-              className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col">
-            {/* Messages section - takes more space on mobile */}
-            <div className="flex-1 p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30 overflow-y-auto">
-              {allMessages.map((m) => {
-                const readBy = Array.isArray(m.read_by) ? m.read_by : [];
-                const isUnread =
-                  !!userEmail &&
-                  m.direction === "inbound" &&
-                  !String(m.id || "").startsWith("__") &&
-                  !readBy.some((e) => (e || "").toLowerCase() === userEmail);
-                return (
-                  <EmailMessageItem
-                    key={m.id}
-                    message={m}
-                    isHighlighted={highlightMessageId === m.id}
-                    isUnread={isUnread}
-                    onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
-                    staffNameByEmail={staffNameByEmail}
-                  />
-                );
-              })}
-            </div>
-            {/* Composer section - shrinks on mobile */}
-            <div className="shrink-0">
-              <EmailComposer
-                ticket={ticket}
-                ticketType={ticketType}
-                currentUser={currentUser}
-                onSent={async () => {
-                  await handleSentAndClearDraft();
-                  setComposerOpen(false);
-                }}
-                isMobileFullscreen
-                draftHtml={draftHtml}
-                onDraftChange={setDraftHtml}
-                draftStatus={draft.status}
-                draftLastSavedAt={draft.lastSavedAt}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

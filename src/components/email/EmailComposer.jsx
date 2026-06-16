@@ -796,10 +796,9 @@ export default function EmailComposer({
             onClick={handlePolish}
             disabled={polishing}
             title="Polish with AI"
-            className="text-purple-700 border-purple-200 hover:bg-purple-50"
+            className="text-purple-700 border-purple-200 hover:bg-purple-50 p-1.5"
           >
-            {polishing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Wand2 className="w-3.5 h-3.5 mr-1.5" />}
-            <span>Polish</span>
+            {polishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
           </Button>
           {draftStatus === "saving" && (
             <span className="text-[11px] text-gray-400 flex items-center gap-1">

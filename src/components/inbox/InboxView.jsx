@@ -40,6 +40,10 @@ export default function InboxView({
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  // Mobile/tablet (< xl) tab to switch the right pane between the conversation
+  // and the contact details. Resets to "conversation" whenever the selected
+  // ticket changes so opening a new conversation always lands on the email view.
+  const [mobileTab, setMobileTab] = useState("conversation");
 
   // Reset state when source changes — default to the first status of the new
   // source so the user lands on a focused list (and the first conversation in
@@ -50,6 +54,10 @@ export default function InboxView({
     setSelectedId(null);
     setShowArchived(false);
   }, [sourceKey]);
+
+  useEffect(() => {
+    setMobileTab("conversation");
+  }, [selectedId]);
 
   // Shares the same query key as ApplicationBoard's main fetch, so react-query
   // de-duplicates and we don't double-fetch when toggling between views.
@@ -183,7 +191,9 @@ export default function InboxView({
           />
         </div>
 
-        {/* Conversation panel */}
+        {/* Right pane: conversation + (on < xl) inline details, controlled by
+            mobileTab. On xl+ both conversation and details are visible
+            side-by-side in their own columns. */}
         <div
           className={`flex-1 min-w-0 ${
             selectedTicket ? "flex" : "hidden lg:flex"
@@ -191,19 +201,68 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              <button
-                type="button"
-                onClick={() => setSelectedId(null)}
-                className="lg:hidden mb-2 inline-flex items-center gap-1 text-xs text-white/80 hover:text-white"
+              {/* Mobile/tablet header: back to list + conversation/details tabs */}
+              <div className="xl:hidden flex items-center gap-2 mb-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(null)}
+                  className="lg:hidden inline-flex items-center gap-1 text-xs text-white/80 hover:text-white"
+                >
+                  <ArrowLeft className="w-4 h-4" /> List
+                </button>
+                <div className="ml-auto flex items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab("conversation")}
+                    className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
+                      mobileTab === "conversation"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-white/75 hover:text-white"
+                    }`}
+                  >
+                    Conversation
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab("details")}
+                    className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
+                      mobileTab === "details"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-white/75 hover:text-white"
+                    }`}
+                  >
+                    Details
+                  </button>
+                </div>
+              </div>
+
+              {/* Conversation — always visible on xl+, hidden on < xl when
+                  the user switches to the details tab. */}
+              <div
+                className={`flex-1 min-h-0 flex-col ${
+                  mobileTab === "details" ? "hidden xl:flex" : "flex"
+                }`}
               >
-                <ArrowLeft className="w-4 h-4" /> Back to list
-              </button>
-              <div className="flex-1 min-h-0">
                 <EmailThreadPanel
                   ticket={selectedTicket}
                   ticketType={entity}
                   currentUser={user}
                   markAsRead={markAsRead}
+                />
+              </div>
+
+              {/* Details inline — only used on < xl when the user switches
+                  to the details tab; xl+ uses the side-column instance below. */}
+              <div
+                className={`flex-1 min-h-0 xl:hidden ${
+                  mobileTab === "details" ? "flex flex-col" : "hidden"
+                }`}
+              >
+                <InboxContactPanel
+                  ticket={selectedTicket}
+                  sourceKey={sourceKey}
+                  detailFields={detailFieldsBySource[sourceKey] || []}
+                  accent={accent}
                 />
               </div>
             </div>
@@ -215,7 +274,7 @@ export default function InboxView({
           )}
         </div>
 
-        {/* Contact panel (desktop only) */}
+        {/* Contact panel — side column on xl+ only */}
         {selectedTicket && (
           <div className="hidden xl:flex w-[300px] shrink-0 flex-col min-h-0">
             <InboxContactPanel
