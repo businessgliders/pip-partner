@@ -8,6 +8,7 @@ import {
   Table2,
   Inbox as InboxIcon,
   Download,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import UserMenu from "@/components/dashboard/UserMenu";
 import NotificationCenter from "@/components/admin/NotificationCenter";
@@ -205,10 +206,11 @@ export default function ApplicationBoardHeader({
         */}
         <div className="flex items-center gap-2 md:gap-3 flex-nowrap">
           <Link
-            to="/Settings"
+            to="/ApplicationBoard"
             onClick={() => {
               setShowArchived(false);
               setSearchQuery("");
+              setHiddenColumns([]);
             }}
             className="flex items-center shrink-0"
           >
@@ -241,7 +243,16 @@ export default function ApplicationBoardHeader({
             {notifBell}
           </div>
 
-          {/* User menu — always row 1, far right */}
+          {/* Settings gear + User menu — always row 1, far right */}
+          {isAdmin && (
+            <Link
+              to="/Settings"
+              title="Settings"
+              className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-all"
+            >
+              <SettingsIcon className="w-4 h-4" />
+            </Link>
+          )}
           <div className="shrink-0 pl-1 md:pl-2 md:ml-1">
             <UserMenu />
           </div>
