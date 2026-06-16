@@ -127,15 +127,17 @@ export default function ApplicationBoardHeader({
             icon={LayoutGrid}
             title="Board"
           />
-          <ViewIconButton
-            active={!showArchived && viewMode === "calendar"}
-            onClick={() => {
-              setShowArchived(false);
-              setViewMode("calendar");
-            }}
-            icon={CalendarDays}
-            title="Calendar"
-          />
+          {activeTab !== "instructor" && activeTab !== "frontadmin" && (
+            <ViewIconButton
+              active={!showArchived && viewMode === "calendar"}
+              onClick={() => {
+                setShowArchived(false);
+                setViewMode("calendar");
+              }}
+              icon={CalendarDays}
+              title="Calendar"
+            />
+          )}
           {showMapView && (
             <ViewIconButton
               active={!showArchived && viewMode === "map"}

@@ -52,6 +52,14 @@ export const INBOX_STATUS_GROUPS = {
     { label: "Step 2", statuses: ["site_selection", "lease", "build_out", "training"] },
     { label: "Other", statuses: ["closed", "ghosted"] },
   ],
+  instructor: [
+    { statuses: ["pending", "reviewed", "invited"] },
+    { label: "Other", statuses: ["declined", "ghosted"] },
+  ],
+  frontadmin: [
+    { statuses: ["pending", "reviewed", "invited"] },
+    { label: "Other", statuses: ["declined", "ghosted"] },
+  ],
 };
 
 export function statusGroupsFor(sourceKey) {

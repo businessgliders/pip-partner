@@ -159,6 +159,10 @@ export default function ApplicationBoard() {
     if (activeTab !== "franchise") {
       setViewMode((v) => (v === "map" ? "status" : v));
     }
+    // Calendar view is hidden for instructor / front desk
+    if (activeTab === "instructor" || activeTab === "frontadmin") {
+      setViewMode((v) => (v === "calendar" ? "status" : v));
+    }
   }, [activeTab]);
 
   // Non-info users can't see the table view; bounce them back to inbox view.

@@ -51,12 +51,35 @@ export default function InboxView({
 
   // Shares the same query key as ApplicationBoard's main fetch, so react-query
   // de-duplicates and we don't double-fetch when toggling between views.
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: rawTickets = [], isLoading } = useQuery({
     queryKey: ["app-board", entity],
     queryFn: () => base44.entities[entity].list("-created_date", 500),
     refetchInterval: 5000,
     enabled: !!entity,
   });
+
+  // Cal.com bookings (franchise only) — merged onto tickets as `_cal_booking`
+  // so the thread row can show meeting details. Same query key as the board
+  // so it's deduped/cached.
+  const { data: calBookings = {} } = useQuery({
+    queryKey: ["cal-bookings"],
+    queryFn: async () => {
+      const resp = await base44.functions.invoke("getCalBookings", {});
+      return resp?.data?.bookings || {};
+    },
+    refetchInterval: 60000,
+    staleTime: 30000,
+    enabled: sourceKey === "franchise",
+  });
+
+  const tickets = useMemo(
+    () =>
+      (rawTickets || []).map((t) => {
+        const emailKey = (t.email || "").toLowerCase().trim();
+        return { ...t, _cal_booking: emailKey ? calBookings[emailKey] || null : null };
+      }),
+    [rawTickets, calBookings]
+  );
 
   // Per-status counts for the left rail (non-archived only).
   const statusCounts = useMemo(() => {

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Search, Inbox as InboxIcon } from "lucide-react";
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import InboxThreadRow from "./InboxThreadRow";
 
@@ -15,6 +16,31 @@ export default function InboxThreadList({
   unreadByTicket = {},
   isLoading,
 }) {
+  // Franchise: group conversations by submission Month-Year. Other sources
+  // render as a flat list.
+  const grouped = useMemo(() => {
+    if (sourceKey !== "franchise") return null;
+    const map = new Map();
+    tickets.forEach((t) => {
+      const d = new Date(t.created_date || Date.now());
+      const key = format(d, "MMMM yyyy");
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(t);
+    });
+    return Array.from(map.entries());
+  }, [tickets, sourceKey]);
+
+  const renderRow = (t) => (
+    <InboxThreadRow
+      key={t.id}
+      ticket={t}
+      sourceKey={sourceKey}
+      active={selectedId === t.id}
+      unread={unreadByTicket[t.id] || 0}
+      onClick={() => onSelect(t)}
+    />
+  );
+
   return (
     <div className="flex flex-col h-full bg-white/95 rounded-2xl border border-white/40 backdrop-blur overflow-hidden shadow-lg">
       <div className="px-4 pt-4 pb-3 border-b border-slate-100">
@@ -52,17 +78,17 @@ export default function InboxThreadList({
             <InboxIcon className="w-8 h-8 mb-2 opacity-40" />
             No conversations here.
           </div>
-        ) : (
-          tickets.map((t) => (
-            <InboxThreadRow
-              key={t.id}
-              ticket={t}
-              sourceKey={sourceKey}
-              active={selectedId === t.id}
-              unread={unreadByTicket[t.id] || 0}
-              onClick={() => onSelect(t)}
-            />
+        ) : grouped ? (
+          grouped.map(([label, rows]) => (
+            <div key={label} className="mb-2">
+              <div className="sticky top-0 z-10 bg-white/95 backdrop-blur px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                {label}
+              </div>
+              <div className="space-y-1 mt-1">{rows.map(renderRow)}</div>
+            </div>
           ))
+        ) : (
+          tickets.map(renderRow)
         )}
       </div>
     </div>

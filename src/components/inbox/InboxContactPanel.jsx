@@ -98,22 +98,32 @@ export default function InboxContactPanel({
         <div>
           {detailFields.map((f) => {
             const v = typeof f.get === "function" ? f.get(ticket) : ticket[f.key];
+            if (v === undefined || v === null || v === "") return null;
+            if (f.key === "resume_url") {
+              return (
+                <div
+                  key={f.key}
+                  className="py-2 border-b border-slate-100 last:border-0"
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                    {f.label}
+                  </div>
+                  <a
+                    href={v}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full hover:opacity-80 transition-opacity"
+                    style={{ background: `${accent}22`, color: accent }}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View Resume
+                  </a>
+                </div>
+              );
+            }
             return <Field key={f.key} label={f.label} value={v} />;
           })}
         </div>
-
-        {ticket.resume_url && (
-          <a
-            href={ticket.resume_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
-            style={{ color: accent }}
-          >
-            <ExternalLink className="w-3 h-3" />
-            View Resume
-          </a>
-        )}
       </div>
     </div>
   );
