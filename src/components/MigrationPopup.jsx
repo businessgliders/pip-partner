@@ -14,7 +14,7 @@ export default function MigrationPopup() {
 
   const handleTryNow = () => {
     window.open(INBOX_URL, '_blank', 'noopener,noreferrer');
-    dismiss();
+    // Keep the popup open after the CTA — user explicitly requested no dismissal.
   };
 
   const handleSwitchAccount = async () => {
