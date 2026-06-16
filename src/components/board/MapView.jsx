@@ -3,22 +3,32 @@ import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen, ExternalLink } from "lucide-react";
 import { getCanadaLand, clipCircleToLand } from "./landMask";
+import { statusOrderFor } from "@/components/inbox/inboxConfig";
 
 // Status → swimlane color (matches KanbanColumn palette)
 const STATUS_COLORS = {
-  new: { hex: "#9ca3af", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" },
-  pending: { hex: "#9ca3af", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" },
-  scheduled: { hex: "#f97316", bg: "bg-orange-50", border: "border-orange-300", text: "text-orange-700", dot: "bg-orange-500" },
-  reviewed: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
-  contacted: { hex: "#a855f7", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
+  new: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  pending: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  scheduled: { hex: "#0ea5e9", bg: "bg-sky-50", border: "border-sky-300", text: "text-sky-700", dot: "bg-sky-500" },
+  discussion: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  reviewed: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  contacted: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  qualified: { hex: "#8b5cf6", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" },
+  site_selection: { hex: "#6366f1", bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", dot: "bg-indigo-500" },
+  lease: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  build_out: { hex: "#06b6d4", bg: "bg-cyan-50", border: "border-cyan-300", text: "text-cyan-700", dot: "bg-cyan-500" },
+  training: { hex: "#14b8a6", bg: "bg-teal-50", border: "border-teal-300", text: "text-teal-700", dot: "bg-teal-500" },
   approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  invited: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  qualified: { hex: "#ec4899", bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", dot: "bg-pink-500" },
+  invited: { hex: "#0ea5e9", bg: "bg-sky-50", border: "border-sky-300", text: "text-sky-700", dot: "bg-sky-500" },
   closed: { hex: "#64748b", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-500" },
+  ghosted: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
   declined: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
 
-const getStatusColor = (status) => STATUS_COLORS[String(status).toLowerCase()] || { hex: "#94a3b8", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-400" };
+const getStatusColor = (status) => STATUS_COLORS[String(status).toLowerCase()] || { hex: "#8b5cf6", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" };
+
+// Statuses that should NOT render a per-ticket radius circle on the map.
+const NO_RADIUS_STATUSES = new Set(["ghosted", "declined"]);
 
 const HQ = {
   name: "Brampton East (HQ)",
@@ -94,7 +104,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const [apiKey, setApiKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [radiusKm, setRadiusKm] = useState(20);
+  const [radiusKm, setRadiusKm] = useState(10);
   const [geocoded, setGeocoded] = useState({}); // { query: {lat,lng} | null }
   const [geocoding, setGeocoding] = useState(false);
   const [selectedSidebarTicket, setSelectedSidebarTicket] = useState(null);
@@ -294,6 +304,41 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
     });
   }, [ticketsWithQuery, geocoded, onTicketClick]);
 
+  // Render per-ticket radius circles (10km by default) — excludes ghosted /
+  // declined statuses. Uses plain google.maps.Circle (no land-clipping) to
+  // keep this lightweight even with up to MAX_MAP_PINS markers.
+  const ticketCirclesRef = useRef([]);
+  useEffect(() => {
+    if (!mapInstance.current || !window.google) return;
+    // Clear existing circles
+    ticketCirclesRef.current.forEach((c) => c.setMap(null));
+    ticketCirclesRef.current = [];
+
+    ticketsWithQuery.forEach(({ ticket, query }) => {
+      const loc = geocoded[query];
+      if (!loc) return;
+      if (NO_RADIUS_STATUSES.has(String(ticket.status).toLowerCase())) return;
+      const color = getStatusColor(ticket.status).hex;
+      const circle = new window.google.maps.Circle({
+        map: mapInstance.current,
+        center: { lat: loc.lat, lng: loc.lng },
+        radius: radiusKm * 1000,
+        strokeColor: color,
+        strokeOpacity: 0.5,
+        strokeWeight: 1,
+        fillColor: color,
+        fillOpacity: 0.12,
+        clickable: false,
+      });
+      ticketCirclesRef.current.push(circle);
+    });
+
+    return () => {
+      ticketCirclesRef.current.forEach((c) => c.setMap(null));
+      ticketCirclesRef.current = [];
+    };
+  }, [ticketsWithQuery, geocoded, radiusKm]);
+
   // Render the HQ radius polygon separately so changing radius doesn't rebuild
   // every marker. This is the only clipped polygon on the map.
   const hqPolyRef = useRef(null);
@@ -348,7 +393,9 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const missingCount = ticketsWithQuery.length - mappedCount;
   const noLocationCount = (tickets?.length || 0) - ticketsWithQuery.length;
 
-  // Group tickets by status — ordered by swimlane order
+  // Group tickets by status — ordered to match the Inbox view side rail
+  // (Step 1 → Step 2 → Other). Falls back to the board's natural status order
+  // for non-franchise boards.
   const ticketsByStatus = useMemo(() => {
     const groups = {};
     ticketsWithQuery.forEach(({ ticket }) => {
@@ -356,12 +403,14 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       if (!groups[status]) groups[status] = [];
       groups[status].push(ticket);
     });
+    const inboxOrder = statusOrderFor("franchise");
+    const orderSource = inboxOrder.length ? inboxOrder : (statusOrder || []);
     const ordered = [];
-    (statusOrder || []).forEach((s) => {
+    orderSource.forEach((s) => {
       if (groups[s]) ordered.push([s, groups[s]]);
     });
     Object.keys(groups).forEach((s) => {
-      if (!statusOrder.includes(s)) ordered.push([s, groups[s]]);
+      if (!orderSource.includes(s)) ordered.push([s, groups[s]]);
     });
     return ordered;
   }, [ticketsWithQuery, statusOrder]);
@@ -371,8 +420,11 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const toggleSection = (status) =>
     setCollapsedSections((prev) => ({ ...prev, [status]: !prev[status] }));
 
-  // Sidebar collapse state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Sidebar collapse state — defaults to collapsed on mobile/tablet (< lg).
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 1024;
+  });
 
   return (
     <div className="flex-1 lg:min-h-0 mt-2 flex flex-col lg:flex-row gap-3">
