@@ -36,7 +36,7 @@ export default function AdminHome() {
       }}
     >
       <AdminFavicon title="PIP Partner — Settings" />
-      <BackToHome />
+      <BackToHome label="Back" useHistoryBack />
 
       <div className="max-w-6xl mx-auto px-6 py-14">
         <motion.div
