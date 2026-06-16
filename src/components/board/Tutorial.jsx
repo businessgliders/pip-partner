@@ -1,243 +1,209 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
-  LayoutGrid,
-  Inbox as InboxIcon,
-  Bell,
-  Users,
-  Rocket,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
-const STORAGE_KEY = "pip-board-tutorial-seen-v1";
+const TUTORIAL_STORAGE_KEY = "pip_partner_tutorial_seen_v1";
 
-/** Returns true once the user has finished or skipped the walkthrough. */
 export function hasSeenTutorial() {
   try {
-    return localStorage.getItem(STORAGE_KEY) === "1";
+    return localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
   } catch {
-    return true;
+    return false;
   }
 }
 
-function markSeen() {
+export function markTutorialSeen() {
   try {
-    localStorage.setItem(STORAGE_KEY, "1");
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
   } catch {
-    /* ignore */
+    /* noop */
   }
 }
 
-// Each step: title, description, optional image URL. When `image` is empty,
-// the visual placeholder uses the `icon` + `accent` gradient instead.
+// Edit these freely. `image` is optional — when null, a soft numbered placeholder is shown.
 const STEPS = [
   {
-    title: "Welcome to the Partner Board",
-    description:
-      "Every franchise inquiry, instructor application, and front desk submission lives here — one place to triage, reply, and track.",
-    image: "",
-    icon: Sparkles,
-    accent: "from-pink-100 via-rose-50 to-amber-50",
+    title: "Welcome to PIP Partner",
+    text: "Your hub for managing franchise, instructor, and front desk applications — all in one place.",
+    image: null,
   },
   {
-    title: "Switch between programs",
-    description:
-      "Use the source tabs to jump between Franchise, Instructor, and Front Desk pipelines. On mobile, the same tabs sit in the bottom bar.",
-    image: "",
-    icon: Users,
-    accent: "from-amber-100 via-orange-50 to-pink-50",
+    title: "Switch between sources",
+    text: "Use the tabs at the top (or the bottom bar on mobile) to flip between Franchise, Instructor, and Front Desk applications.",
+    image: null,
   },
   {
-    title: "Inbox — your conversation hub",
-    description:
-      "Read every applicant thread inline, reply with templates or AI assist, and update statuses from the same panel — no context switching.",
-    image: "",
-    icon: InboxIcon,
-    accent: "from-sky-100 via-blue-50 to-indigo-50",
+    title: "Inbox view",
+    text: "Read conversations, reply to applicants, and update statuses without ever leaving the page.",
+    image: null,
   },
   {
-    title: "Board — drag tickets through stages",
-    description:
-      "Switch to the Board view to drag applicants across columns. Manual order is remembered per column so urgent leads stay on top.",
-    image: "",
-    icon: LayoutGrid,
-    accent: "from-emerald-100 via-teal-50 to-cyan-50",
+    title: "Board, Calendar & Map",
+    text: "Track applications as a Kanban board, see upcoming meetings on the calendar, or spot leads on the map.",
+    image: null,
   },
   {
-    title: "Stay on top of new replies",
-    description:
-      "The bell shows unread messages across every pipeline. Click any notification to jump straight to that conversation.",
-    image: "",
-    icon: Bell,
-    accent: "from-purple-100 via-fuchsia-50 to-pink-50",
+    title: "Notifications & search",
+    text: "The bell flags new replies. The search icon helps you find any applicant in seconds.",
+    image: null,
   },
   {
     title: "You're all set",
-    description:
-      "That's the tour. Reach out any time you want to adjust how the board works for your team — and good luck onboarding your next partner.",
-    image: "",
-    icon: Rocket,
-    accent: "from-rose-100 via-pink-100 to-amber-100",
+    text: "Click Get Started to dive in. You can revisit any time from your account menu.",
+    image: null,
   },
 ];
 
 export default function Tutorial({ onClose }) {
   const [step, setStep] = useState(0);
-  const isLast = step === STEPS.length - 1;
+  const total = STEPS.length;
   const current = STEPS[step];
-  const Icon = current.icon;
+  const isFirst = step === 0;
+  const isLast = step === total - 1;
 
-  const handleClose = () => {
-    markSeen();
+  const close = () => {
+    markTutorialSeen();
     onClose?.();
   };
-
-  const handleNext = () => {
-    if (isLast) handleClose();
-    else setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  };
-
-  const handleBack = () => setStep((s) => Math.max(s - 1, 0));
+  const next = () => (isLast ? close() : setStep((s) => s + 1));
+  const back = () => !isFirst && setStep((s) => s - 1);
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        {/* Frosted backdrop */}
-        <motion.button
-          type="button"
-          onClick={handleClose}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          aria-label="Close tutorial"
-          className="absolute inset-0 bg-black/60 backdrop-blur-md cursor-default"
+      <motion.div
+        key="tutorial-overlay"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={close}
         />
 
-        {/* Modal */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.92, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ type: "spring", damping: 24, stiffness: 280 }}
-          className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/40"
+          className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 w-full max-w-md overflow-hidden"
+          initial={{ scale: 0.92, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.92, opacity: 0, y: 20 }}
+          transition={{ type: "spring", stiffness: 220, damping: 22 }}
         >
           <button
             type="button"
-            onClick={handleClose}
-            className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/70 hover:bg-white text-slate-600 flex items-center justify-center backdrop-blur"
-            title="Close"
+            onClick={close}
+            className="absolute top-3 right-3 p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 z-10"
+            aria-label="Close tutorial"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* Visual area */}
-          <div className={`relative aspect-[5/3] bg-gradient-to-br ${current.accent} overflow-hidden`}>
+          {/* Image / illustration area */}
+          <div className="h-44 sm:h-48 bg-gradient-to-br from-pink-100 via-amber-50 to-rose-100 flex items-center justify-center relative overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`img-${step}`}
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -24 }}
-                transition={{ duration: 0.28, ease: "easeOut" }}
+                transition={{ duration: 0.25 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 {current.image ? (
                   <img
                     src={current.image}
-                    alt=""
-                    className="w-full h-full object-cover"
+                    alt={current.title}
+                    className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="h-20 w-20 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-lg">
-                      <Icon className="w-10 h-10 text-slate-700" strokeWidth={1.5} />
-                    </div>
+                  <div className="text-7xl font-light text-pink-300/70 select-none">
+                    {step + 1}
                   </div>
                 )}
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Content */}
-          <div className="p-6">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
-              Step {step + 1} of {STEPS.length}
-            </div>
+          {/* Text */}
+          <div className="px-6 pt-5 pb-3">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`txt-${step}`}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
               >
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
                   {current.title}
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed min-h-[60px]">
-                  {current.description}
+                  {current.text}
                 </p>
               </motion.div>
             </AnimatePresence>
+          </div>
 
-            {/* Dots */}
-            <div className="flex justify-center items-center gap-1.5 mt-5 mb-5">
-              {STEPS.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setStep(i)}
-                  aria-label={`Go to step ${i + 1}`}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === step
-                      ? "w-6 bg-pink-500"
-                      : "w-1.5 bg-slate-200 hover:bg-slate-300"
-                  }`}
-                />
-              ))}
-            </div>
+          {/* Dots */}
+          <div className="px-6 pb-2 flex items-center justify-center gap-1.5">
+            {STEPS.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setStep(i)}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === step
+                    ? "w-6 bg-pink-500"
+                    : i < step
+                      ? "w-1.5 bg-pink-300"
+                      : "w-1.5 bg-slate-200"
+                }`}
+                aria-label={`Step ${i + 1}`}
+              />
+            ))}
+          </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between">
+          {/* Controls */}
+          <div className="px-6 pb-5 pt-3 flex items-center justify-between gap-2">
+            {!isFirst ? (
               <button
                 type="button"
-                onClick={handleClose}
-                className="text-xs text-slate-500 hover:text-slate-700 hover:underline"
+                onClick={back}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={close}
+                className="px-3 py-1.5 text-sm text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 Skip
               </button>
-              <div className="flex items-center gap-2">
-                {step > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-slate-200 text-slate-700 text-xs font-medium hover:bg-slate-50"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    Back
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className={`inline-flex items-center gap-1 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-colors ${
-                    isLast
-                      ? "bg-pink-500 hover:bg-pink-600 text-white"
-                      : "bg-slate-900 hover:bg-slate-800 text-white"
-                  }`}
-                >
-                  {isLast ? "Get Started" : "Next"}
-                  {!isLast && <ChevronRight className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-            </div>
+            )}
+
+            <span className="text-[11px] text-slate-400 font-medium tabular-nums">
+              Step {step + 1} of {total}
+            </span>
+
+            <button
+              type="button"
+              onClick={next}
+              className="inline-flex items-center gap-1 px-4 py-1.5 text-sm font-medium bg-pink-500 text-white hover:bg-pink-600 rounded-lg shadow-sm transition-colors"
+            >
+              {isLast ? (
+                "Get Started"
+              ) : (
+                <>
+                  Next <ChevronRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     </AnimatePresence>
   );
 }

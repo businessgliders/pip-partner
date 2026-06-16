@@ -151,10 +151,14 @@ export default function ApplicationBoard() {
   // STATUS_CHANGE_REQUIRES_DIALOG is true).
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
-  // First-load tutorial. Excluded for info@pilatesinpinkstudio.com (they see
-  // the migration popup instead). Lazy-initialized from localStorage.
+  // First-load onboarding tutorial. Suppressed for info@pilatesinpinkstudio.com
+  // (which uses the influencer-only mailbox migration popup instead).
   const [showTutorial, setShowTutorial] = useState(() => !hasSeenTutorial());
-  const tutorialActive = showTutorial && !isInfluencerOnly;
+  useEffect(() => {
+    if ((user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com") {
+      setShowTutorial(false);
+    }
+  }, [user?.email]);
 
   useEffect(() => {
     setSearchQuery("");
@@ -523,7 +527,7 @@ export default function ApplicationBoard() {
     >
       <AdminFavicon title="PIP Partner — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
-      {tutorialActive && <Tutorial onClose={() => setShowTutorial(false)} />}
+      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"

@@ -161,6 +161,10 @@ export default function InboxView({
             onChange={(s) => {
               setStatusFilter(s);
               setShowArchived(false);
+              // Clear so the auto-select effect picks the first ticket of the
+              // newly-filtered list across the thread + conversation + contact
+              // panels.
+              setSelectedId(null);
             }}
             counts={statusCounts}
             accent={accent}
@@ -168,6 +172,7 @@ export default function InboxView({
             onArchived={() => {
               setShowArchived(true);
               setStatusFilter(null);
+              setSelectedId(null);
             }}
             archivedCount={archivedCount}
           />
