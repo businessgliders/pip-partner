@@ -25,32 +25,32 @@ const STEPS = [
   {
     title: "Welcome to PIP Partner",
     text: "Your hub for managing franchise, instructor, and front desk applications — all in one place.",
-    image: null,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/afcf5b713_generated_image.png",
   },
   {
     title: "Switch between sources",
     text: "Use the tabs at the top (or the bottom bar on mobile) to flip between Franchise, Instructor, and Front Desk applications.",
-    image: null,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/dfcdc0f97_generated_image.png",
   },
   {
     title: "Inbox view",
     text: "Read conversations, reply to applicants, and update statuses without ever leaving the page.",
-    image: null,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c6fd796ff_generated_image.png",
   },
   {
     title: "Board, Calendar & Map",
     text: "Track applications as a Kanban board, see upcoming meetings on the calendar, or spot leads on the map.",
-    image: null,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/91d5cd6fe_generated_image.png",
   },
   {
     title: "Notifications & search",
     text: "The bell flags new replies. The search icon helps you find any applicant in seconds.",
-    image: null,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/20bb8a72d_generated_image.png",
   },
   {
     title: "You're all set",
     text: "Click Get Started to dive in. You can revisit any time from your account menu.",
-    image: null,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/5a1dde34f_generated_image.png",
   },
 ];
 
@@ -114,7 +114,7 @@ export default function Tutorial({ onClose }) {
                   <img
                     src={current.image}
                     alt={current.title}
-                    className="max-h-full max-w-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="text-7xl font-light text-pink-300/70 select-none">
