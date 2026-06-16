@@ -8,6 +8,7 @@ import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import AdminFavicon from "../components/AdminFavicon";
 import MigrationPopup from "../components/MigrationPopup";
 import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
+import MobileSourceTabBar from "../components/board/MobileSourceTabBar";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
@@ -840,11 +841,20 @@ export default function ApplicationBoard() {
           </>
         )}
 
-        <div className="mt-2 mb-0 flex items-center justify-center gap-3 flex-shrink-0">
+        <div className="hidden md:flex mt-2 mb-0 items-center justify-center gap-3 flex-shrink-0">
           <img src={FOOTER_LOGO_URL} className="w-6 h-6 rounded shadow" alt="" />
           <p className="text-gray-500 text-xs">© {new Date().getFullYear()} Pilates in Pink™ Studio • All rights reserved</p>
         </div>
       </div>
+
+      {/* iOS-style mobile bottom tab bar — source selector */}
+      <MobileSourceTabBar
+        className="md:hidden -mx-4 -mb-2 mt-2 relative z-10"
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        boards={allowedBoards}
+        allowedKeys={allowedBoards.map((b) => b.key)}
+      />
 
       <ConfirmDialog
         isOpen={!!archiveAllConfirmDialog}

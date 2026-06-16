@@ -421,7 +421,18 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         </div>
 
         <div className="border-t bg-white">
-          {/* Desktop-only drag handle to resize the composer editor */}
+          {/* Mobile-only Reply button — opens the fullscreen thread + composer popup */}
+          <button
+            type="button"
+            onClick={() => setComposerOpen(true)}
+            className="md:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+          >
+            <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">
+              Reply
+            </span>
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          </button>
+          {/* Inline composer — md+ only (tablet/desktop keep it always mounted) */}
           <div className="hidden md:block">
             <ComposerDragHandle
               currentHeight={editorHeight ?? 200}
@@ -429,19 +440,19 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               minHeight={80}
               maxHeight={inlineEditorMax}
             />
+            <EmailComposer
+              ticket={ticket}
+              ticketType={ticketType}
+              currentUser={currentUser}
+              onSent={handleSentAndClearDraft}
+              onRequestFullscreen={() => setFullscreen(true)}
+              editorHeightPx={editorHeight}
+              draftHtml={draftHtml}
+              onDraftChange={setDraftHtml}
+              draftStatus={draft.status}
+              draftLastSavedAt={draft.lastSavedAt}
+            />
           </div>
-          <EmailComposer
-            ticket={ticket}
-            ticketType={ticketType}
-            currentUser={currentUser}
-            onSent={handleSentAndClearDraft}
-            onRequestFullscreen={() => setFullscreen(true)}
-            editorHeightPx={editorHeight}
-            draftHtml={draftHtml}
-            onDraftChange={setDraftHtml}
-            draftStatus={draft.status}
-            draftLastSavedAt={draft.lastSavedAt}
-          />
         </div>
       </div>
 
@@ -515,6 +526,59 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         saving={confirmSaving}
       />
 
+      {/* Mobile-only fullscreen popup — entire thread + composer */}
+      {composerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden bg-white flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
+            <span className="font-semibold text-sm text-gray-800">Email Communications</span>
+            <button
+              type="button"
+              onClick={() => requestClose(() => setComposerOpen(false))}
+              className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col">
+            <div className="flex-1 p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30 overflow-y-auto">
+              {allMessages.map((m) => {
+                const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+                const isUnread =
+                  !!userEmail &&
+                  m.direction === "inbound" &&
+                  !String(m.id || "").startsWith("__") &&
+                  !readBy.some((e) => (e || "").toLowerCase() === userEmail);
+                return (
+                  <EmailMessageItem
+                    key={m.id}
+                    message={m}
+                    isHighlighted={highlightMessageId === m.id}
+                    isUnread={isUnread}
+                    onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
+                    staffNameByEmail={staffNameByEmail}
+                  />
+                );
+              })}
+            </div>
+            <div className="shrink-0">
+              <EmailComposer
+                ticket={ticket}
+                ticketType={ticketType}
+                currentUser={currentUser}
+                onSent={async () => {
+                  await handleSentAndClearDraft();
+                  setComposerOpen(false);
+                }}
+                isMobileFullscreen
+                draftHtml={draftHtml}
+                onDraftChange={setDraftHtml}
+                draftStatus={draft.status}
+                draftLastSavedAt={draft.lastSavedAt}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

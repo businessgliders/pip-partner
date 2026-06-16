@@ -172,14 +172,19 @@ export default function ApplicationBoardHeader({
         />
       </Link>
 
-      {/* Row 1 — Source tabs (centered on mobile/tablet, left-aligned on desktop) */}
+      {/* Row 1 — center area. Mobile: view filter (source tabs live in the
+          bottom tab bar). Tablet+: source tabs (view filter goes in row 2 on
+          tablet, or in the right cluster on desktop). */}
       <div className="flex-1 min-w-0 flex justify-center lg:justify-start overflow-x-auto hide-scrollbar">
-        <BoardTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          boards={boards}
-          allowedKeys={allowedKeys}
-        />
+        <div className="flex md:hidden items-center gap-2">{viewFilterCluster}</div>
+        <div className="hidden md:flex">
+          <BoardTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            boards={boards}
+            allowedKeys={allowedKeys}
+          />
+        </div>
       </div>
 
       {/* Row 1 — Search + Notif + User (always). View filter appended on desktop. */}
@@ -205,8 +210,8 @@ export default function ApplicationBoardHeader({
         </div>
       </div>
 
-      {/* Row 2 — View filter (mobile/tablet only) */}
-      <div className="w-full flex items-center justify-center gap-2 lg:hidden">
+      {/* Row 2 — View filter (tablet only: md to lg) */}
+      <div className="w-full hidden md:flex lg:hidden items-center justify-center gap-2">
         {viewFilterCluster}
       </div>
     </header>
