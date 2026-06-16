@@ -32,9 +32,10 @@ import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
 import ProgramDock from "../components/board/ProgramDock";
-import { LayoutGrid, Table2, Download, Map as MapIcon, CalendarDays } from "lucide-react";
+import { LayoutGrid, Table2, Download, Map as MapIcon, CalendarDays, Inbox as InboxIcon } from "lucide-react";
 import MapView from "../components/board/MapView";
 import CalendarView from "../components/board/CalendarView";
+import InboxView from "../components/inbox/InboxView";
 
 const PRIMARY = "#f1889b";
 const LOGO_URL = "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c51835c8a_PiPPartner.png";
@@ -121,7 +122,10 @@ export default function ApplicationBoard() {
     if (v === "table") return "table";
     if (v === "map") return "map";
     if (v === "calendar") return "calendar";
-    return "status";
+    if (v === "status" || v === "board") return "status";
+    if (v === "inbox") return "inbox";
+    // Inbox is the new default view.
+    return "inbox";
   });
   const [hiddenColumns, setHiddenColumns] = useState([]);
   const [showCleanupPopup, setShowCleanupPopup] = useState(false);
@@ -162,10 +166,20 @@ export default function ApplicationBoard() {
     }
   }, [activeTab]);
 
-  // Non-info users can't see the table view; bounce them back to board view.
+  // Non-info users can't see the table view; bounce them back to inbox view.
   useEffect(() => {
-    if (!isInfluencerOnly && viewMode === "table") setViewMode("status");
+    if (!isInfluencerOnly && viewMode === "table") setViewMode("inbox");
   }, [isInfluencerOnly, viewMode]);
+
+  // Influencer-only users don't get Inbox view (it's franchise/instructor/frontadmin only).
+  useEffect(() => {
+    if (isInfluencerOnly && viewMode === "inbox") setViewMode("status");
+  }, [isInfluencerOnly, viewMode]);
+
+  // Inbox doesn't apply to the influencer board even for other users.
+  useEffect(() => {
+    if (activeTab === "influencer" && viewMode === "inbox") setViewMode("status");
+  }, [activeTab, viewMode]);
 
   const { data: rawTickets = [], isLoading } = useQuery({
     queryKey: ["app-board", board.entity],
@@ -564,6 +578,17 @@ export default function ApplicationBoard() {
               {!showArchived && (
                 <div className="flex md:hidden items-center">
                   <div className="h-9 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-0.5">
+                    {!isInfluencerOnly && activeTab !== "influencer" && (
+                      <button
+                        onClick={() => setViewMode("inbox")}
+                        title="Inbox view"
+                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                          viewMode === "inbox" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                        }`}
+                      >
+                        <InboxIcon className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <button
                       onClick={() => setViewMode("status")}
                       title="Board view"
@@ -633,6 +658,17 @@ export default function ApplicationBoard() {
               <div className="hidden md:flex lg:hidden items-center gap-2">
                 {!showArchived && (
                   <div className="h-10 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1">
+                    {!isInfluencerOnly && activeTab !== "influencer" && (
+                      <button
+                        onClick={() => setViewMode("inbox")}
+                        title="Inbox view"
+                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                          viewMode === "inbox" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                        }`}
+                      >
+                        <InboxIcon className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => setViewMode("status")}
                       title="Board view"
@@ -692,7 +728,8 @@ export default function ApplicationBoard() {
                     if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
                     setSearchQuery("");
                     setHiddenColumns([]);
-                    setViewMode("status");
+                    // Keep current viewMode — the modal opens on top of whatever
+                    // view the user is on, including Inbox.
                     setShowArchived(!!ticket?.archived);
                     setHighlightedTicketId(ticket?.id || null);
                     setTimeout(() => setHighlightedTicketId(null), 3000);
@@ -713,7 +750,8 @@ export default function ApplicationBoard() {
                     if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
                     setSearchQuery("");
                     setHiddenColumns([]);
-                    setViewMode("status");
+                    // Keep current viewMode — the modal opens on top of whatever
+                    // view the user is on, including Inbox.
                     setShowArchived(!!ticket?.archived);
                     setHighlightedTicketId(ticket?.id || null);
                     setTimeout(() => setHighlightedTicketId(null), 3000);
@@ -757,6 +795,18 @@ export default function ApplicationBoard() {
 
                {/* View Filter */}
                <div className="h-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 shadow-lg flex items-center p-1 gap-1 ml-3">
+                   {!isInfluencerOnly && activeTab !== "influencer" && (
+                     <button
+                       onClick={() => setViewMode("inbox")}
+                       title="Inbox view"
+                       className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                         viewMode === "inbox" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                       }`}
+                     >
+                       <InboxIcon className="w-4 h-4" />
+                       <span className="hidden md:inline">Inbox</span>
+                     </button>
+                   )}
                    <button
                      onClick={() => setViewMode("status")}
                      title="Board view"
@@ -845,10 +895,9 @@ export default function ApplicationBoard() {
                  markAsRead={markAsRead}
                  onSelect={(ticket, messageId, tabKey) => {
                    if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
-                   // Reset filters so the ticket is visible underneath the modal
+                   // Keep current viewMode — modal opens on top of whatever view.
                    setSearchQuery("");
                    setHiddenColumns([]);
-                   setViewMode("status");
                    setShowArchived(!!ticket?.archived);
                    setHighlightedTicketId(ticket?.id || null);
                    setTimeout(() => setHighlightedTicketId(null), 3000);
@@ -891,6 +940,17 @@ export default function ApplicationBoard() {
               accentColor={board.color}
               onView={(t) => setSelectedTicket(t)}
               onRestore={(t) => handleRestoreTicket(t.id)}
+            />
+          </div>
+        ) : effectiveViewMode === "inbox" ? (
+          <div className="flex-1 lg:min-h-0 flex flex-col mt-2 min-h-0">
+            <InboxView
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              user={user}
+              detailFieldsBySource={DETAIL_FIELDS}
+              unreadCountByTicket={unreadCountByTicket}
+              markAsRead={markAsRead}
             />
           </div>
         ) : effectiveViewMode === "table" ? (
