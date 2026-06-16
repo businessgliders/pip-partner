@@ -129,19 +129,19 @@ async function postToHub(applicationData) {
     console.warn('SPOKE_INTAKE_SECRET not set — skipping hub forward');
     return;
   }
-  const social = applicationData.instagram_handle || applicationData.tiktok_handle || '';
   const payload = {
     source_app: 'influencer',
     name: applicationData.full_name || '',
     email: applicationData.email || '',
     phone: '',
-    subject: applicationData.content_style || 'Influencer Application',
-    form_data: {
-      company: '',
-      social_handle: social,
-      partnership_type: applicationData.content_style || '',
-      message: applicationData.why_partner || '',
-    },
+    subject: `Influencer Application - ${applicationData.full_name || ''}`,
+    // All extra fields flattened top-level — hub spreads them into form_data.
+    instagram_handle: applicationData.instagram_handle || '',
+    tiktok_handle: applicationData.tiktok_handle || '',
+    follower_count: applicationData.follower_count || '',
+    content_style: applicationData.content_style || '',
+    location: applicationData.location || '',
+    why_partner: applicationData.why_partner || '',
   };
   try {
     const res = await fetch(
@@ -150,7 +150,7 @@ async function postToHub(applicationData) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-spoke-secret': secret,
+          'Authorization': `Bearer ${secret}`,
         },
         body: JSON.stringify(payload),
       }
