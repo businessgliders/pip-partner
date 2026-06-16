@@ -19,7 +19,7 @@ export default function BoardTabs({ activeTab, onTabChange, boards, allowedKeys 
   const allowed = allowedKeys ? new Set(allowedKeys) : null;
 
   return (
-    <div className="flex gap-1.5 md:gap-2 -mx-2 px-2 mt-3 mb-1 overflow-x-auto hide-scrollbar">
+    <div className="flex gap-1 md:gap-1.5 lg:gap-2 -mx-2 px-2 overflow-x-auto hide-scrollbar">
       {boards.map((t) => {
         const Icon = ICONS[t.key];
         const isActive = activeTab === t.key;
@@ -32,7 +32,7 @@ export default function BoardTabs({ activeTab, onTabChange, boards, allowedKeys 
             disabled={!isAllowed}
             title={isAllowed ? t.label : `${t.label} — admin access only`}
             style={isActive ? { color: t.color } : undefined}
-            className={`relative flex flex-1 lg:flex-initial items-center justify-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all border ${
+            className={`relative flex items-center justify-center gap-1 md:gap-1.5 lg:gap-2 px-2.5 md:px-2.5 lg:px-4 py-1.5 md:py-1.5 rounded-full text-xs lg:text-sm font-medium whitespace-nowrap transition-all border ${
               isActive
                 ? "bg-white/90 shadow-sm border-white"
                 : isAllowed
@@ -40,8 +40,8 @@ export default function BoardTabs({ activeTab, onTabChange, boards, allowedKeys 
                   : "text-white/40 bg-white/5 border-white/10 cursor-not-allowed"
             }`}
           >
-            {Icon && <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />}
-            <span className="hidden md:inline">{t.label}</span>
+            {Icon && <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 shrink-0" />}
+            <span className="hidden lg:inline">{t.label}</span>
             {!isAllowed && <Lock className="w-3 h-3 ml-1 opacity-60" />}
           </button>
         );

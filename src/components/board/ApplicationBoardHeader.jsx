@@ -239,13 +239,13 @@ export default function ApplicationBoardHeader({
         </div>
 
         {/* ─── ROW 2 (mobile only) ──────────────────────────────────
-            View filter + Search trigger + Bell.
+            View filter centred, with search + bell on the right.
         */}
-        <div className="md:hidden mt-2 flex items-center gap-2 justify-between">
-          <div className="flex items-center gap-2 min-w-0 overflow-x-auto hide-scrollbar">
+        <div className="md:hidden mt-2 relative flex items-center min-h-[36px]">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
             {viewFilterCluster}
           </div>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="ml-auto flex items-center gap-1 shrink-0 relative z-10">
             {searchTrigger}
             {notifBell}
           </div>

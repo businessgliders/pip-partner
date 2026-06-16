@@ -127,7 +127,7 @@ export default function NotificationCenter({ unreadMessages, totalUnread, markAs
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-96 p-0 max-h-[70vh] overflow-hidden flex flex-col">
+      <PopoverContent align="center" sideOffset={8} className="w-[calc(100vw-2rem)] max-w-sm md:w-96 md:max-w-none p-0 max-h-[70vh] overflow-hidden flex flex-col mx-auto">
         <div className="px-4 py-3 border-b bg-gradient-to-r from-pink-50 to-amber-50 flex items-center justify-between">
           <div className="text-sm font-semibold text-gray-800">Notifications</div>
           <div className="text-xs text-gray-500">
