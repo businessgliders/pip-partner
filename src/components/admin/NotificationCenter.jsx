@@ -116,12 +116,12 @@ export default function NotificationCenter({ unreadMessages, totalUnread, markAs
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="relative h-11 w-11 rounded-xl backdrop-blur-md bg-white/70 border border-white/80 text-gray-900 hover:bg-white/80 shadow-lg flex items-center justify-center"
+          className="relative h-8 w-8 rounded-full text-white/80 hover:bg-white/15 flex items-center justify-center"
           aria-label="Notifications"
         >
           <Bell className="w-4 h-4" />
           {totalUnread > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow ring-2 ring-white">
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">
               {totalUnread > 9 ? "9+" : totalUnread}
             </span>
           )}

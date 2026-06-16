@@ -78,8 +78,8 @@ export default function ApplicationBoardHeader({
   const showTable = isInfluencerOnly;
 
   return (
-    <header className="shrink-0 grid grid-cols-[auto_1fr_auto] items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
-      {/* Left: Logo */}
+    <header className="shrink-0 flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
+      {/* Logo */}
       <Link
         to="/Settings"
         onClick={() => {
@@ -95,8 +95,8 @@ export default function ApplicationBoardHeader({
         />
       </Link>
 
-      {/* Center: Source tabs */}
-      <div className="min-w-0 flex justify-center">
+      {/* Source tabs — left, right after logo */}
+      <div className="min-w-0 flex">
         <BoardTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -105,8 +105,11 @@ export default function ApplicationBoardHeader({
         />
       </div>
 
+      {/* Spacer */}
+      <div className="flex-1" />
+
       {/* Right: View filter + Search + Notif + User */}
-      <div className="flex items-center gap-2 justify-self-end">
+      <div className="flex items-center gap-2">
         <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20">
           {showInbox && (
             <ViewIconButton
