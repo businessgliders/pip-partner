@@ -194,9 +194,9 @@ export default function ApplicationBoardHeader({
     <>
       <header className="shrink-0 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg px-3 md:px-4 py-2">
         {/* ─── ROW 1 ────────────────────────────────────────────────
-            Mobile: Logo + Source tabs (compact) + User
-            Tablet/Desktop: Logo + Source tabs + View filter + Search trigger
-                            + Bell + User
+            Mobile: Logo + Source tabs centred + User (far right)
+            Tablet: Logo + Source tabs + View filter + User
+            Desktop: Logo + Source tabs + View filter + Search trigger + Bell + User
         */}
         <div className="flex items-center gap-2 md:gap-3 flex-nowrap">
           <Link
@@ -214,8 +214,8 @@ export default function ApplicationBoardHeader({
             />
           </Link>
 
-          {/* Source tabs — visible from mobile up (BoardTabs is already icon-only on small viewports) */}
-          <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar -ml-1">
+          {/* Source tabs — centred on mobile, left-aligned (after logo) on md+. */}
+          <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar -ml-1 flex justify-center md:justify-start">
             <BoardTabs
               activeTab={activeTab}
               onTabChange={setActiveTab}
@@ -256,22 +256,34 @@ export default function ApplicationBoardHeader({
         </div>
 
         {/* ─── ROW 2 (tablet only) ─────────────────────────────────
-            Search trigger + bell on the right; row collapses cleanly
-            when search is expanded (HeaderSearchBar sits below).
+            Search (expands inline) + bell, right-aligned.
         */}
-        <div className="hidden md:flex lg:hidden mt-2 items-center justify-end gap-1">
-          {searchTrigger}
+        <div className="hidden md:flex lg:hidden mt-2 items-center justify-end gap-2">
+          {searchOpen ? (
+            <HeaderSearchBar
+              inline
+              open
+              onClose={() => setSearchOpen(false)}
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
+          ) : (
+            searchTrigger
+          )}
           {notifBell}
         </div>
       </header>
 
-      {/* Expanded search panel — sits below the header on every viewport */}
-      <HeaderSearchBar
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        value={searchQuery}
-        onChange={setSearchQuery}
-      />
+      {/* Expanded search panel — sits below the header on mobile + desktop.
+          Tablet (md..lg) uses the inline variant in row 2 instead. */}
+      <div className="md:hidden lg:block">
+        <HeaderSearchBar
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
+      </div>
     </>
   );
 }

@@ -13,7 +13,7 @@ import { Search, X } from "lucide-react";
  *   onChange   — query change handler
  *   compact    — when true, the trigger button is icon-only with no label
  */
-export default function HeaderSearchBar({ open, onClose, value, onChange }) {
+export default function HeaderSearchBar({ open, onClose, value, onChange, inline = false }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -35,8 +35,15 @@ export default function HeaderSearchBar({ open, onClose, value, onChange }) {
 
   if (!open) return null;
 
+  // `inline` collapses outer margin + sizes the panel to flex-1 so it can sit
+  // alongside other row-2 controls (e.g. the bell on tablet) instead of taking
+  // its own row below the header.
+  const wrapperCls = inline
+    ? "flex-1 min-w-0 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg px-3 py-1.5 flex items-center gap-2"
+    : "mt-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg px-3 py-2 flex items-center gap-2";
+
   return (
-    <div className="mt-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg px-3 py-2 flex items-center gap-2">
+    <div className={wrapperCls}>
       <Search className="w-4 h-4 text-white/70 shrink-0" />
       <input
         ref={inputRef}
@@ -44,7 +51,7 @@ export default function HeaderSearchBar({ open, onClose, value, onChange }) {
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder="Search applications, names, emails…"
-        className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/60"
+        className="flex-1 min-w-0 bg-transparent outline-none text-sm text-white placeholder:text-white/60"
       />
       {value && (
         <button
