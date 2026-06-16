@@ -289,15 +289,26 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
       markersByTicketRef.current[ticket.id] = { marker, position };
 
       marker.addListener("click", () => {
-        const content = `<div style="font-family:sans-serif;font-size:12px;max-width:240px">
-          <div style="font-weight:700;margin-bottom:2px">${ticket._display_name || "Application"}</div>
-          <div style="color:#475569;margin-bottom:2px">${ticket.email || ""}</div>
-          <div style="color:#64748b">${loc.formatted || query}</div>
+        const safeName = (ticket._display_name || "Application").replace(/"/g, "&quot;");
+        const content = `<div style="font-family:sans-serif;font-size:13px;max-width:240px">
+          <div style="font-weight:700;margin-bottom:6px;color:#0f172a">${safeName}</div>
+          <button id="map-open-details-${ticket.id}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:6px;background:#0f172a;color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">
+            Open details
+          </button>
         </div>`;
         sharedInfoRef.current.setContent(content);
         sharedInfoRef.current.open(mapInstance.current, marker);
         setSelectedSidebarTicket(ticket.id);
-        if (onTicketClick) setTimeout(() => onTicketClick(ticket), 50);
+        // Wire up the "Open details" button after the InfoWindow renders.
+        window.google.maps.event.addListenerOnce(sharedInfoRef.current, "domready", () => {
+          const btn = document.getElementById(`map-open-details-${ticket.id}`);
+          if (btn) {
+            btn.addEventListener("click", () => {
+              if (onTicketClick) onTicketClick(ticket);
+              sharedInfoRef.current.close();
+            });
+          }
+        });
       });
 
       overlaysRef.current.push(marker);
