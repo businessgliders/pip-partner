@@ -861,14 +861,17 @@ export default function ApplicationBoard() {
         </div>
       </div>
 
-      {/* iOS-style mobile bottom tab bar — source selector */}
-      <MobileSourceTabBar
-        className="sm:hidden -mx-4 -mb-2 mt-2 relative z-10"
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        boards={allowedBoards}
-        allowedKeys={allowedBoards.map((b) => b.key)}
-      />
+      {/* iOS-style mobile bottom tab bar — source selector (mobile only).
+          Wrapped in a div because the inner <nav> uses inline `display:grid`
+          which would otherwise override Tailwind's `sm:hidden` class. */}
+      <div className="sm:hidden -mx-4 -mb-2 mt-2 relative z-10">
+        <MobileSourceTabBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          boards={allowedBoards}
+          allowedKeys={allowedBoards.map((b) => b.key)}
+        />
+      </div>
 
       <ConfirmDialog
         isOpen={!!archiveAllConfirmDialog}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, LogOut } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const INBOX_URL = 'https://inbox.pilatesinpinkstudio.com/inbox#influencer';
 const SHOWCASE_IMAGE = 'https://media.base44.com/images/public/69b4780e4278ece8feeae352/4fdbd3e5b_generated_image.png';
@@ -14,6 +15,17 @@ export default function MigrationPopup() {
   const handleTryNow = () => {
     window.open(INBOX_URL, '_blank', 'noopener,noreferrer');
     dismiss();
+  };
+
+  const handleSwitchAccount = async () => {
+    // Hard log out, then send the user back through the Google login flow with
+    // a fresh prompt so they can pick a different account.
+    try {
+      await base44.auth.logout();
+    } catch (_) {
+      // Swallow — even if the SDK call fails we still want to redirect.
+    }
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   return (
@@ -73,7 +85,7 @@ export default function MigrationPopup() {
                 organized, never miss a message.
               </p>
 
-              <div className="flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
                 <button
                   onClick={handleTryNow}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
@@ -84,6 +96,19 @@ export default function MigrationPopup() {
                 >
                   Let's Go
                   <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleSwitchAccount}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium transition-colors border"
+                  style={{
+                    color: '#7a6970',
+                    borderColor: 'rgba(122,105,112,0.25)',
+                    background: 'white',
+                  }}
+                  title="Log out and sign in with a different Google account"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Switch account
                 </button>
               </div>
             </div>
