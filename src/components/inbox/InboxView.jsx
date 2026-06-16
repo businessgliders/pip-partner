@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, MessagesSquare } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
-import InboxSourceTabs from "./InboxSourceTabs";
 import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
@@ -58,18 +57,6 @@ export default function InboxView({
     refetchInterval: 5000,
     enabled: !!entity,
   });
-
-  // Unread counts per source (for top tab badges).
-  const sourceCounts = useMemo(() => {
-    // We only have access to tickets for the active source, but the badge
-    // shows unread count across all of that source's tickets.
-    const c = {};
-    Object.keys(SOURCE_META).forEach((k) => (c[k] = 0));
-    tickets.forEach((t) => {
-      if (unreadCountByTicket[t.id]) c[sourceKey] += unreadCountByTicket[t.id];
-    });
-    return c;
-  }, [tickets, sourceKey, unreadCountByTicket]);
 
   // Per-status counts for the left rail (non-archived only).
   const statusCounts = useMemo(() => {
@@ -128,12 +115,6 @@ export default function InboxView({
 
   return (
     <div className="flex flex-col h-full">
-      <InboxSourceTabs
-        active={sourceKey}
-        onChange={onTabChange}
-        counts={sourceCounts}
-      />
-
       <div className="flex-1 min-h-0 flex gap-3 px-2 pb-3">
         {/* Status rail (desktop+tablet) */}
         <InboxStatusRail

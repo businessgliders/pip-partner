@@ -28,7 +28,6 @@ import { BOARD_TYPES, displayName } from "../components/board/boardConfig";
 import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
 import { TABLE_COLUMN_CONFIG, downloadCsv } from "../components/board/tableColumns";
-import BoardTabs from "../components/board/BoardTabs";
 import MapView from "../components/board/MapView";
 import CalendarView from "../components/board/CalendarView";
 import InboxView from "../components/inbox/InboxView";
@@ -583,16 +582,9 @@ export default function ApplicationBoard() {
               downloadCsv(rows, activeTab);
             }}
             canExport={isAdmin}
-          />
-
-          {/* Horizontal source tabs (replaces vertical ProgramDock) */}
-          <BoardTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
             boards={allowedBoards}
             allowedKeys={allowedBoards.map((b) => b.key)}
           />
-
         </div>
 
         {showArchived ? (
