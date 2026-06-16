@@ -84,7 +84,10 @@ export default function ApplicationBoard() {
   const INFLUENCER_ONLY_EMAILS = ["info@pilatesinpinkstudio.com"];
   const isInfluencerOnly = INFLUENCER_ONLY_EMAILS.includes((user?.email || "").toLowerCase());
   const allowedBoards = useMemo(
-    () => (isInfluencerOnly ? BOARD_TYPES.filter((b) => b.key === "influencer") : BOARD_TYPES),
+    () =>
+      isInfluencerOnly
+        ? BOARD_TYPES.filter((b) => b.key === "influencer")
+        : BOARD_TYPES.filter((b) => b.key !== "influencer"),
     [isInfluencerOnly]
   );
   const [activeTab, setActiveTab] = useState(() => {
@@ -92,12 +95,14 @@ export default function ApplicationBoard() {
     const tabParam = params.get("tab");
     const defaultTab = isInfluencerOnly ? "influencer" : "franchise";
     if (isInfluencerOnly) return "influencer";
+    if (tabParam === "influencer") return defaultTab;
     return tabParam && BOARD_TYPES.find((b) => b.key === tabParam) ? tabParam : defaultTab;
   });
 
-  // Force influencer-only users to influencer if they somehow ended up elsewhere
+  // Force influencer-only users to influencer; bounce other users away from it.
   useEffect(() => {
     if (isInfluencerOnly && activeTab !== "influencer") setActiveTab("influencer");
+    if (!isInfluencerOnly && activeTab === "influencer") setActiveTab("franchise");
   }, [isInfluencerOnly, activeTab]);
 
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
@@ -137,6 +142,10 @@ export default function ApplicationBoard() {
   // there's a visible snap-back flicker.
   const [orderOverrides, setOrderOverrides] = useState({});
 
+  // Per-column sort mode: { [statusKey]: 'submission' | 'appointment' }.
+  // Undefined = default (manual order, then newest-created).
+  const [columnSort, setColumnSort] = useState({});
+
   // Optional cross-column confirm dialog state (only used when
   // STATUS_CHANGE_REQUIRES_DIALOG is true).
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
@@ -146,11 +155,17 @@ export default function ApplicationBoard() {
     setHiddenColumns([]);
     setShowArchived(false);
     setCleanupDismissed(false);
+    setColumnSort({});
     // Map view is only available for franchise board
     if (activeTab !== "franchise") {
       setViewMode((v) => (v === "map" ? "status" : v));
     }
   }, [activeTab]);
+
+  // Non-info users can't see the table view; bounce them back to board view.
+  useEffect(() => {
+    if (!isInfluencerOnly && viewMode === "table") setViewMode("status");
+  }, [isInfluencerOnly, viewMode]);
 
   const { data: rawTickets = [], isLoading } = useQuery({
     queryKey: ["app-board", board.entity],
@@ -268,6 +283,22 @@ export default function ApplicationBoard() {
         : (board.categoryField && t[board.categoryField] === column);
       return matchCol && matchesSearch(t);
     });
+
+    // Explicit sort mode picked by the user via the column sort dropdown
+    // overrides manual-reorder and the default newest-first behavior.
+    const sortMode = columnSort[column];
+    if (sortMode === "appointment") {
+      return [...inCol].sort((a, b) => {
+        const aT = a._cal_booking?.start ? new Date(a._cal_booking.start).getTime() : -Infinity;
+        const bT = b._cal_booking?.start ? new Date(b._cal_booking.start).getTime() : -Infinity;
+        return bT - aT;
+      });
+    }
+    if (sortMode === "submission") {
+      return [...inCol].sort(
+        (a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)
+      );
+    }
 
     // Sort priority:
     //  1. orderOverrides (in-flight optimistic drag result)
@@ -543,15 +574,6 @@ export default function ApplicationBoard() {
                       <LayoutGrid className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={() => setViewMode("table")}
-                      title="Table view"
-                      className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <Table2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
                       onClick={() => setViewMode("calendar")}
                       title="Calendar view"
                       className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
@@ -560,6 +582,17 @@ export default function ApplicationBoard() {
                     >
                       <CalendarDays className="w-3.5 h-3.5" />
                     </button>
+                    {isInfluencerOnly && (
+                      <button
+                        onClick={() => setViewMode("table")}
+                        title="Table view"
+                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                          viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                        }`}
+                      >
+                        <Table2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <button
                       onClick={() => setShowArchived(true)}
                       title="Archived"
@@ -610,15 +643,6 @@ export default function ApplicationBoard() {
                       <LayoutGrid className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setViewMode("table")}
-                      title="Table view"
-                      className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                        viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                      }`}
-                    >
-                      <Table2 className="w-4 h-4" />
-                    </button>
-                    <button
                       onClick={() => setViewMode("calendar")}
                       title="Calendar view"
                       className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
@@ -627,6 +651,17 @@ export default function ApplicationBoard() {
                     >
                       <CalendarDays className="w-4 h-4" />
                     </button>
+                    {isInfluencerOnly && (
+                      <button
+                        onClick={() => setViewMode("table")}
+                        title="Table view"
+                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                          viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                        }`}
+                      >
+                        <Table2 className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => setShowArchived((v) => !v)}
                       title="Archived"
@@ -733,14 +768,14 @@ export default function ApplicationBoard() {
                      <span className="hidden md:inline">Board</span>
                    </button>
                    <button
-                     onClick={() => setViewMode("table")}
-                     title="Table view"
+                     onClick={() => setViewMode("calendar")}
+                     title="Calendar view"
                      className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                       viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                       viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
                      }`}
                    >
-                     <Table2 className="w-4 h-4" />
-                     <span className="hidden md:inline">Table</span>
+                     <CalendarDays className="w-4 h-4" />
+                     <span className="hidden md:inline">Calendar</span>
                    </button>
                    {showMapView && (
                      <button
@@ -754,16 +789,18 @@ export default function ApplicationBoard() {
                        <span className="hidden md:inline">Map</span>
                      </button>
                    )}
-                   <button
-                     onClick={() => setViewMode("calendar")}
-                     title="Calendar view"
-                     className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
-                       viewMode === "calendar" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
-                     }`}
-                   >
-                     <CalendarDays className="w-4 h-4" />
-                     <span className="hidden md:inline">Calendar</span>
-                   </button>
+                   {isInfluencerOnly && (
+                     <button
+                       onClick={() => setViewMode("table")}
+                       title="Table view"
+                       className={`h-9 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                         viewMode === "table" ? "bg-white text-gray-900 shadow" : "text-gray-700 hover:bg-white/60"
+                       }`}
+                     >
+                       <Table2 className="w-4 h-4" />
+                       <span className="hidden md:inline">Table</span>
+                     </button>
+                   )}
                  </div>
 
                {!showArchived && viewMode === "table" && (
@@ -1063,10 +1100,16 @@ export default function ApplicationBoard() {
                   overlay={stepOverlay}
                   getActions={(label) => {
                     const statusKey = labelToKey[label];
+                    const sortActions = {
+                      sortMode: columnSort[statusKey] || "submission",
+                      onSortChange: (mode) =>
+                        setColumnSort((prev) => ({ ...prev, [statusKey]: mode })),
+                    };
                     // Bulk actions only appear on the resolved / closing-style columns.
                     const isClosingCol = ["closed", "ghosted", "declined"].includes(statusKey);
-                    if (!isClosingCol) return {};
+                    if (!isClosingCol) return sortActions;
                     return {
+                      ...sortActions,
                       onArchiveSome: () => handleArchiveSome(statusKey),
                       onArchiveAll: () => setArchiveAllConfirmDialog({ status: statusKey }),
                     };

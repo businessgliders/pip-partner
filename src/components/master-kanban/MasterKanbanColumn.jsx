@@ -3,8 +3,14 @@ import ReactDOM from "react-dom";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Archive, Sparkles } from "lucide-react";
+import { Archive, Sparkles, ArrowUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import MasterKanbanCard from "./MasterKanbanCard";
 import DragLiftWrapper from "./DragLiftWrapper";
 
@@ -44,6 +50,11 @@ export default function MasterKanbanColumn({
   onTidyUp,
   onArchiveSome,
   onArchiveAll,
+  // Optional per-column sort control. When `onSortChange` is provided, a small
+  // sort dropdown appears in the column header. `sortMode` is 'submission' |
+  // 'appointment' and reflects the current selection.
+  sortMode,
+  onSortChange,
   emptyLabel = "No items",
   // Optional per-column subtitle (e.g. workflow description / next-step hint)
   description,
@@ -80,6 +91,34 @@ export default function MasterKanbanColumn({
         </div>
 
         <div className="flex items-center gap-1">
+          {onSortChange && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-slate-700 hover:bg-white/50"
+                  title="Sort"
+                >
+                  <ArrowUpDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => onSortChange("submission")}>
+                  <span className="w-4 mr-1 flex items-center">
+                    {sortMode === "submission" && <Check className="w-3.5 h-3.5" />}
+                  </span>
+                  Submission Date (A–Z)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange("appointment")}>
+                  <span className="w-4 mr-1 flex items-center">
+                    {sortMode === "appointment" && <Check className="w-3.5 h-3.5" />}
+                  </span>
+                  Appointment Date (A–Z)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {onTidyUp && tickets.length > 0 && (
             <Button
               variant="ghost"
