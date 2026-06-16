@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MessagesSquare } from "lucide-react";
+import { ArrowLeft, MessagesSquare, Info } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";

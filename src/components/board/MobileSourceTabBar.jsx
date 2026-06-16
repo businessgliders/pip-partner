@@ -25,9 +25,8 @@ export default function MobileSourceTabBar({
 
   return (
     <nav
-      className={`shrink-0 bg-white/95 backdrop-blur-xl border-t border-white/40 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] ${className}`}
+      className={`shrink-0 grid bg-white/95 backdrop-blur-xl border-t border-white/40 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] ${className}`}
       style={{
-        display: "grid",
         gridTemplateColumns: `repeat(${boards.length}, minmax(0, 1fr))`,
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
