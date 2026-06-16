@@ -526,9 +526,16 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         saving={confirmSaving}
       />
 
-      {/* Mobile-only fullscreen popup — entire thread + composer */}
+      {/* Mobile-only popup — entire thread + composer. Positioned to leave
+          the page header (top) and the bottom source tab bar visible. */}
       {composerOpen && (
-        <div className="fixed inset-0 z-50 md:hidden bg-white flex flex-col">
+        <div
+          className="fixed left-0 right-0 z-40 md:hidden bg-white flex flex-col shadow-2xl"
+          style={{
+            top: "calc(env(safe-area-inset-top, 0px) + 76px)",
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 64px)",
+          }}
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
             <span className="font-semibold text-sm text-gray-800">Email Communications</span>
             <button

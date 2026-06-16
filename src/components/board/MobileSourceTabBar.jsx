@@ -25,10 +25,15 @@ export default function MobileSourceTabBar({
 
   return (
     <nav
-      className={`shrink-0 grid bg-white/95 backdrop-blur-xl border-t border-white/40 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] ${className}`}
+      className={`shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-1px_0_rgba(0,0,0,0.04),0_-8px_24px_rgba(0,0,0,0.08)] ${className}`}
       style={{
+        display: "grid",
         gridTemplateColumns: `repeat(${boards.length}, minmax(0, 1fr))`,
         paddingBottom: "env(safe-area-inset-bottom)",
+        // iOS HIG: tab bar content area is 49pt tall on iPhone; safe-area
+        // inset (home indicator) extends the bar visually but not its hit
+        // area, so labels/icons sit above the indicator.
+        minHeight: "calc(49px + env(safe-area-inset-bottom, 0px))",
       }}
     >
       {boards.map((t) => {

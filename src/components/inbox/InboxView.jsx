@@ -208,7 +208,7 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              {/* Mobile/tablet header: back + name/ticket#/status + conversation/details tabs */}
+              {/* Mobile/tablet header: back + container(name + #) + status + (tablet only) horizontal toggle */}
               <div className="xl:hidden flex items-center gap-2 mb-2 flex-wrap">
                 <button
                   type="button"
@@ -217,7 +217,8 @@ export default function InboxView({
                 >
                   <ArrowLeft className="w-4 h-4" /> List
                 </button>
-                <div className="flex items-center gap-1.5 min-w-0">
+                {/* Backgrounded container behind client name + ticket # */}
+                <div className="flex items-center gap-1.5 min-w-0 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur">
                   <span className="text-sm font-semibold text-white truncate max-w-[140px] sm:max-w-[200px]">
                     {displayName(selectedTicket)}
                   </span>
@@ -228,7 +229,8 @@ export default function InboxView({
                   )}
                 </div>
                 <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                <div className="ml-auto flex items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
+                {/* Horizontal toggle — tablet/desktop only (mobile uses the vertical strip). */}
+                <div className="hidden md:flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
                   <button
                     type="button"
                     onClick={() => setMobileTab("conversation")}
@@ -254,34 +256,65 @@ export default function InboxView({
                 </div>
               </div>
 
-              {/* Conversation — always visible on xl+, hidden on < xl when
-                  the user switches to the details tab. */}
-              <div
-                className={`flex-1 min-h-0 flex-col ${
-                  mobileTab === "details" ? "hidden xl:flex" : "flex"
-                }`}
-              >
-                <EmailThreadPanel
-                  ticket={selectedTicket}
-                  ticketType={entity}
-                  currentUser={user}
-                  markAsRead={markAsRead}
-                />
-              </div>
+              {/* Main row: panel + (mobile-only) vertical conv/details strip on the right */}
+              <div className="flex-1 min-h-0 flex gap-2">
+                {/* Conversation — always visible on xl+, hidden on < xl when
+                    the user switches to the details tab. */}
+                <div
+                  className={`flex-1 min-w-0 min-h-0 flex-col ${
+                    mobileTab === "details" ? "hidden xl:flex" : "flex"
+                  }`}
+                >
+                  <EmailThreadPanel
+                    ticket={selectedTicket}
+                    ticketType={entity}
+                    currentUser={user}
+                    markAsRead={markAsRead}
+                  />
+                </div>
 
-              {/* Details inline — only used on < xl when the user switches
-                  to the details tab; xl+ uses the side-column instance below. */}
-              <div
-                className={`flex-1 min-h-0 xl:hidden ${
-                  mobileTab === "details" ? "flex flex-col" : "hidden"
-                }`}
-              >
-                <InboxContactPanel
-                  ticket={selectedTicket}
-                  sourceKey={sourceKey}
-                  detailFields={detailFieldsBySource[sourceKey] || []}
-                  accent={accent}
-                />
+                {/* Details inline — only used on < xl when the user switches
+                    to the details tab; xl+ uses the side-column instance below. */}
+                <div
+                  className={`flex-1 min-w-0 min-h-0 xl:hidden ${
+                    mobileTab === "details" ? "flex flex-col" : "hidden"
+                  }`}
+                >
+                  <InboxContactPanel
+                    ticket={selectedTicket}
+                    sourceKey={sourceKey}
+                    detailFields={detailFieldsBySource[sourceKey] || []}
+                    accent={accent}
+                  />
+                </div>
+
+                {/* Vertical conv/details strip — mobile only */}
+                <div className="md:hidden flex flex-col gap-1 shrink-0 self-start p-1 rounded-2xl bg-white/15 border border-white/25 backdrop-blur shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab("conversation")}
+                    title="Conversation"
+                    className={`h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
+                      mobileTab === "conversation"
+                        ? "bg-white text-slate-900 shadow"
+                        : "text-white/75 hover:text-white hover:bg-white/15"
+                    }`}
+                  >
+                    <MessagesSquare className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab("details")}
+                    title="Details"
+                    className={`h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
+                      mobileTab === "details"
+                        ? "bg-white text-slate-900 shadow"
+                        : "text-white/75 hover:text-white hover:bg-white/15"
+                    }`}
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
