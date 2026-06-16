@@ -42,9 +42,26 @@ export function statusLabel(boardKey, status) {
   return getStatusLabel(boardKey, status);
 }
 
-export function statusOrderFor(sourceKey) {
+// Per-source inbox status grouping for the left rail. Each entry has an
+// optional `label` (heading shown above the group) and an ordered list of
+// status keys. Sources without an entry fall back to a single ungrouped list
+// of all the board's statuses.
+export const INBOX_STATUS_GROUPS = {
+  franchise: [
+    { label: "Step 1", statuses: ["new", "scheduled", "qualified"] },
+    { label: "Step 2", statuses: ["site_selection", "lease", "build_out", "training"] },
+    { label: "Other", statuses: ["closed", "ghosted"] },
+  ],
+};
+
+export function statusGroupsFor(sourceKey) {
+  if (INBOX_STATUS_GROUPS[sourceKey]) return INBOX_STATUS_GROUPS[sourceKey];
   const b = BOARD_TYPES.find((x) => x.key === sourceKey);
-  return b?.statuses || [];
+  return [{ statuses: b?.statuses || [] }];
+}
+
+export function statusOrderFor(sourceKey) {
+  return statusGroupsFor(sourceKey).flatMap((g) => g.statuses);
 }
 
 export function entityForSource(sourceKey) {

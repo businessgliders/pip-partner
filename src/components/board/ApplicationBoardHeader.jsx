@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
-  Archive,
   LayoutGrid,
   CalendarDays,
   Map as MapIcon,
@@ -162,12 +161,6 @@ export default function ApplicationBoardHeader({
               title="Table"
             />
           )}
-          <ViewIconButton
-            active={showArchived}
-            onClick={() => setShowArchived((v) => !v)}
-            icon={Archive}
-            title="Archived"
-          />
         </div>
 
         {!showArchived && viewMode === "table" && (
@@ -199,7 +192,9 @@ export default function ApplicationBoardHeader({
           markAsRead={markAsRead}
           onSelect={handleNotificationSelect}
         />
-        <UserMenu />
+        <div className="pl-2 ml-1 border-l border-white/20">
+          <UserMenu />
+        </div>
       </div>
     </header>
   );

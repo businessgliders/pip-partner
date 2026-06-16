@@ -1,15 +1,15 @@
 import React from "react";
-import { Archive, Inbox as InboxIcon } from "lucide-react";
-import { statusLabel } from "./inboxConfig";
+import { Archive } from "lucide-react";
+import { statusLabel, statusGroupsFor } from "./inboxConfig";
 
 /**
  * Vertical status filter rail on the left of the thread list.
- * Each tab shows the count as the glyph and the status name below.
- *   - `active === null` means "All" is selected.
+ * Statuses are rendered in groups (e.g. "Step 1" / "Step 2" / "Other") based
+ * on the per-source config in inboxConfig.INBOX_STATUS_GROUPS. Clicking the
+ * already-active status toggles it off (returns to "show all").
  */
 export default function InboxStatusRail({
   sourceKey,
-  statuses = [],
   active,
   onChange,
   counts = {},
@@ -18,44 +18,42 @@ export default function InboxStatusRail({
   onArchived,
   archivedCount = 0,
 }) {
-  return (
-    <div className="hidden md:flex flex-col gap-1.5 px-1.5 py-3 w-16 shrink-0 bg-white/5 border border-white/10 rounded-2xl">
-      <button
-        type="button"
-        onClick={() => onChange(null)}
-        title="All"
-        style={!archivedActive && active === null ? { background: accent, color: "#fff" } : undefined}
-        className={`w-13 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
-          !archivedActive && active === null
-            ? "shadow-md"
-            : "text-white/65 hover:bg-white/10"
-        }`}
-      >
-        <InboxIcon className="w-4 h-4" />
-        <span>All</span>
-      </button>
+  const groups = statusGroupsFor(sourceKey);
 
-      {statuses.map((s) => {
-        const isActive = !archivedActive && active === s;
-        const c = counts[s] || 0;
-        return (
-          <button
-            key={s}
-            type="button"
-            onClick={() => onChange(s)}
-            title={statusLabel(sourceKey, s)}
-            style={isActive ? { background: accent, color: "#fff" } : undefined}
-            className={`relative w-13 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
-              isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
-            }`}
-          >
-            <span className="text-base font-bold leading-none">{c}</span>
-            <span className="text-[9px] truncate max-w-[3.2rem] capitalize">
-              {statusLabel(sourceKey, s).split(" ")[0]}
-            </span>
-          </button>
-        );
-      })}
+  return (
+    <div className="hidden md:flex flex-col gap-1 px-1.5 py-3 w-16 shrink-0 bg-white/5 border border-white/10 rounded-2xl">
+      {groups.map((group, gi) => (
+        <React.Fragment key={gi}>
+          {group.label && (
+            <div
+              className={`px-1 ${gi === 0 ? "" : "mt-1.5"} mb-0.5 text-[8px] font-semibold uppercase tracking-wider text-white/40 text-center`}
+            >
+              {group.label}
+            </div>
+          )}
+          {group.statuses.map((s) => {
+            const isActive = !archivedActive && active === s;
+            const c = counts[s] || 0;
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onChange(isActive ? null : s)}
+                title={statusLabel(sourceKey, s)}
+                style={isActive ? { background: accent, color: "#fff" } : undefined}
+                className={`relative w-13 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+                  isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
+                }`}
+              >
+                <span className="text-base font-bold leading-none">{c}</span>
+                <span className="text-[9px] truncate max-w-[3.2rem] capitalize">
+                  {statusLabel(sourceKey, s).split(" ")[0]}
+                </span>
+              </button>
+            );
+          })}
+        </React.Fragment>
+      ))}
 
       {onArchived && (
         <button
