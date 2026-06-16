@@ -20,7 +20,7 @@ const OWNER_EMAILS = (Deno.env.get('FRANCHISE_OWNER_EMAILS') || '')
   .map((e) => e.trim())
   .filter(Boolean);
 
-const FROM_EMAIL = 'partner@pilatesinpinkstudio.com';
+const FROM_EMAIL = 'franchise@pilatesinpinkstudio.com';
 const REPLY_TO_EMAIL = 'franchise@pilatesinpinkstudio.com';
 const FROM_NAME = 'Pilates in Pink \u2122';
 
