@@ -100,7 +100,6 @@ const AuthenticatedApp = () => {
           <InfluencerProgram />
         </LayoutWrapper>
       } />
-      <Route path="/InfluencerProgram" element={<Navigate to="/Influencer" replace />} />
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
       <Route path="/login" element={<Login />} />

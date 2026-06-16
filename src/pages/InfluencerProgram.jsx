@@ -72,7 +72,7 @@ export default function InfluencerProgram() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 40%, #fbe0e2 75%, #fce8ee 100%)" }}>
       <BackToHome />
-      <AdminPadlock />
+      <AdminPadlock to="https://inbox.pilatesinpinkstudio.com/inbox#influencer" />
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
