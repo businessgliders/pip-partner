@@ -6,11 +6,13 @@ import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
+import InboxStatusDropdown from "./InboxStatusDropdown";
 import {
   SOURCE_META,
   statusOrderFor,
   entityForSource,
   statusLabel,
+  displayName,
 } from "./inboxConfig";
 
 /**
@@ -201,15 +203,26 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              {/* Mobile/tablet header: back to list + conversation/details tabs */}
+              {/* Mobile/tablet header: back + name/ticket#/status + conversation/details tabs */}
               <div className="xl:hidden flex items-center gap-2 mb-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setSelectedId(null)}
-                  className="lg:hidden inline-flex items-center gap-1 text-xs text-white/80 hover:text-white"
+                  className="lg:hidden inline-flex items-center gap-1 text-xs text-white/80 hover:text-white shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" /> List
                 </button>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-sm font-semibold text-white truncate max-w-[140px] sm:max-w-[200px]">
+                    {displayName(selectedTicket)}
+                  </span>
+                  {selectedTicket.app_number && (
+                    <span className="text-[10px] text-white/60 shrink-0">
+                      #{selectedTicket.app_number}
+                    </span>
+                  )}
+                </div>
+                <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
                 <div className="ml-auto flex items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
                   <button
                     type="button"

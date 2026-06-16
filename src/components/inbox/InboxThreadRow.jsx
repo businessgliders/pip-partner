@@ -27,9 +27,9 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onClick?.();
       }}
-      className={`w-full text-left flex gap-3 px-3 py-3 rounded-xl transition-colors cursor-pointer ${
+      className={`w-full text-left flex gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer ${
         active
-          ? "bg-white shadow-sm border border-slate-200"
+          ? "bg-white shadow-lg ring-2 ring-pink-300 border border-pink-200"
           : "bg-white/70 hover:bg-white border border-transparent"
       }`}
     >
@@ -72,7 +72,7 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
               <ExternalLink className="w-2.5 h-2.5" />
               Resume
             </a>
-          ) : (
+          ) : !isFranchise ? (
             <span
               className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${statusChip(
                 ticket.status
@@ -80,7 +80,7 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
             >
               {statusLabel(sourceKey, ticket.status)}
             </span>
-          )}
+          ) : null}
 
           {isFranchise && calStart && (
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 inline-flex items-center gap-1">
