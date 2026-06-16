@@ -9,6 +9,7 @@ import AdminFavicon from "../components/AdminFavicon";
 import MigrationPopup from "../components/MigrationPopup";
 import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
 import MobileSourceTabBar from "../components/board/MobileSourceTabBar";
+import Tutorial, { hasSeenTutorial } from "../components/board/Tutorial";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
@@ -149,6 +150,11 @@ export default function ApplicationBoard() {
   // Optional cross-column confirm dialog state (only used when
   // STATUS_CHANGE_REQUIRES_DIALOG is true).
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
+
+  // First-load tutorial. Excluded for info@pilatesinpinkstudio.com (they see
+  // the migration popup instead). Lazy-initialized from localStorage.
+  const [showTutorial, setShowTutorial] = useState(() => !hasSeenTutorial());
+  const tutorialActive = showTutorial && !isInfluencerOnly;
 
   useEffect(() => {
     setSearchQuery("");
@@ -517,6 +523,7 @@ export default function ApplicationBoard() {
     >
       <AdminFavicon title="PIP Partner — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
+      {tutorialActive && <Tutorial onClose={() => setShowTutorial(false)} />}
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"
