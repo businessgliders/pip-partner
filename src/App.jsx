@@ -18,7 +18,6 @@ import AdminMarketingCampaign from './pages/AdminMarketingCampaign';
 import AdminSettingsTemplates from './pages/AdminSettingsTemplates';
 import AdminSettingsSignature from './pages/AdminSettingsSignature';
 import ApplicationBoard from './pages/ApplicationBoard';
-import FranchiseMailbox from './pages/FranchiseMailbox';
 import AdminGate from './components/AdminGate';
 import BoardAccessGate from './components/BoardAccessGate';
 
@@ -113,7 +112,6 @@ const AuthenticatedApp = () => {
         <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
         <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
         <Route path="/ApplicationBoard" element={<BoardAccessGate><ApplicationBoard /></BoardAccessGate>} />
-        <Route path="/FranchiseMailbox" element={<AdminGate><FranchiseMailbox /></AdminGate>} />
       </Route>
       <Route path="/Settings/Submissions" element={<Navigate to="/ApplicationBoard?view=table" replace />} />
       <Route path="/AdminDashboard/*" element={<Navigate to="/Settings" replace />} />
