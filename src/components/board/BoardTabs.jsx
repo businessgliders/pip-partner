@@ -41,7 +41,7 @@ export default function BoardTabs({ activeTab, onTabChange, boards, allowedKeys 
             }`}
           >
             {Icon && <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />}
-            <span>{t.label}</span>
+            <span className="hidden md:inline">{t.label}</span>
             {!isAllowed && <Lock className="w-3 h-3 ml-1 opacity-60" />}
           </button>
         );
