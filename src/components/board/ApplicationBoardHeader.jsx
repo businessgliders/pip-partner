@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import UserMenu from "@/components/dashboard/UserMenu";
 import NotificationCenter from "@/components/admin/NotificationCenter";
-import ChangelogPopup from "@/components/admin/ChangelogPopup";
 import BoardTabs from "@/components/board/BoardTabs";
 
 const LOGO_URL =
@@ -35,8 +34,9 @@ function ViewIconButton({ active, onClick, icon: Icon, title }) {
 }
 
 /**
- * Single unified header for ApplicationBoard. Layout:
- *   [Logo] [Search icon] [Source tabs (center)] [View icons] [Changelog] [Notif] [User]
+ * Unified header. 3-column grid layout so the source tabs are truly centered
+ * regardless of left/right cluster widths.
+ *   [Logo] [Source tabs] [View filter + Search + Notif + User]
  */
 export default function ApplicationBoardHeader({
   user,
@@ -78,8 +78,8 @@ export default function ApplicationBoardHeader({
   const showTable = isInfluencerOnly;
 
   return (
-    <header className="shrink-0 flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
-      {/* Logo */}
+    <header className="shrink-0 grid grid-cols-[auto_1fr_auto] items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
+      {/* Left: Logo */}
       <Link
         to="/Settings"
         onClick={() => {
@@ -95,17 +95,8 @@ export default function ApplicationBoardHeader({
         />
       </Link>
 
-      {/* Search (icon-only) */}
-      <button
-        onClick={onMobileSearchOpen}
-        className="h-8 w-8 rounded-full text-white/80 hover:bg-white/15 flex items-center justify-center shrink-0"
-        title="Search"
-      >
-        <Search className="w-4 h-4" />
-      </button>
-
-      {/* Source tabs — centered */}
-      <div className="flex-1 min-w-0 flex justify-center">
+      {/* Center: Source tabs */}
+      <div className="min-w-0 flex justify-center">
         <BoardTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -114,88 +105,99 @@ export default function ApplicationBoardHeader({
         />
       </div>
 
-      {/* View filter pill (icon-only) */}
-      {!showArchived && (
-        <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20 shrink-0">
+      {/* Right: View filter + Search + Notif + User */}
+      <div className="flex items-center gap-2 justify-self-end">
+        <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20">
           {showInbox && (
             <ViewIconButton
-              active={viewMode === "inbox"}
-              onClick={() => setViewMode("inbox")}
+              active={!showArchived && viewMode === "inbox"}
+              onClick={() => {
+                setShowArchived(false);
+                setViewMode("inbox");
+              }}
               icon={InboxIcon}
               title="Inbox"
             />
           )}
           <ViewIconButton
-            active={viewMode === "status"}
-            onClick={() => setViewMode("status")}
+            active={!showArchived && viewMode === "status"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("status");
+            }}
             icon={LayoutGrid}
             title="Board"
           />
           <ViewIconButton
-            active={viewMode === "calendar"}
-            onClick={() => setViewMode("calendar")}
+            active={!showArchived && viewMode === "calendar"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("calendar");
+            }}
             icon={CalendarDays}
             title="Calendar"
           />
           {showMapView && (
             <ViewIconButton
-              active={viewMode === "map"}
-              onClick={() => setViewMode("map")}
+              active={!showArchived && viewMode === "map"}
+              onClick={() => {
+                setShowArchived(false);
+                setViewMode("map");
+              }}
               icon={MapIcon}
               title="Map"
             />
           )}
           {showTable && (
             <ViewIconButton
-              active={viewMode === "table"}
-              onClick={() => setViewMode("table")}
+              active={!showArchived && viewMode === "table"}
+              onClick={() => {
+                setShowArchived(false);
+                setViewMode("table");
+              }}
               icon={Table2}
               title="Table"
             />
           )}
           <ViewIconButton
-            active={false}
-            onClick={() => setShowArchived(true)}
+            active={showArchived}
+            onClick={() => setShowArchived((v) => !v)}
             icon={Archive}
             title="Archived"
           />
         </div>
-      )}
 
-      {showArchived && (
+        {!showArchived && viewMode === "table" && (
+          <button
+            onClick={onExportCsv}
+            disabled={!canExport}
+            title={canExport ? "Export CSV" : "Export CSV — admin access only"}
+            className={`h-8 w-8 rounded-full flex items-center justify-center ${
+              canExport
+                ? "bg-white/15 hover:bg-white/25 text-white"
+                : "bg-white/5 text-white/40 cursor-not-allowed"
+            }`}
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        )}
+
         <button
-          onClick={() => setShowArchived(false)}
-          title="Back to board"
-          className="h-9 px-3 rounded-full bg-purple-500/80 border border-purple-400/80 text-white shadow-md flex items-center gap-1.5 text-xs md:text-sm font-medium shrink-0"
+          onClick={onMobileSearchOpen}
+          className="h-8 w-8 rounded-full text-white/80 hover:bg-white/15 flex items-center justify-center"
+          title="Search"
         >
-          <Archive className="w-4 h-4" />
-          <span>Archived</span>
+          <Search className="w-4 h-4" />
         </button>
-      )}
 
-      {!showArchived && viewMode === "table" && (
-        <button
-          onClick={onExportCsv}
-          disabled={!canExport}
-          title={canExport ? "Export CSV" : "Export CSV — admin access only"}
-          className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-            canExport
-              ? "bg-white/15 hover:bg-white/25 text-white"
-              : "bg-white/5 text-white/40 cursor-not-allowed"
-          }`}
-        >
-          <Download className="w-4 h-4" />
-        </button>
-      )}
-
-      <ChangelogPopup user={user} />
-      <NotificationCenter
-        unreadMessages={unreadMessages}
-        totalUnread={totalUnread}
-        markAsRead={markAsRead}
-        onSelect={handleNotificationSelect}
-      />
-      <UserMenu />
+        <NotificationCenter
+          unreadMessages={unreadMessages}
+          totalUnread={totalUnread}
+          markAsRead={markAsRead}
+          onSelect={handleNotificationSelect}
+        />
+        <UserMenu />
+      </div>
     </header>
   );
 }
