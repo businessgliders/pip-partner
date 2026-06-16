@@ -36,14 +36,16 @@ export default function InboxView({
   const entity = entityForSource(sourceKey);
   const statuses = statusOrderFor(sourceKey);
 
-  const [statusFilter, setStatusFilter] = useState(null); // null = "All"
+  const [statusFilter, setStatusFilter] = useState(() => statusOrderFor(sourceKey)[0] || null);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
 
-  // Reset state when source changes.
+  // Reset state when source changes — default to the first status of the new
+  // source so the user lands on a focused list (and the first conversation in
+  // that list will auto-preselect via the effect below on desktop).
   useEffect(() => {
-    setStatusFilter(null);
+    setStatusFilter(statusOrderFor(sourceKey)[0] || null);
     setSearch("");
     setSelectedId(null);
     setShowArchived(false);

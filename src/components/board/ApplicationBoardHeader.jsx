@@ -76,16 +76,94 @@ export default function ApplicationBoardHeader({
   const showInbox = !isInfluencerOnly && activeTab !== "influencer";
   const showTable = isInfluencerOnly;
 
+  // View-filter cluster (pill + optional CSV export) — rendered twice so it
+  // can sit inline on desktop (row 1, right side) and on its own row on
+  // mobile/tablet (row 2, centered).
+  const viewFilterCluster = (
+    <>
+      <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20">
+        {showInbox && (
+          <ViewIconButton
+            active={!showArchived && viewMode === "inbox"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("inbox");
+            }}
+            icon={InboxIcon}
+            title="Inbox"
+          />
+        )}
+        <ViewIconButton
+          active={!showArchived && viewMode === "status"}
+          onClick={() => {
+            setShowArchived(false);
+            setViewMode("status");
+          }}
+          icon={LayoutGrid}
+          title="Board"
+        />
+        {activeTab !== "instructor" && activeTab !== "frontadmin" && (
+          <ViewIconButton
+            active={!showArchived && viewMode === "calendar"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("calendar");
+            }}
+            icon={CalendarDays}
+            title="Calendar"
+          />
+        )}
+        {showMapView && (
+          <ViewIconButton
+            active={!showArchived && viewMode === "map"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("map");
+            }}
+            icon={MapIcon}
+            title="Map"
+          />
+        )}
+        {showTable && (
+          <ViewIconButton
+            active={!showArchived && viewMode === "table"}
+            onClick={() => {
+              setShowArchived(false);
+              setViewMode("table");
+            }}
+            icon={Table2}
+            title="Table"
+          />
+        )}
+      </div>
+
+      {!showArchived && viewMode === "table" && (
+        <button
+          onClick={onExportCsv}
+          disabled={!canExport}
+          title={canExport ? "Export CSV" : "Export CSV — admin access only"}
+          className={`h-8 w-8 rounded-full flex items-center justify-center ${
+            canExport
+              ? "bg-white/15 hover:bg-white/25 text-white"
+              : "bg-white/5 text-white/40 cursor-not-allowed"
+          }`}
+        >
+          <Download className="w-4 h-4" />
+        </button>
+      )}
+    </>
+  );
+
   return (
     <header className="shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
-      {/* Logo — row 1 left on all sizes */}
+      {/* Row 1 — Logo (left) */}
       <Link
         to="/Settings"
         onClick={() => {
           setShowArchived(false);
           setSearchQuery("");
         }}
-        className="flex items-center shrink-0 order-1"
+        className="flex items-center shrink-0"
       >
         <img
           src={LOGO_URL}
@@ -94,8 +172,8 @@ export default function ApplicationBoardHeader({
         />
       </Link>
 
-      {/* Source tabs — row 2 below lg (w-full forces wrap), inline on lg+ */}
-      <div className="order-3 lg:order-2 w-full lg:w-auto lg:flex-1 min-w-0 flex justify-center lg:justify-start overflow-x-auto hide-scrollbar">
+      {/* Row 1 — Source tabs (centered on mobile/tablet, left-aligned on desktop) */}
+      <div className="flex-1 min-w-0 flex justify-center lg:justify-start overflow-x-auto hide-scrollbar">
         <BoardTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -104,78 +182,9 @@ export default function ApplicationBoardHeader({
         />
       </div>
 
-      {/* Right: View filter + Search + Notif + User — row 1 right below lg */}
-      <div className="order-2 lg:order-3 ml-auto lg:ml-0 flex items-center gap-2">
-        <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20">
-          {showInbox && (
-            <ViewIconButton
-              active={!showArchived && viewMode === "inbox"}
-              onClick={() => {
-                setShowArchived(false);
-                setViewMode("inbox");
-              }}
-              icon={InboxIcon}
-              title="Inbox"
-            />
-          )}
-          <ViewIconButton
-            active={!showArchived && viewMode === "status"}
-            onClick={() => {
-              setShowArchived(false);
-              setViewMode("status");
-            }}
-            icon={LayoutGrid}
-            title="Board"
-          />
-          {activeTab !== "instructor" && activeTab !== "frontadmin" && (
-            <ViewIconButton
-              active={!showArchived && viewMode === "calendar"}
-              onClick={() => {
-                setShowArchived(false);
-                setViewMode("calendar");
-              }}
-              icon={CalendarDays}
-              title="Calendar"
-            />
-          )}
-          {showMapView && (
-            <ViewIconButton
-              active={!showArchived && viewMode === "map"}
-              onClick={() => {
-                setShowArchived(false);
-                setViewMode("map");
-              }}
-              icon={MapIcon}
-              title="Map"
-            />
-          )}
-          {showTable && (
-            <ViewIconButton
-              active={!showArchived && viewMode === "table"}
-              onClick={() => {
-                setShowArchived(false);
-                setViewMode("table");
-              }}
-              icon={Table2}
-              title="Table"
-            />
-          )}
-        </div>
-
-        {!showArchived && viewMode === "table" && (
-          <button
-            onClick={onExportCsv}
-            disabled={!canExport}
-            title={canExport ? "Export CSV" : "Export CSV — admin access only"}
-            className={`h-8 w-8 rounded-full flex items-center justify-center ${
-              canExport
-                ? "bg-white/15 hover:bg-white/25 text-white"
-                : "bg-white/5 text-white/40 cursor-not-allowed"
-            }`}
-          >
-            <Download className="w-4 h-4" />
-          </button>
-        )}
+      {/* Row 1 — Search + Notif + User (always). View filter appended on desktop. */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="hidden lg:flex items-center gap-2">{viewFilterCluster}</div>
 
         <button
           onClick={onMobileSearchOpen}
@@ -194,6 +203,11 @@ export default function ApplicationBoardHeader({
         <div className="pl-2 ml-1 border-l border-white/20">
           <UserMenu />
         </div>
+      </div>
+
+      {/* Row 2 — View filter (mobile/tablet only) */}
+      <div className="w-full flex items-center justify-center gap-2 lg:hidden">
+        {viewFilterCluster}
       </div>
     </header>
   );

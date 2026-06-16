@@ -21,7 +21,7 @@ export default function InboxStatusRail({
   const groups = statusGroupsFor(sourceKey);
 
   return (
-    <div className="flex flex-col gap-1 px-1 md:px-1.5 py-3 w-14 md:w-16 shrink-0 bg-white/5 border border-white/10 rounded-2xl">
+    <div className="flex flex-col gap-1 px-1 md:px-1.5 py-3 w-14 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
       {groups.map((group, gi) => (
         <React.Fragment key={gi}>
           {group.label && (
