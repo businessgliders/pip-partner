@@ -9,6 +9,7 @@ import {
   Inbox as InboxIcon,
   Download,
   Settings as SettingsIcon,
+  ArrowLeft,
 } from "lucide-react";
 import UserMenu from "@/components/dashboard/UserMenu";
 import NotificationCenter from "@/components/admin/NotificationCenter";
@@ -205,6 +206,13 @@ export default function ApplicationBoardHeader({
             Desktop: Logo + Source tabs + View filter + Search trigger + Bell + User
         */}
         <div className="flex items-center gap-2 md:gap-3 flex-nowrap">
+          <Link
+            to="/"
+            title="Back to Home"
+            className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
           <Link
             to="/ApplicationBoard"
             onClick={() => {
