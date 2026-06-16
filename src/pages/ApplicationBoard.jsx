@@ -863,7 +863,7 @@ export default function ApplicationBoard() {
 
       {/* iOS-style mobile bottom tab bar — source selector */}
       <MobileSourceTabBar
-        className="md:hidden -mx-4 -mb-2 mt-2 relative z-10"
+        className="sm:hidden -mx-4 -mb-2 mt-2 relative z-10"
         activeTab={activeTab}
         onTabChange={setActiveTab}
         boards={allowedBoards}
