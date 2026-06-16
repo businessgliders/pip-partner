@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -12,6 +12,7 @@ import {
 import UserMenu from "@/components/dashboard/UserMenu";
 import NotificationCenter from "@/components/admin/NotificationCenter";
 import BoardTabs from "@/components/board/BoardTabs";
+import HeaderSearchBar from "@/components/board/HeaderSearchBar";
 
 const LOGO_URL =
   "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c51835c8a_PiPPartner.png";
@@ -33,9 +34,18 @@ function ViewIconButton({ active, onClick, icon: Icon, title }) {
 }
 
 /**
- * Unified header. 3-column grid layout so the source tabs are truly centered
- * regardless of left/right cluster widths.
- *   [Logo] [Source tabs] [View filter + Search + Notif + User]
+ * Unified header.
+ *
+ * Layout breakdown:
+ *   Desktop (lg+):    [Logo] [Source tabs] [View filter] [Search trigger] [Bell] [User]
+ *   Tablet (md..lg):  Row 1 = [Logo] [Source tabs] [View filter] [User]
+ *                     Row 2 = [Glass search expand] [Bell] (when search is closed,
+ *                             the trigger sits next to the bell on row 2)
+ *   Mobile (< md):    Row 1 = [Logo] [Source tabs (compact icon-only via BoardTabs)] [User]
+ *                     Row 2 = [View filter] [Search trigger] [Bell]
+ *
+ * The expanded search bar always slides in BELOW the header rows as a separate
+ * glass panel (HeaderSearchBar).
  */
 export default function ApplicationBoardHeader({
   user,
@@ -47,8 +57,8 @@ export default function ApplicationBoardHeader({
   showArchived,
   setShowArchived,
   showMapView,
+  searchQuery,
   setSearchQuery,
-  onMobileSearchOpen,
   unreadMessages,
   totalUnread,
   markAsRead,
@@ -63,6 +73,8 @@ export default function ApplicationBoardHeader({
   allowedKeys,
   currentViewMode,
 }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   const handleNotificationSelect = (ticket, messageId, tabKey) => {
     if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
     setSearchQuery("");
@@ -71,9 +83,6 @@ export default function ApplicationBoardHeader({
     setHighlightedTicketId(ticket?.id || null);
     setTimeout(() => setHighlightedTicketId(null), 3000);
     setHighlightMessageId(messageId);
-    // In Inbox view, opening a notification should keep us in Inbox and just
-    // select the conversation — no modal. In other views, open the detail
-    // modal as before.
     if (currentViewMode !== "inbox") {
       setSelectedTicket(ticket);
     }
@@ -82,9 +91,6 @@ export default function ApplicationBoardHeader({
   const showInbox = !isInfluencerOnly && activeTab !== "influencer";
   const showTable = isInfluencerOnly;
 
-  // View-filter cluster (pill + optional CSV export) — rendered twice so it
-  // can sit inline on desktop (row 1, right side) and on its own row on
-  // mobile/tablet (row 2, centered).
   const viewFilterCluster = (
     <>
       <div className="flex items-center gap-0.5 p-1 rounded-full bg-white/10 border border-white/20">
@@ -160,61 +166,99 @@ export default function ApplicationBoardHeader({
     </>
   );
 
+  // Search trigger button (glass pill). Used inline on row 2 of tablet/mobile.
+  const searchTrigger = (
+    <button
+      onClick={() => setSearchOpen((v) => !v)}
+      className={`h-8 w-8 rounded-full flex items-center justify-center transition-all ${
+        searchOpen
+          ? "bg-white/90 text-slate-900 shadow-sm"
+          : "text-white/80 hover:bg-white/15"
+      }`}
+      title="Search"
+    >
+      <Search className="w-4 h-4" />
+    </button>
+  );
+
+  const notifBell = (
+    <NotificationCenter
+      unreadMessages={unreadMessages}
+      totalUnread={totalUnread}
+      markAsRead={markAsRead}
+      onSelect={handleNotificationSelect}
+    />
+  );
+
   return (
-    <header className="shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg">
-      {/* Row 1 — Logo (left) */}
-      <Link
-        to="/Settings"
-        onClick={() => {
-          setShowArchived(false);
-          setSearchQuery("");
-        }}
-        className="flex items-center shrink-0"
-      >
-        <img
-          src={LOGO_URL}
-          alt="Pilates in Pink"
-          className="h-9 md:h-10 object-contain drop-shadow-xl hover:scale-105 transition-transform"
-        />
-      </Link>
+    <>
+      <header className="shrink-0 rounded-2xl border border-white/40 bg-white/15 backdrop-blur-xl shadow-lg px-3 md:px-4 py-2">
+        {/* ─── ROW 1 ────────────────────────────────────────────────
+            Mobile: Logo + Source tabs (compact) + User
+            Tablet/Desktop: Logo + Source tabs + View filter + Search trigger
+                            + Bell + User
+        */}
+        <div className="flex items-center gap-2 md:gap-3 flex-nowrap">
+          <Link
+            to="/Settings"
+            onClick={() => {
+              setShowArchived(false);
+              setSearchQuery("");
+            }}
+            className="flex items-center shrink-0"
+          >
+            <img
+              src={LOGO_URL}
+              alt="Pilates in Pink"
+              className="h-9 md:h-10 object-contain drop-shadow-xl hover:scale-105 transition-transform"
+            />
+          </Link>
 
-      {/* Row 1 — center area. Mobile: view filter (source tabs live in the
-          bottom tab bar). Tablet+: source tabs sit immediately after the logo
-          (left-aligned, tight gap). */}
-      <div className="flex-1 min-w-0 flex justify-center md:justify-start overflow-x-auto hide-scrollbar md:-ml-1">
-        <div className="flex md:hidden items-center gap-2">{viewFilterCluster}</div>
-        <div className="hidden md:flex">
-          <BoardTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            boards={boards}
-            allowedKeys={allowedKeys}
-          />
+          {/* Source tabs — visible from mobile up (BoardTabs is already icon-only on small viewports) */}
+          <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar -ml-1">
+            <BoardTabs
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              boards={boards}
+              allowedKeys={allowedKeys}
+            />
+          </div>
+
+          {/* Tablet/Desktop row-1 cluster — view filter + search trigger + bell.
+              Hidden on mobile (those move to row 2). */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {viewFilterCluster}
+            {searchTrigger}
+            {notifBell}
+          </div>
+
+          {/* User menu — always row 1, far right */}
+          <div className="shrink-0 pl-1 md:pl-2 md:ml-1">
+            <UserMenu />
+          </div>
         </div>
-      </div>
 
-      {/* Row 1 — View filter (tablet+) + Search + Notif + User */}
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="hidden md:flex items-center gap-2">{viewFilterCluster}</div>
-
-        <button
-          onClick={onMobileSearchOpen}
-          className="h-8 w-8 rounded-full text-white/80 hover:bg-white/15 flex items-center justify-center"
-          title="Search"
-        >
-          <Search className="w-4 h-4" />
-        </button>
-
-        <NotificationCenter
-          unreadMessages={unreadMessages}
-          totalUnread={totalUnread}
-          markAsRead={markAsRead}
-          onSelect={handleNotificationSelect}
-        />
-        <div className="pl-2 ml-1">
-          <UserMenu />
+        {/* ─── ROW 2 (mobile only) ──────────────────────────────────
+            View filter + Search trigger + Bell.
+        */}
+        <div className="md:hidden mt-2 flex items-center gap-2 justify-between">
+          <div className="flex items-center gap-2 min-w-0 overflow-x-auto hide-scrollbar">
+            {viewFilterCluster}
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {searchTrigger}
+            {notifBell}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Expanded search panel — sits below the header on every viewport */}
+      <HeaderSearchBar
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        value={searchQuery}
+        onChange={setSearchQuery}
+      />
+    </>
   );
 }

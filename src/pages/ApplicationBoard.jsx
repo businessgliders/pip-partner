@@ -25,7 +25,7 @@ import StatusChangeDialog from "../components/board/StatusChangeDialog";
 const STATUS_CHANGE_REQUIRES_DIALOG = false;
 import ArchivedTicketsList from "../components/board/ArchivedTicketsList";
 import ResolvedCleanupPopup from "../components/board/ResolvedCleanupPopup";
-import { ConfirmDialog, AlertDialogComponent, MobileSearchDialog } from "../components/board/BoardDialogs";
+import { ConfirmDialog, AlertDialogComponent } from "../components/board/BoardDialogs";
 import { BOARD_TYPES, displayName } from "../components/board/boardConfig";
 import SubmissionDetailModal from "../components/admin/SubmissionDetailModal";
 import SubmissionsTable from "../components/admin/SubmissionsTable";
@@ -127,8 +127,6 @@ export default function ApplicationBoard() {
   const [hiddenColumns, setHiddenColumns] = useState([]);
   const [showCleanupPopup, setShowCleanupPopup] = useState(false);
   const [cleanupDismissed, setCleanupDismissed] = useState(false);
-  const [mobileSearchDialog, setMobileSearchDialog] = useState(false);
-  const [tabletSearchOpen, setTabletSearchOpen] = useState(false);
   const [alertDialog, setAlertDialog] = useState(null);
   const [archiveAllConfirmDialog, setArchiveAllConfirmDialog] = useState(null);
   // Franchise-only: which "step" of the funnel is shown in the main row.
@@ -308,34 +306,40 @@ export default function ApplicationBoard() {
       return matchCol && matchesSearch(t);
     });
 
+    // Default sort behavior:
+    //  - "new" status column: submission date Z-A (newest first)
+    //  - All other columns: appointment date A-Z (most recent appointment first),
+    //    falling back to submission date Z-A when no booking exists.
+    const sortByAppointmentThenSubmission = (a, b) => {
+      const aT = a._cal_booking?.start ? new Date(a._cal_booking.start).getTime() : null;
+      const bT = b._cal_booking?.start ? new Date(b._cal_booking.start).getTime() : null;
+      if (aT != null && bT != null) return bT - aT; // most recent first
+      if (aT != null) return -1; // bookings before non-bookings
+      if (bT != null) return 1;
+      return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+    };
+    const sortBySubmission = (a, b) =>
+      new Date(b.created_date || 0) - new Date(a.created_date || 0);
+
     // Explicit sort mode picked by the user via the column sort dropdown
-    // overrides manual-reorder and the default newest-first behavior.
+    // overrides manual-reorder and the default behavior.
     const sortMode = columnSort[column];
     if (sortMode === "appointment") {
-      return [...inCol].sort((a, b) => {
-        const aT = a._cal_booking?.start ? new Date(a._cal_booking.start).getTime() : -Infinity;
-        const bT = b._cal_booking?.start ? new Date(b._cal_booking.start).getTime() : -Infinity;
-        return bT - aT;
-      });
+      return [...inCol].sort(sortByAppointmentThenSubmission);
     }
     if (sortMode === "submission") {
-      return [...inCol].sort(
-        (a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)
-      );
+      return [...inCol].sort(sortBySubmission);
     }
 
     // Sort priority:
     //  1. orderOverrides (in-flight optimistic drag result)
     //  2. manual_sort_index (any card dragged in this column → respect manual order)
-    //  3. newest created first (default)
-    //
-    // Once ANY card in the column carries a manual_sort_index, the column is
-    // considered "manually sorted" and we never auto-rearrange it. Cards
-    // without an index (e.g. brand-new submissions) sort to the top by
-    // created_date so newcomers appear naturally at the head of the column.
+    //  3. column-aware default (see above)
     const columnIsManuallySorted = inCol.some(
       (t) => orderOverrides[t.id] != null || t.manual_sort_index != null
     );
+
+    const defaultSort = column === "new" ? sortBySubmission : sortByAppointmentThenSubmission;
 
     const sorted = [...inCol].sort((a, b) => {
       if (columnIsManuallySorted) {
@@ -346,12 +350,11 @@ export default function ApplicationBoard() {
         const aHas = aIdx != null;
         const bHas = bIdx != null;
         if (aHas && bHas) return aIdx - bIdx;
-        if (aHas) return 1;   // un-indexed (newer) goes to top
+        if (aHas) return 1;
         if (bHas) return -1;
-        return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+        return defaultSort(a, b);
       }
-      // Default: newest created first
-      return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+      return defaultSort(a, b);
     });
 
     return sorted;
@@ -583,7 +586,6 @@ export default function ApplicationBoard() {
             showMapView={showMapView}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            onMobileSearchOpen={() => setMobileSearchDialog(true)}
             unreadMessages={unreadMessages}
             totalUnread={totalUnread}
             markAsRead={markAsRead}
@@ -879,13 +881,6 @@ export default function ApplicationBoard() {
         isOpen={!!alertDialog}
         message={alertDialog?.message}
         onClose={() => setAlertDialog(null)}
-      />
-      <MobileSearchDialog
-        open={mobileSearchDialog}
-        onClose={() => setMobileSearchDialog(false)}
-        value={searchQuery}
-        onChange={setSearchQuery}
-        onSubmit={() => {}}
       />
       <ResolvedCleanupPopup
         open={showCleanupPopup}
