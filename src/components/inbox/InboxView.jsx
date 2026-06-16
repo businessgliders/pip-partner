@@ -8,6 +8,7 @@ import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
 import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
+import FddCountdownPill from "@/components/board/FddCountdownPill";
 import {
   SOURCE_META,
   statusOrderFor,
@@ -218,7 +219,7 @@ export default function InboxView({
                 >
                   <ArrowLeft className="w-4 h-4" /> List
                 </button>
-                {/* Backgrounded container behind client name + ticket # */}
+                {/* Backgrounded container behind client name + ticket # + (franchise) FDD pill */}
                 <div className="flex items-center gap-1.5 min-w-0 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur">
                   <span className="text-sm font-semibold text-white truncate max-w-[140px] sm:max-w-[200px]">
                     {displayName(selectedTicket)}
@@ -227,6 +228,9 @@ export default function InboxView({
                     <span className="text-[10px] text-white/60 shrink-0">
                       #{selectedTicket.app_number}
                     </span>
+                  )}
+                  {sourceKey === "franchise" && (
+                    <FddCountdownPill ticket={selectedTicket} />
                   )}
                 </div>
                 <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
