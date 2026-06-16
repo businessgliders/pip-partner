@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen, ExternalLink } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen, ExternalLink, Palette } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getCanadaLand, clipCircleToLand } from "./landMask";
 import { statusOrderFor } from "@/components/inbox/inboxConfig";
 
@@ -610,6 +611,57 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
               )}
             </div>
             <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    title="Color legend"
+                    className="inline-flex items-center gap-1.5 h-9 px-2.5 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 transition"
+                  >
+                    <Palette className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="flex items-center -space-x-1">
+                      {ticketsByStatus.slice(0, 5).map(([status]) => (
+                        <span
+                          key={status}
+                          className="w-2.5 h-2.5 rounded-full ring-2 ring-white"
+                          style={{ background: getStatusColor(status).hex }}
+                        />
+                      ))}
+                    </span>
+                    <span className="hidden sm:inline">Legend</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-56 p-2">
+                  <div className="text-[10px] uppercase tracking-widest font-semibold text-slate-500 px-1 pb-1.5">
+                    Marker colors
+                  </div>
+                  {ticketsByStatus.length === 0 ? (
+                    <div className="text-xs text-slate-500 px-1 py-1">No applications mapped</div>
+                  ) : (
+                    <div className="space-y-0.5">
+                      {ticketsByStatus.map(([status, statusTickets]) => (
+                        <div
+                          key={status}
+                          className="flex items-center justify-between gap-2 px-1 py-1 rounded text-xs"
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{ background: getStatusColor(status).hex }}
+                            />
+                            <span className="capitalize text-slate-700 truncate">
+                              {String(status).replace(/_/g, " ")}
+                            </span>
+                          </span>
+                          <span className="text-slate-400 tabular-nums shrink-0">
+                            {statusTickets.length}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
               <label className="text-xs text-slate-600 font-medium">Radius:</label>
               <Select value={String(radiusKm)} onValueChange={(v) => setRadiusKm(Number(v))}>
                 <SelectTrigger className="h-9 w-28">
