@@ -73,7 +73,7 @@ export default function InfluencerProgram() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 40%, #fbe0e2 75%, #fce8ee 100%)" }}>
       <Seo
-        title="Influencer Program — Pilates in Pink™"
+        title="Influencer Program | Pilates in Pink™"
         description="Partner with Pilates in Pink™ as a brand ambassador and content creator. Enjoy complimentary classes, exclusive perks, and collaborations with a growing wellness brand."
         path="/Influencer"
       />

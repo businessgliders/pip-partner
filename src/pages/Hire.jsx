@@ -139,7 +139,7 @@ export default function Hire() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #c4896b 0%, #d4a088 30%, #f6eee7 60%, #fbe0e2 100%)" }}>
       <Seo
-        title="Become an Instructor — Pilates in Pink™ Careers"
+        title="Become an Instructor | Pilates in Pink™"
         description="Join Pilates in Pink™ as a certified reformer instructor. Inspire a movement-driven community and grow your teaching career with a luxury wellness brand."
         path="/Instructor"
       />

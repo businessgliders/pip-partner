@@ -18,7 +18,7 @@ export default function Login() {
       subtitle="Log in to your account"
     >
       <Seo
-        title="Log in — Pilates in Pink™"
+        title="Log in | Pilates in Pink™"
         description="Sign in to the Pilates in Pink™ Application Board."
         path="/login"
         noindex

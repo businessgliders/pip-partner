@@ -73,7 +73,7 @@ export default function FrontAdmin() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #5f8fa8 0%, #89b4cc 30%, #d6eaf4 60%, #eef6fa 100%)" }}>
       <Seo
-        title="Front Desk Careers — Pilates in Pink™"
+        title="Front Desk Careers | Pilates in Pink™"
         description="Be the first smile our members see. Apply to join the front desk team at a Pilates in Pink™ studio and help build a welcoming wellness community."
         path="/FrontAdmin"
       />

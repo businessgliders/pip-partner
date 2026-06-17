@@ -50,7 +50,7 @@ export default function Home() {
       }}
     >
       <Seo
-        title="Pilates in Pink™ — Find Your Place With Us"
+        title="Find Your Place With Us | Pilates in Pink™"
         description="Pilates in Pink™ — luxury reformer pilates. Explore franchise ownership, instructor and front desk careers, and our influencer program."
         path="/"
       />

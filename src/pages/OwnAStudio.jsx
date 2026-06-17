@@ -184,7 +184,7 @@ export default function OwnAStudio() {
       }}
     >
       <Seo
-        title="Own a Pilates Studio — Pilates in Pink™ Franchise"
+        title="Own a Studio | Pilates in Pink™"
         description="Become a Pilates in Pink™ franchise partner and bring luxury reformer pilates to your city. Book a private discovery call with our franchise team."
         path="/OwnAStudio"
         type="website"
