@@ -280,24 +280,26 @@ export default function InboxView({
                   <button
                     type="button"
                     onClick={() => setMobileTab("conversation")}
-                    className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
+                    title="Conversation"
+                    className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
                       mobileTab === "conversation"
                         ? "bg-white text-slate-900 shadow-sm"
                         : "text-white/75 hover:text-white"
                     }`}
                   >
-                    Conversation
+                    <MessagesSquare className="w-3.5 h-3.5" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setMobileTab("details")}
-                    className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${
+                    title="Details"
+                    className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
                       mobileTab === "details"
                         ? "bg-white text-slate-900 shadow-sm"
                         : "text-white/75 hover:text-white"
                     }`}
                   >
-                    Details
+                    <Info className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
