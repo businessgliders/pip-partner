@@ -115,14 +115,33 @@ export function relativeTime(iso) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+// Sentence-case helper: capitalizes the first letter of each
+// space/comma/hyphen-separated word. Used so user-entered location strings
+// (often typed all lowercase) render cleanly in the inbox.
+function toSentenceCase(s) {
+  if (!s) return s;
+  return String(s).toLowerCase().replace(/(^|[\s,\-/])([a-z])/g, (_, sep, ch) => sep + ch.toUpperCase());
+}
+
+// Compact form for the available_capital field (e.g. "$200K - $300K" → "$200–300K").
+function compactCapital(s) {
+  if (!s) return "";
+  const str = String(s);
+  const m = str.match(/\$?\s*(\d+)\s*K\s*-\s*\$?\s*(\d+)\s*K/i);
+  if (m) return `$${m[1]}–${m[2]}K`;
+  return str.replace(/\s+/g, " ").trim();
+}
+
 // One-line summary preview shown in the thread list under the name+status.
 export function previewLine(sourceKey, t) {
   if (!t) return "";
   if (sourceKey === "franchise") {
-    return [t.preferred_location, t.province].filter(Boolean).join(" · ") || t.email || "";
+    const parts = [toSentenceCase(t.preferred_location), t.province].filter(Boolean);
+    if (t.available_capital) parts.push(compactCapital(t.available_capital));
+    return parts.join(" · ") || t.email || "";
   }
   if (sourceKey === "instructor" || sourceKey === "frontadmin") {
-    return [t.preferred_studio, t.province].filter(Boolean).join(" · ") || t.email || "";
+    return [toSentenceCase(t.preferred_studio), t.province].filter(Boolean).join(" · ") || t.email || "";
   }
   return t.email || "";
 }
