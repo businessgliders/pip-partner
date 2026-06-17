@@ -162,11 +162,17 @@ export default function InboxView({
   }, [tickets, search, statusFilter, showArchived]);
 
   // Auto-select the first available thread whenever nothing is selected —
-  // applies to every device so each status rail click highlights and opens
-  // the first thread of that group. We mirror the thread list's sort here so
-  // "first" matches the first row the user actually sees on screen.
+  // DESKTOP ONLY (>= lg / 1024px). On mobile and tablet, we want users to
+  // land on the thread list and pick a conversation themselves; otherwise
+  // the email panel takes over the whole screen on load with no way back.
+  // We mirror the thread list's sort here so "first" matches the first row
+  // the user actually sees on screen.
   useEffect(() => {
     if (selectedId || filtered.length === 0) return;
+    const isDesktop =
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches;
+    if (!isDesktop) return;
     const statusKey = showArchived ? null : statusFilter;
     const sortMode = getDefaultSort(sourceKey, statusKey);
     const sorted = sortTickets(filtered, sortMode);
