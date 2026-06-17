@@ -14,22 +14,37 @@ export default function InboxThreadList({
   search,
   setSearch,
   sourceKey,
+  statusKey,
   unreadByTicket = {},
   isLoading,
 }) {
-  // Sort mode is per-list (resets when the source changes via parent unmount).
+  // Sort mode is per-list (resets when the source/status changes via parent unmount).
   // Franchise gets both options; other sources only get submission date.
+  // Default: franchise "new" status = submission; all other franchise statuses
+  // = appointment (soonest upcoming first).
   const showAppointment = sourceKey === "franchise";
-  const [sortMode, setSortMode] = useState("submission");
+  const defaultSort = showAppointment && statusKey && statusKey !== "new"
+    ? "appointment"
+    : "submission";
+  const [sortMode, setSortMode] = useState(defaultSort);
   const effectiveSort = showAppointment ? sortMode : "submission";
 
   const sortedTickets = useMemo(() => {
     const arr = [...tickets];
     if (effectiveSort === "appointment") {
+      // Soonest upcoming appointment first, then past appointments (most recent
+      // past first), then tickets with no booking sorted by submission (newest
+      // first).
+      const now = Date.now();
       return arr.sort((a, b) => {
-        const aT = a._cal_booking?.start ? new Date(a._cal_booking.start).getTime() : -Infinity;
-        const bT = b._cal_booking?.start ? new Date(b._cal_booking.start).getTime() : -Infinity;
-        return bT - aT;
+        const aT = a._cal_booking?.start ? new Date(a._cal_booking.start).getTime() : null;
+        const bT = b._cal_booking?.start ? new Date(b._cal_booking.start).getTime() : null;
+        const aBucket = aT == null ? 2 : aT >= now ? 0 : 1;
+        const bBucket = bT == null ? 2 : bT >= now ? 0 : 1;
+        if (aBucket !== bBucket) return aBucket - bBucket;
+        if (aBucket === 0) return aT - bT;       // upcoming: soonest first
+        if (aBucket === 1) return bT - aT;       // past: most recent first
+        return new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
       });
     }
     return arr.sort(

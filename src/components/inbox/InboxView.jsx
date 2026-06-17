@@ -186,6 +186,7 @@ export default function InboxView({
           } flex-col min-h-0`}
         >
           <InboxThreadList
+            key={`${sourceKey}-${showArchived ? "archived" : statusFilter || "all"}`}
             title={title}
             count={filtered.length}
             tickets={filtered}
@@ -194,6 +195,7 @@ export default function InboxView({
             search={search}
             setSearch={setSearch}
             sourceKey={sourceKey}
+            statusKey={showArchived ? null : statusFilter}
             unreadByTicket={unreadCountByTicket}
             isLoading={isLoading}
           />

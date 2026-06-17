@@ -833,8 +833,14 @@ export default function ApplicationBoard() {
                   overlay={stepOverlay}
                   getActions={(label) => {
                     const statusKey = labelToKey[label];
+                    // Default displayed mode matches the actual default sort:
+                    // "new" = submission, other franchise columns = appointment.
+                    const defaultMode =
+                      board.key === "franchise" && statusKey !== "new"
+                        ? "appointment"
+                        : "submission";
                     const sortActions = {
-                      sortMode: columnSort[statusKey] || "submission",
+                      sortMode: columnSort[statusKey] || defaultMode,
                       onSortChange: (mode) =>
                         setColumnSort((prev) => ({ ...prev, [statusKey]: mode })),
                     };
