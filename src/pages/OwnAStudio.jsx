@@ -14,6 +14,7 @@ import SchedulePlaceholder from "../components/franchise/SchedulePlaceholder";
 import LoadingTransition from "../components/franchise/LoadingTransition";
 import ResumeInquiryDialog from "../components/franchise/ResumeInquiryDialog";
 import FindApplicationDialog from "../components/franchise/FindApplicationDialog";
+import Seo from "@/components/Seo";
 
 // Wraps a promise so the UI never hangs forever if the network/backend stalls.
 function withTimeout(promise, ms, message = "Request timed out") {
@@ -182,6 +183,12 @@ export default function OwnAStudio() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
+      <Seo
+        title="Own a Pilates Studio — Pilates in Pink™ Franchise"
+        description="Become a Pilates in Pink™ franchise partner and bring luxury reformer pilates to your city. Book a private discovery call with our franchise team."
+        path="/OwnAStudio"
+        type="website"
+      />
       <BackToHome />
       <AdminPadlock />
       <ResumeInquiryDialog

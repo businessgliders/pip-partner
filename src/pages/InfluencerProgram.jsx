@@ -16,6 +16,7 @@ import { Sparkles, Gift, Users, Camera, Heart, CheckCircle2, Briefcase, Clipboar
 import { Link } from "react-router-dom";
 import BackToHome from "../components/BackToHome";
 import AdminPadlock from "../components/AdminPadlock";
+import Seo from "@/components/Seo";
 
 export default function InfluencerProgram() {
   const [formData, setFormData] = useState({
@@ -71,6 +72,11 @@ export default function InfluencerProgram() {
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #f1889b 0%, #f7b1bd 40%, #fbe0e2 75%, #fce8ee 100%)" }}>
+      <Seo
+        title="Influencer Program — Pilates in Pink™"
+        description="Partner with Pilates in Pink™ as a brand ambassador and content creator. Enjoy complimentary classes, exclusive perks, and collaborations with a growing wellness brand."
+        path="/Influencer"
+      />
       <BackToHome />
       <AdminPadlock to="https://inbox.pilatesinpinkstudio.com/inbox#influencer" />
       {/* Hero Section */}

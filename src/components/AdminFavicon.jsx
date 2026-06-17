@@ -3,8 +3,9 @@ import { useEffect } from "react";
 const ADMIN_FAVICON = "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/cd66b9522_c51835c8a_PiPPartner.png";
 const DEFAULT_FAVICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png";
 
-// Swaps the document favicon (and optional title) to the PIP Partner mark while
-// admin/backend pages are mounted, then restores the original on unmount.
+// Swaps the document favicon (and optional title) to the Pilates in Pink™
+// admin mark while admin/backend pages are mounted, then restores the
+// original on unmount.
 export default function AdminFavicon({ title }) {
   useEffect(() => {
     const head = document.head;

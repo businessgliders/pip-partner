@@ -35,7 +35,7 @@ export default function AdminHome() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
-      <AdminFavicon title="PIP Partner — Settings" />
+      <AdminFavicon title="Pilates in Pink™ — Settings" />
       <BackToHome label="Back" useHistoryBack />
 
       <div className="max-w-6xl mx-auto px-6 py-14">

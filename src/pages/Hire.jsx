@@ -17,6 +17,7 @@ import { Sparkles, CheckCircle2, Star, Award, Heart, Dumbbell, ChevronDown, Chev
 import { Link } from "react-router-dom";
 import BackToHome from "@/components/BackToHome";
 import AdminPadlock from "@/components/AdminPadlock";
+import Seo from "@/components/Seo";
 
 const QUALIFICATIONS = [
   "Personal Training / Group Fitness Cert",
@@ -137,6 +138,11 @@ export default function Hire() {
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #c4896b 0%, #d4a088 30%, #f6eee7 60%, #fbe0e2 100%)" }}>
+      <Seo
+        title="Become an Instructor — Pilates in Pink™ Careers"
+        description="Join Pilates in Pink™ as a certified reformer instructor. Inspire a movement-driven community and grow your teaching career with a luxury wellness brand."
+        path="/Instructor"
+      />
       <BackToHome />
       <AdminPadlock />
       {/* Hero */}

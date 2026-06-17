@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Sparkles, Briefcase, Users, ClipboardList, Lock } from "lucide-react";
 import AdminPadlock from "../components/AdminPadlock";
+import Seo from "@/components/Seo";
 
 const TILES = [
   {
@@ -48,6 +49,11 @@ export default function Home() {
           "linear-gradient(180deg, #f1889b 0%, #f7b1bd 35%, #fbe0e2 70%, #f6eee7 100%)",
       }}
     >
+      <Seo
+        title="Pilates in Pink™ — Find Your Place With Us"
+        description="Pilates in Pink™ — luxury reformer pilates. Explore franchise ownership, instructor and front desk careers, and our influencer program."
+        path="/"
+      />
       <AdminPadlock />
 
       {/* Header */}

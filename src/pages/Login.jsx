@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import Seo from "@/components/Seo";
 
 export default function Login() {
   const handleGoogle = () => {
@@ -16,6 +17,12 @@ export default function Login() {
       title="Welcome back"
       subtitle="Log in to your account"
     >
+      <Seo
+        title="Log in — Pilates in Pink™"
+        description="Sign in to the Pilates in Pink™ Application Board."
+        path="/login"
+        noindex
+      />
       <Button
         variant="outline"
         className="w-full h-12 text-sm font-medium"

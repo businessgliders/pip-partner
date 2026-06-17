@@ -528,7 +528,7 @@ export default function ApplicationBoard() {
         backgroundAttachment: "fixed",
       }}
     >
-      <AdminFavicon title="PIP Partner — Application Board" />
+      <AdminFavicon title="Pilates in Pink™ — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
       {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
       <div

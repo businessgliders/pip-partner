@@ -29,7 +29,7 @@ export default function AdminSettingsSignature() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <AdminFavicon title="PIP Partner — Signature" />
+      <AdminFavicon title="Pilates in Pink™ — Signature" />
       <BackToHome to="/Settings" label="Settings" />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="mb-6">
