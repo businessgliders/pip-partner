@@ -36,6 +36,9 @@ export default function InboxStatusRail({
           {group.statuses.map((s) => {
             const isActive = !archivedActive && active === s;
             const c = counts[s] || 0;
+            // Hide empty statuses on mobile/tablet (< md). Keep them on desktop
+            // so the rail layout stays stable for power users.
+            const hideWhenEmpty = c === 0 && !isActive ? "hidden md:flex" : "flex";
             return (
               <button
                 key={s}
@@ -43,7 +46,7 @@ export default function InboxStatusRail({
                 onClick={() => onChange(isActive ? null : s)}
                 title={statusLabel(sourceKey, s)}
                 style={isActive ? { background: accent, color: "#fff" } : undefined}
-                className={`relative w-full flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+                className={`relative w-full ${hideWhenEmpty} flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
                   isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
                 }`}
               >

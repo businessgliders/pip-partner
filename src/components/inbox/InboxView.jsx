@@ -269,12 +269,13 @@ export default function InboxView({
                     </span>
                   )}
                 </div>
-                <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                {/* Franchise FDD timer + Cal.com pills — mobile/tablet header
-                    (xl+ shows the full cluster inside the details panel). */}
-                {sourceKey === "franchise" && (
-                  <FranchiseMeetingPills ticket={selectedTicket} compact />
-                )}
+                {/* Status + FDD/Cal.com pills — kept together so they share a row on mobile */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
+                  {sourceKey === "franchise" && (
+                    <FranchiseMeetingPills ticket={selectedTicket} compact />
+                  )}
+                </div>
                 {/* Horizontal toggle — right-aligned on the header row, all viewports < xl. */}
                 <div className="flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
                   <button
