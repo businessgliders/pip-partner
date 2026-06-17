@@ -158,6 +158,27 @@ async function processMessageId(base44, accessToken, messageId) {
     }
   }
 
+  // Fallback: match by sender email across all submission entities. This catches
+  // emails the applicant sent fresh (no In-Reply-To, no ticket tag in subject)
+  // — e.g. a new follow-up they composed from their inbox.
+  if (!parentId && fromParsed.email) {
+    const senderEmail = fromParsed.email.toLowerCase();
+    for (const entityName of ENTITY_NAMES) {
+      try {
+        const matches = await base44.asServiceRole.entities[entityName].filter(
+          { email: senderEmail },
+          '-created_date',
+          1
+        );
+        if (matches.length > 0) {
+          parentId = matches[0].id;
+          parentType = entityName;
+          break;
+        }
+      } catch (_) {}
+    }
+  }
+
   if (!parentId || !parentType) {
     return { messageId, status: 'no_parent', subject };
   }
