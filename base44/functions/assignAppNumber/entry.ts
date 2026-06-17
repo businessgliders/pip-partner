@@ -29,12 +29,24 @@ function computeDisplayNumber(entityName, rawNumber) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    const body = await req.json().catch(() => ({}));
+
+    // Auth: shared secret (for entity automations / system calls) OR admin session (for manual invocation).
+    const expectedSecret = Deno.env.get('AUTOMATION_SHARED_SECRET');
+    const providedSecret =
+      req.headers.get('x-automation-secret') ||
+      req.headers.get('X-Automation-Secret') ||
+      body?.secret ||
+      '';
+    const secretOk = !!expectedSecret && providedSecret === expectedSecret;
+
+    if (!secretOk) {
+      const user = await base44.auth.me().catch(() => null);
+      if (user?.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
-    const body = await req.json();
     const entityName = body?.event?.entity_name;
     const entityId = body?.event?.entity_id;
 
