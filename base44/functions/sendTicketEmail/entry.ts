@@ -33,9 +33,17 @@ function brandedShell(innerHtml, preheader = '') {
 // Map ticket_type → From alias
 const FROM_ALIASES = {
   FranchiseInquiry: 'franchise@pilatesinpinkstudio.com',
-  InfluencerApplication: 'partner@pilatesinpinkstudio.com',
+  InfluencerApplication: 'internal@pilatesinpinkstudio.com',
   InstructorApplication: 'hire@pilatesinpinkstudio.com',
   FrontAdminApplication: 'hire@pilatesinpinkstudio.com',
+};
+
+// Map ticket_type → From display name
+const FROM_DISPLAY_NAMES = {
+  FranchiseInquiry: 'Franchise @ Pilates in Pink \u2122',
+  InfluencerApplication: 'Influencer @ Pilates in Pink \u2122',
+  InstructorApplication: 'Instructor @ Pilates in Pink \u2122',
+  FrontAdminApplication: 'Front Desk @ Pilates in Pink \u2122',
 };
 
 const ENTITY_NAME_MAP = {
@@ -304,7 +312,8 @@ Deno.serve(async (req) => {
     }
 
     const fromEmail = FROM_ALIASES[ticket_type] || 'hire@pilatesinpinkstudio.com';
-    const fromDisplay = rfc2047(`${BUSINESS_NAME} \u2122`);
+    const fromDisplayName = FROM_DISPLAY_NAMES[ticket_type] || `${BUSINESS_NAME} \u2122`;
+    const fromDisplay = rfc2047(fromDisplayName);
     const fromHeader = `${fromDisplay} <${fromEmail}>`;
 
     // Get Gmail access token
@@ -393,7 +402,7 @@ Deno.serve(async (req) => {
         ticket_type,
         direction: 'outbound',
         from_email: fromEmail,
-        from_name: `${BUSINESS_NAME} \u2122`,
+        from_name: fromDisplayName,
         to_email: ccEmails.length > 0 ? `${toEmail}, ${ccEmails.join(', ')}` : toEmail,
         subject,
         body_html: finalBodyHtml,
@@ -445,7 +454,7 @@ Deno.serve(async (req) => {
       references: refsChain,
       direction: 'outbound',
       from_email: fromEmail,
-      from_name: `${BUSINESS_NAME} \u2122`,
+      from_name: fromDisplayName,
       to_email: ccEmails.length > 0 ? `${toEmail}, ${ccEmails.join(', ')}` : toEmail,
       subject,
       body_html: finalBodyHtml,
