@@ -361,7 +361,7 @@ Deno.serve(async (req) => {
       sendPayload.threadId = lastReal.gmail_thread_id;
     }
 
-    const sendRes = await fetch(
+    const gmailSend = (payload) => fetch(
       'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
       {
         method: 'POST',
@@ -369,9 +369,21 @@ Deno.serve(async (req) => {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(sendPayload),
+        body: JSON.stringify(payload),
       }
     );
+
+    let sendRes = await gmailSend(sendPayload);
+
+    // If the existing threadId belongs to a different mailbox or was deleted,
+    // Gmail returns 404. Retry without the threadId so the email still goes
+    // out (it'll start a new Gmail thread, but our app-level thread stays
+    // intact via ticket_id grouping + RFC In-Reply-To/References headers).
+    if (sendRes.status === 404 && sendPayload.threadId) {
+      console.warn('Gmail threadId not found, retrying without threadId');
+      const { threadId, ...retryPayload } = sendPayload;
+      sendRes = await gmailSend(retryPayload);
+    }
 
     if (!sendRes.ok) {
       const errText = await sendRes.text();
