@@ -13,7 +13,9 @@ import {
 
 export default function InboxThreadRow({ ticket, sourceKey, active, unread, onClick }) {
   const name = displayName(ticket);
-  const time = relativeTime(ticket.updated_date || ticket.created_date);
+  // Show submission date by default; switch to the most recent outbound email
+  // date once we've actually emailed the applicant.
+  const time = relativeTime(ticket._last_email_at || ticket.created_date);
   const preview = previewLine(sourceKey, ticket);
   const isHiring = sourceKey === "instructor" || sourceKey === "frontadmin";
   const isFranchise = sourceKey === "franchise";

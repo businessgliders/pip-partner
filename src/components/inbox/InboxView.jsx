@@ -85,13 +85,42 @@ export default function InboxView({
     enabled: sourceKey === "franchise",
   });
 
+  // Latest outbound email timestamp per ticket — so the thread row shows the
+  // submission date by default, overridden by the most recent email sent.
+  // We filter to this source's entity to keep the result set small.
+  const { data: lastEmailByTicket = {} } = useQuery({
+    queryKey: ["inbox-last-email", entity],
+    queryFn: async () => {
+      const msgs = await base44.entities.EmailMessage.filter(
+        { ticket_type: entity, direction: "outbound" },
+        "-sent_at",
+        2000
+      );
+      const map = {};
+      for (const m of msgs) {
+        const ts = m.sent_at || m.created_date;
+        if (!m.ticket_id || !ts) continue;
+        // First hit wins because results are sorted by -sent_at.
+        if (!map[m.ticket_id]) map[m.ticket_id] = ts;
+      }
+      return map;
+    },
+    refetchInterval: 15000,
+    staleTime: 10000,
+    enabled: !!entity,
+  });
+
   const tickets = useMemo(
     () =>
       (rawTickets || []).map((t) => {
         const emailKey = (t.email || "").toLowerCase().trim();
-        return { ...t, _cal_booking: emailKey ? calBookings[emailKey] || null : null };
+        return {
+          ...t,
+          _cal_booking: emailKey ? calBookings[emailKey] || null : null,
+          _last_email_at: lastEmailByTicket[t.id] || null,
+        };
       }),
-    [rawTickets, calBookings]
+    [rawTickets, calBookings, lastEmailByTicket]
   );
 
   // Per-status counts for the left rail (non-archived only).
