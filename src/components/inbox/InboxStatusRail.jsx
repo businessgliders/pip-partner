@@ -21,7 +21,7 @@ export default function InboxStatusRail({
   const groups = statusGroupsFor(sourceKey);
 
   return (
-    <div className="flex flex-col gap-1 px-1 md:px-1.5 py-3 w-14 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
+    <div className="flex flex-col gap-1 px-0.5 md:px-1.5 py-3 w-12 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
       {groups.map((group, gi) => (
         <React.Fragment key={gi}>
           {group.label && (
@@ -43,12 +43,12 @@ export default function InboxStatusRail({
                 onClick={() => onChange(isActive ? null : s)}
                 title={statusLabel(sourceKey, s)}
                 style={isActive ? { background: accent, color: "#fff" } : undefined}
-                className={`relative w-13 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+                className={`relative w-full flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
                   isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
                 }`}
               >
                 <span className="text-base font-bold leading-none">{c}</span>
-                <span className="text-[9px] truncate max-w-[3.2rem] capitalize">
+                <span className="block w-full px-0.5 text-[9px] truncate capitalize text-center">
                   {statusLabel(sourceKey, s).split(" ")[0]}
                 </span>
               </button>
@@ -63,12 +63,12 @@ export default function InboxStatusRail({
           onClick={onArchived}
           title="Archived"
           style={archivedActive ? { background: accent, color: "#fff" } : undefined}
-          className={`mt-auto w-13 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+          className={`mt-auto w-full flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
             archivedActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
           }`}
         >
           <Archive className="w-4 h-4" />
-          <span>{archivedCount > 0 ? archivedCount : "Archived"}</span>
+          <span className="block w-full px-0.5 truncate text-center">{archivedCount > 0 ? archivedCount : "Archived"}</span>
         </button>
       )}
     </div>
