@@ -45,7 +45,9 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
   const toDisplay = isInternal ? resolveName(message.to_email) : message.to_email;
 
   const cleanText = stripQuotedReply(stripHtml(message.body_html || message.body_text || ""));
-  const isLong = cleanText.length > 180;
+  // Bubble is truncated to a single line, so surface the "tap to expand" icon
+  // whenever the preview likely overflows that one line.
+  const isLong = cleanText.length > 60;
   const senderName = isInbound
     ? message.from_name || message.from_email
     : message.sent_by || "Staff";
@@ -127,7 +129,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
              dangerouslySetInnerHTML={{ __html: message.body_html }}
            />
           ) : (
-           <div className={`lg:text-sm text-xs text-gray-800 truncate ${!isInbound ? "line-clamp-1" : "whitespace-pre-wrap break-words line-clamp-3 lg:line-clamp-4"}`}>
+           <div className="lg:text-sm text-xs text-gray-800 truncate line-clamp-1">
              {cleanText || "(empty)"}
            </div>
           )}

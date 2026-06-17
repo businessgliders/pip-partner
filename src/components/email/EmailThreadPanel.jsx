@@ -138,7 +138,7 @@ function buildIntakeSummary(ticket, ticketType) {
     .join("");
 }
 
-function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessageId, markAsRead }, ref) {
+function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessageId, markAsRead, headerContent }, ref) {
   const containerRef = useRef(null);
   const panelRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
@@ -376,24 +376,30 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
   return (
     <>
       <div ref={panelRef} className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
-          <div className="flex items-center gap-2 min-w-0">
-            <Mail className="w-4 h-4 text-pink-600 shrink-0" />
-            <span className="font-semibold text-sm lg:text-sm text-gray-800">
-              <span className="lg:hidden">Emails</span>
-              <span className="hidden lg:inline">Email Communications</span>
-            </span>
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
-              {allMessages.length}
-            </span>
+        {headerContent ? (
+          <div className="px-4 py-2.5 border-b bg-gradient-to-r from-amber-50 to-pink-50">
+            {headerContent}
           </div>
-          {FROM_ALIASES[ticketType] && (
-            <span className="hidden lg:block text-[11px] text-gray-500 truncate ml-2 shrink-0">
-              <span className="text-gray-400">From:</span>{" "}
-              <span className="font-medium text-gray-700">{FROM_ALIASES[ticketType]}</span>
-            </span>
-          )}
-        </div>
+        ) : (
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50">
+            <div className="flex items-center gap-2 min-w-0">
+              <Mail className="w-4 h-4 text-pink-600 shrink-0" />
+              <span className="font-semibold text-sm lg:text-sm text-gray-800">
+                <span className="lg:hidden">Emails</span>
+                <span className="hidden lg:inline">Email Communications</span>
+              </span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700">
+                {allMessages.length}
+              </span>
+            </div>
+            {FROM_ALIASES[ticketType] && (
+              <span className="hidden lg:block text-[11px] text-gray-500 truncate ml-2 shrink-0">
+                <span className="text-gray-400">From:</span>{" "}
+                <span className="font-medium text-gray-700">{FROM_ALIASES[ticketType]}</span>
+              </span>
+            )}
+          </div>
+        )}
 
         <div
           ref={containerRef}

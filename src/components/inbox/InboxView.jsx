@@ -249,8 +249,9 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              {/* Mobile/tablet header: back + container(name + #) + status + (tablet only) horizontal toggle */}
-              <div className="xl:hidden flex items-center gap-2 mb-2 flex-wrap">
+              {/* Mobile/tablet (< lg) header: back + container(name + #) + status + horizontal toggle.
+                  On lg+, the same controls live inside the EmailThreadPanel header. */}
+              <div className="lg:hidden flex items-center gap-2 mb-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setSelectedId(null)}
@@ -319,16 +320,86 @@ export default function InboxView({
                     ticketType={entity}
                     currentUser={user}
                     markAsRead={markAsRead}
+                    headerContent={
+                      <div className="hidden lg:flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-sm font-semibold text-gray-800 truncate max-w-[220px]">
+                            {displayName(selectedTicket)}
+                          </span>
+                          {selectedTicket.app_number && (
+                            <span className="text-[10px] text-gray-500 shrink-0">
+                              #{selectedTicket.app_number}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
+                          {sourceKey === "franchise" && (
+                            <FranchiseMeetingPills ticket={selectedTicket} compact />
+                          )}
+                        </div>
+                        {/* Conv/Details toggle — only on lg-to-xl (contact panel hidden). */}
+                        <div className="xl:hidden flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/70 border border-gray-200">
+                          <button
+                            type="button"
+                            onClick={() => setMobileTab("conversation")}
+                            title="Conversation"
+                            className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                              mobileTab === "conversation"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            <MessagesSquare className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMobileTab("details")}
+                            title="Details"
+                            className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                              mobileTab === "details"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
 
                 {/* Details inline — only used on < xl when the user switches
-                    to the details tab; xl+ uses the side-column instance below. */}
+                    to the details tab; xl+ uses the side-column instance below.
+                    On lg+, we add an inline toggle row so the user can switch
+                    back to the conversation (the toggle in the email header
+                    isn't visible while the conversation panel is hidden). */}
                 <div
                   className={`flex-1 min-w-0 min-h-0 xl:hidden ${
                     mobileTab === "details" ? "flex flex-col" : "hidden"
                   }`}
                 >
+                  <div className="hidden lg:flex justify-end mb-2">
+                    <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-white/70 border border-gray-200">
+                      <button
+                        type="button"
+                        onClick={() => setMobileTab("conversation")}
+                        title="Conversation"
+                        className="h-7 w-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900"
+                      >
+                        <MessagesSquare className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMobileTab("details")}
+                        title="Details"
+                        className="h-7 w-7 rounded-full flex items-center justify-center bg-slate-900 text-white shadow-sm"
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                   <InboxContactPanel
                     ticket={selectedTicket}
                     sourceKey={sourceKey}
