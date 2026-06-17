@@ -9,11 +9,10 @@ function formatAppNumber(n) {
   return String(6150 + Number(n) * 19);
 }
 
-const OWNER_EMAILS = [
-  'rashmeen@pilatesinpinkstudio.com',
-  'gurpreen@pilatesinpinkstudio.com',
-  'sahil@pilatesinpinkstudio.com',
-];
+const OWNER_EMAILS = (Deno.env.get('HIRING_OWNER_EMAILS') || '')
+  .split(',')
+  .map((e) => e.trim())
+  .filter(Boolean);
 const FROM_EMAIL = 'hire@pilatesinpinkstudio.com';
 const FROM_NAME = 'Pilates in Pink \u2122';
 

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const SHARED_DRIVE_ID = '0AAZGMpSg7QNfUk9PVA';
+const SHARED_DRIVE_ID = Deno.env.get('DRIVE_LEADS_SHARED_FOLDER_ID') || '';
 const LEADS_FOLDER_NAME = 'Leads';
 
 Deno.serve(async (req) => {
@@ -15,6 +15,9 @@ Deno.serve(async (req) => {
     const { ticket_id, ticket_type, client_name } = await req.json();
     if (!ticket_id || !ticket_type || !client_name) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    if (!SHARED_DRIVE_ID) {
+      return Response.json({ error: 'DRIVE_LEADS_SHARED_FOLDER_ID not configured' }, { status: 500 });
     }
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
