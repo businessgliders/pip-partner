@@ -160,13 +160,12 @@ export default function InboxView({
     });
   }, [tickets, search, statusFilter, showArchived]);
 
-  // Auto-select first thread when nothing is selected (desktop only).
+  // Auto-select the first available thread whenever nothing is selected —
+  // applies to every device so each status rail click highlights and opens
+  // the first thread of that group.
   useEffect(() => {
     if (!selectedId && filtered.length > 0) {
-      const isDesktop =
-        typeof window !== "undefined" &&
-        window.matchMedia("(min-width: 1024px)").matches;
-      if (isDesktop) setSelectedId(filtered[0].id);
+      setSelectedId(filtered[0].id);
     }
   }, [filtered, selectedId]);
 
