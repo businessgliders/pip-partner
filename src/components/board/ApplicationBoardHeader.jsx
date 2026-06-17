@@ -213,13 +213,9 @@ export default function ApplicationBoardHeader({
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <Link
-            to="/ApplicationBoard"
-            onClick={() => {
-              setShowArchived(false);
-              setSearchQuery("");
-              setHiddenColumns([]);
-            }}
+          <a
+            href="/ApplicationBoard?view=inbox"
+            title="Reload board — Inbox view"
             className="flex items-center shrink-0"
           >
             <img
@@ -227,7 +223,7 @@ export default function ApplicationBoardHeader({
               alt="Pilates in Pink"
               className="h-9 md:h-10 object-contain drop-shadow-xl hover:scale-105 transition-transform"
             />
-          </Link>
+          </a>
 
           {/* Source tabs — centred on mobile, left-aligned (after logo) on md+. */}
           <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar -ml-1 flex justify-center md:justify-start">
