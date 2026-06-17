@@ -15,6 +15,7 @@ import {
   statusLabel,
   displayName,
 } from "./inboxConfig";
+import { getDefaultSort, sortTickets } from "./inboxSort";
 
 /**
  * Inbox View — 3-pane clone of pip-hub's /inbox, adapted to use this app's
@@ -162,12 +163,15 @@ export default function InboxView({
 
   // Auto-select the first available thread whenever nothing is selected —
   // applies to every device so each status rail click highlights and opens
-  // the first thread of that group.
+  // the first thread of that group. We mirror the thread list's sort here so
+  // "first" matches the first row the user actually sees on screen.
   useEffect(() => {
-    if (!selectedId && filtered.length > 0) {
-      setSelectedId(filtered[0].id);
-    }
-  }, [filtered, selectedId]);
+    if (selectedId || filtered.length === 0) return;
+    const statusKey = showArchived ? null : statusFilter;
+    const sortMode = getDefaultSort(sourceKey, statusKey);
+    const sorted = sortTickets(filtered, sortMode);
+    if (sorted.length > 0) setSelectedId(sorted[0].id);
+  }, [filtered, selectedId, sourceKey, statusFilter, showArchived]);
 
   const selectedTicket = tickets.find((t) => t.id === selectedId) || null;
 

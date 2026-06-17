@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import InboxThreadRow from "./InboxThreadRow";
 import InboxSortMenu from "./InboxSortMenu";
+import { getDefaultSort, sortTickets } from "./inboxSort";
 
 export default function InboxThreadList({
   title,
@@ -23,35 +24,13 @@ export default function InboxThreadList({
   // Default: franchise "new" status = submission; all other franchise statuses
   // = appointment (soonest upcoming first).
   const showAppointment = sourceKey === "franchise";
-  const defaultSort = showAppointment && statusKey && statusKey !== "new"
-    ? "appointment"
-    : "submission";
-  const [sortMode, setSortMode] = useState(defaultSort);
+  const [sortMode, setSortMode] = useState(getDefaultSort(sourceKey, statusKey));
   const effectiveSort = showAppointment ? sortMode : "submission";
 
-  const sortedTickets = useMemo(() => {
-    const arr = [...tickets];
-    if (effectiveSort === "appointment") {
-      // Soonest upcoming appointment first, then past appointments (most recent
-      // past first), then tickets with no booking sorted by submission (newest
-      // first).
-      const now = Date.now();
-      return arr.sort((a, b) => {
-        const aT = a._cal_booking?.start ? new Date(a._cal_booking.start).getTime() : null;
-        const bT = b._cal_booking?.start ? new Date(b._cal_booking.start).getTime() : null;
-        const aBucket = aT == null ? 2 : aT >= now ? 0 : 1;
-        const bBucket = bT == null ? 2 : bT >= now ? 0 : 1;
-        if (aBucket !== bBucket) return aBucket - bBucket;
-        if (aBucket === 0) return aT - bT;       // upcoming: soonest first
-        if (aBucket === 1) return bT - aT;       // past: most recent first
-        return new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
-      });
-    }
-    return arr.sort(
-      (a, b) =>
-        new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime()
-    );
-  }, [tickets, effectiveSort]);
+  const sortedTickets = useMemo(
+    () => sortTickets(tickets, effectiveSort),
+    [tickets, effectiveSort]
+  );
 
   // Franchise + submission sort: group conversations by submission Month-Year.
   // All other combinations render as a flat list.
