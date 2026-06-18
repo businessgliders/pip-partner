@@ -33,8 +33,8 @@ const CAL_EVENT_LINKS = {
 // Franchise sub-types — kept in sync with the backend whitelist in
 // getCalAvailability / bookCalEvent. Defaults to Discovery on open.
 const FRANCHISE_EVENT_TYPES = [
-  { id: "5595622", label: "Discovery" },
-  { id: "6052661", label: "Prospectus" },
+  { id: "5595622", label: "[Step 1] Discovery" },
+  { id: "6052661", label: "[Step 2] Prospectus" },
 ];
 
 export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscreen, boardKey = 'hiring' }) {
