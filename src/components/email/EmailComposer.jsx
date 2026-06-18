@@ -236,6 +236,9 @@ export default function EmailComposer({
             notes: `Booked by staff from admin board (ticket ${ticket?.id || ""})`,
             inquiryId: ticket?.id,
             boardKey: ticketType === 'FranchiseInquiry' ? 'franchise' : 'hiring',
+            // Franchise sub-type chosen in the popover (Discovery / Prospectus).
+            // Ignored server-side for non-franchise.
+            eventTypeId: pendingBooking.eventTypeId,
           });
         } catch (bookErr) {
           console.error("bookCalEvent failed after send", bookErr);
@@ -298,8 +301,8 @@ export default function EmailComposer({
     setShowSuggest(false);
   };
 
-  const handleSlotSelected = ({ start, timeZone, friendly }) => {
-    setPendingBooking({ start, timeZone, friendly });
+  const handleSlotSelected = ({ start, timeZone, friendly, eventTypeId }) => {
+    setPendingBooking({ start, timeZone, friendly, eventTypeId });
     const greetingName = firstName || ticketName || "there";
     const block = `
 <p style="margin:0 0 12px;">Hi ${greetingName},</p>

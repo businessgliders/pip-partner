@@ -24,10 +24,21 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { start, timeZone = 'America/Toronto', name, email, phone, notes, inquiryId, friendlyTime, boardKey = 'hiring' } = body || {};
 
-    // Determine event type based on boardKey: 'franchise' or 'hiring' (default)
-    const eventTypeId = boardKey === 'franchise'
-      ? Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE')
-      : Deno.env.get('CAL_EVENT_TYPE_ID_HIRING');
+    // Determine event type based on boardKey: 'franchise' or 'hiring' (default).
+    // Franchise supports two whitelisted sub-types selectable per-booking by
+    // admin staff. Any non-whitelisted override falls back to the default.
+    const FRANCHISE_ALLOWED_EVENT_TYPES = ['5595622', '6052661'];
+    let eventTypeId;
+    if (boardKey === 'franchise') {
+      const requested = body.eventTypeId ? String(body.eventTypeId) : null;
+      if (requested && FRANCHISE_ALLOWED_EVENT_TYPES.includes(requested)) {
+        eventTypeId = requested;
+      } else {
+        eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE');
+      }
+    } else {
+      eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID_HIRING');
+    }
 
     if (!eventTypeId) {
       return Response.json({ error: `Cal.com event type for '${boardKey}' is not configured` }, { status: 500 });

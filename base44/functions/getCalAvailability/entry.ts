@@ -19,11 +19,22 @@ Deno.serve(async (req) => {
     let body = {};
     try { body = await req.json(); } catch (_) { body = {}; }
 
-    // Determine event type based on boardKey: 'franchise' or 'hiring' (default)
+    // Determine event type based on boardKey: 'franchise' or 'hiring' (default).
+    // Franchise supports two whitelisted sub-types (Discovery, Prospectus) that
+    // can be selected per-booking by admin staff via the BookCallPopover.
     const boardKey = body.boardKey || 'hiring';
-    const eventTypeId = boardKey === 'franchise'
-      ? Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE')
-      : Deno.env.get('CAL_EVENT_TYPE_ID_HIRING');
+    const FRANCHISE_ALLOWED_EVENT_TYPES = ['5595622', '6052661'];
+    let eventTypeId;
+    if (boardKey === 'franchise') {
+      const requested = body.eventTypeId ? String(body.eventTypeId) : null;
+      if (requested && FRANCHISE_ALLOWED_EVENT_TYPES.includes(requested)) {
+        eventTypeId = requested;
+      } else {
+        eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE');
+      }
+    } else {
+      eventTypeId = Deno.env.get('CAL_EVENT_TYPE_ID_HIRING');
+    }
 
     if (!eventTypeId) {
       return Response.json({ error: `Cal.com event type for '${boardKey}' is not configured` }, { status: 500 });
