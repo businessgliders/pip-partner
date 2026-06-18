@@ -10,6 +10,9 @@ import {
 import {
   Popover, PopoverTrigger, PopoverContent
 } from "@/components/ui/popover";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
@@ -310,7 +313,7 @@ export default function EmailComposer({
   };
 
   return (
-    <div className={`border-t bg-white space-y-3 ${isMobileFullscreen ? "p-3" : "p-4"}`}>
+    <div className={`border-t bg-white space-y-2 ${isMobileFullscreen ? "p-3" : "px-4 py-3"}`}>
       <div className="flex items-start justify-between text-xs text-gray-600 gap-2">
         <div className="space-y-0.5 min-w-0 flex-1">
           <div>
@@ -595,27 +598,55 @@ export default function EmailComposer({
           <button type="button" onClick={handleInsertLink} className="p-1.5 hover:bg-gray-200 rounded">
             <LinkIcon className="w-3.5 h-3.5" />
           </button>
-          <div className="ml-auto flex items-center gap-1 flex-wrap justify-end">
-            <Button
-              size="sm"
-              variant={showDescribe ? "default" : "outline"}
-              className={`h-7 px-2 ${showDescribe ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
-              onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
-              title="Describe in simple words"
-            >
-              <Sparkles className="w-3.5 h-3.5 lg:mr-1.5" />
-              <span className="hidden lg:inline">Describe</span>
-            </Button>
-            <Button
-              size="sm"
-              variant={showSuggest ? "default" : "outline"}
-              className={`h-7 px-2 ${showSuggest ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
-              onClick={() => { setShowSuggest((v) => !v); setShowDescribe(false); }}
-              title="Suggest replies"
-            >
-              <Lightbulb className="w-3.5 h-3.5 lg:mr-1.5" />
-              <span className="hidden lg:inline">Suggest</span>
-            </Button>
+          <div className="ml-auto flex items-center gap-1 justify-end">
+            {/* AI menu — bundles Describe / Suggest / Polish into one button to
+                keep the toolbar on a single row and give the editor more space. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant={(showDescribe || showSuggest) ? "default" : "outline"}
+                  className={`h-7 px-2 ${(showDescribe || showSuggest)
+                    ? "bg-purple-600 hover:bg-purple-700 text-white"
+                    : "text-purple-700 border-purple-200 hover:bg-purple-50"}`}
+                  title="AI assist"
+                >
+                  <Sparkles className="w-3.5 h-3.5 lg:mr-1.5" />
+                  <span className="hidden lg:inline">AI</span>
+                  <ChevronDown className="w-3 h-3 ml-0.5 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
+                  className="text-xs gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="flex-1">Describe</span>
+                  {showDescribe && <span className="text-[10px] text-purple-600 font-semibold">ON</span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => { setShowSuggest((v) => !v); setShowDescribe(false); }}
+                  className="text-xs gap-2"
+                >
+                  <Lightbulb className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="flex-1">Suggest replies</span>
+                  {showSuggest && <span className="text-[10px] text-purple-600 font-semibold">ON</span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handlePolish}
+                  disabled={polishing}
+                  className="text-xs gap-2"
+                >
+                  {polishing ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-600" />
+                  ) : (
+                    <Wand2 className="w-3.5 h-3.5 text-purple-600" />
+                  )}
+                  <span className="flex-1">Polish draft</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <TemplatePicker vars={vars} onSelect={handleTemplate} isMobileFullscreen={isMobileFullscreen} />
             <BookCallPopover
               onSelect={handleSlotSelected}
@@ -660,22 +691,26 @@ export default function EmailComposer({
           suppressContentEditableWarning
         />
         {currentUser?.signature_html && (
-          <div className="border-t bg-gray-50/60 px-3 py-1.5">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <div className="flex items-center gap-1">
-                <span className="text-[8px] uppercase tracking-wider text-gray-400 font-semibold">
+          <div className="border-t bg-gray-50/60 px-2.5 py-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 min-w-0 flex-1">
+                <span className="text-[9px] uppercase tracking-wider text-gray-400 font-semibold shrink-0">
                   Signature
                 </span>
                 <button
                   type="button"
                   onClick={() => navigate("/Settings/Signature")}
-                  className="text-gray-400 hover:text-gray-700 p-0.5"
+                  className="text-gray-400 hover:text-gray-700 p-0.5 shrink-0"
                   title="Manage signature"
                 >
                   <Settings2 className="w-3 h-3" />
                 </button>
+                <div
+                  className="hidden lg:block text-[10px] text-gray-500 truncate ml-1 [&_*]:!inline [&_p]:!m-0 [&_br]:hidden"
+                  dangerouslySetInnerHTML={{ __html: currentUser.signature_html }}
+                />
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -781,7 +816,7 @@ export default function EmailComposer({
               </div>
             </div>
             <div
-              className="prose prose-xs max-w-none text-gray-600 text-xs [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
+              className="lg:hidden prose prose-xs max-w-none text-gray-600 text-[11px] mt-1 [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
               dangerouslySetInnerHTML={{ __html: currentUser.signature_html }}
             />
           </div>
@@ -790,16 +825,6 @@ export default function EmailComposer({
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handlePolish}
-            disabled={polishing}
-            title="Polish with AI"
-            className="text-purple-700 border-purple-200 hover:bg-purple-50 p-1.5"
-          >
-            {polishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
-          </Button>
           {draftStatus === "saving" && (
             <span className="text-[11px] text-gray-400 flex items-center gap-1">
               <Loader2 className="w-3 h-3 animate-spin" />
