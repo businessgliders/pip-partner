@@ -520,8 +520,14 @@ export default function ApplicationBoard() {
 
   return (
     <div
-      className="h-screen flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-hidden"
+      className="flex flex-col px-4 md:px-8 pt-4 md:pt-8 pb-2 relative overflow-hidden"
       style={{
+        // Use dynamic viewport height where supported (100dvh) so iOS Safari's
+        // collapsing URL bar doesn't change layout, and respect the Dynamic
+        // Island / notch by padding the top with the safe-area inset.
+        height: "100dvh",
+        minHeight: "100vh",
+        paddingTop: "max(1rem, env(safe-area-inset-top))",
         backgroundImage: "linear-gradient(to bottom, #2b1a1f, #5a3a42)",
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -869,8 +875,10 @@ export default function ApplicationBoard() {
 
       {/* iOS-style mobile bottom tab bar — source selector (mobile only).
           Wrapped in a div because the inner <nav> uses inline `display:grid`
-          which would otherwise override Tailwind's `sm:hidden` class. */}
-      <div className="sm:hidden -mx-4 -mb-2 mt-2 relative z-10">
+          which would otherwise override Tailwind's `sm:hidden` class.
+          We extend the wrapper edge-to-edge (no negative bottom margin) so the
+          home-indicator safe-area padding inside <nav> can paint correctly. */}
+      <div className="sm:hidden -mx-4 mt-2 relative z-10">
         <MobileSourceTabBar
           activeTab={activeTab}
           onTabChange={setActiveTab}
