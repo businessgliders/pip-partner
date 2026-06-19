@@ -145,6 +145,7 @@ async function postToHub(applicationData) {
     content_style: applicationData.content_style || '',
     location: applicationData.location || '',
     why_partner: applicationData.why_partner || '',
+    submitted_at: applicationData.created_date || '',
   };
   try {
     const res = await fetch(
