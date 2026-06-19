@@ -9,6 +9,7 @@ import AdminFavicon from "../components/AdminFavicon";
 import MigrationPopup from "../components/MigrationPopup";
 import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
 import MobileSourceTabBar from "../components/board/MobileSourceTabBar";
+import WebAppMeasures from "../components/board/WebAppMeasures";
 import Tutorial, { hasSeenTutorial } from "../components/board/Tutorial";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
@@ -534,6 +535,7 @@ export default function ApplicationBoard() {
         backgroundAttachment: "fixed",
       }}
     >
+      <WebAppMeasures />
       <AdminFavicon title="Pilates in Pink™ — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
       {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
