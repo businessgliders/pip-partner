@@ -190,9 +190,10 @@ export default function InboxView({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-0 flex gap-2 md:gap-3 px-2 pb-3">
-        {/* Status rail — visible on mobile/tablet too; hidden only when a
-            conversation is opened on screens < lg (full-screen reading mode). */}
-        <div className={selectedTicket ? "hidden lg:flex" : "flex"}>
+        {/* Status rail — always visible across all viewports, including while
+            reading a thread on mobile/tablet (so users can quickly switch
+            statuses without backing out of the conversation). */}
+        <div className="flex">
           <InboxStatusRail
             sourceKey={sourceKey}
             statuses={statuses}
@@ -249,60 +250,65 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              {/* Mobile/tablet (< lg) header: back + container(name + #) + status + horizontal toggle.
-                  On lg+, the same controls live inside the EmailThreadPanel header. */}
-              <div className="lg:hidden flex items-center gap-2 mb-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setSelectedId(null)}
-                  className="lg:hidden inline-flex items-center gap-1 text-xs text-white/80 hover:text-white shrink-0"
-                >
-                  <ArrowLeft className="w-4 h-4" /> List
-                </button>
-                {/* Backgrounded container behind client name + ticket # */}
-                <div className="flex items-center gap-1.5 min-w-0 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur">
-                  <span className="text-sm font-semibold text-white truncate max-w-[140px] sm:max-w-[200px]">
-                    {displayName(selectedTicket)}
-                  </span>
-                  {selectedTicket.app_number && (
-                    <span className="text-[10px] text-white/60 shrink-0">
-                      #{selectedTicket.app_number}
+              {/* Mobile/tablet (< lg) header — two rows.
+                  Row 1: back button + client name + ticket #.
+                  Row 2: status + FDD/Cal.com pills (left) and conv/details toggle (right).
+                  On lg+, the equivalent controls live inside the EmailThreadPanel header. */}
+              <div className="lg:hidden mb-2 space-y-1.5">
+                {/* Row 1 — identification */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(null)}
+                    className="inline-flex items-center gap-1 text-xs text-white/80 hover:text-white shrink-0"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> List
+                  </button>
+                  <div className="flex items-center gap-1.5 min-w-0 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur">
+                    <span className="text-sm font-semibold text-white truncate max-w-[140px] sm:max-w-[200px]">
+                      {displayName(selectedTicket)}
                     </span>
-                  )}
+                    {selectedTicket.app_number && (
+                      <span className="text-[10px] text-white/60 shrink-0">
+                        #{selectedTicket.app_number}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                {/* Status + FDD/Cal.com pills — kept together so they share a row on mobile */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                  {sourceKey === "franchise" && (
-                    <FranchiseMeetingPills ticket={selectedTicket} compact />
-                  )}
-                </div>
-                {/* Horizontal toggle — right-aligned on the header row, all viewports < xl. */}
-                <div className="flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25">
-                  <button
-                    type="button"
-                    onClick={() => setMobileTab("conversation")}
-                    title="Conversation"
-                    className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
-                      mobileTab === "conversation"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-white/75 hover:text-white"
-                    }`}
-                  >
-                    <MessagesSquare className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMobileTab("details")}
-                    title="Details"
-                    className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
-                      mobileTab === "details"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-white/75 hover:text-white"
-                    }`}
-                  >
-                    <Info className="w-3.5 h-3.5" />
-                  </button>
+                {/* Row 2 — status + FDD pills (left), conv/details toggle (right) */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
+                    {sourceKey === "franchise" && (
+                      <FranchiseMeetingPills ticket={selectedTicket} compact />
+                    )}
+                  </div>
+                  <div className="flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-white/15 border border-white/25 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setMobileTab("conversation")}
+                      title="Conversation"
+                      className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                        mobileTab === "conversation"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-white/75 hover:text-white"
+                      }`}
+                    >
+                      <MessagesSquare className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobileTab("details")}
+                      title="Details"
+                      className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                        mobileTab === "details"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-white/75 hover:text-white"
+                      }`}
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
