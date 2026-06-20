@@ -18,6 +18,7 @@ import AdminSettingsSignature from './pages/AdminSettingsSignature';
 import ApplicationBoard from './pages/ApplicationBoard';
 import AdminGate from './components/AdminGate';
 import BoardAccessGate from './components/BoardAccessGate';
+import PublicForm from './pages/PublicForm';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -35,6 +36,14 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+
+  // PUBLIC SHORT-CIRCUIT — /form must render for everyone with no auth checks,
+  // no loading spinner, no layout wrapper. Visitors arriving via a tokenized
+  // share link should never be redirected to login or shown the "user not
+  // registered" screen.
+  if (typeof window !== "undefined" && window.location.pathname.toLowerCase() === "/form") {
+    return <PublicForm />;
+  }
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -101,6 +110,7 @@ const AuthenticatedApp = () => {
       <Route path="/Instructor" element={<Hire />} />
       <Route path="/FrontAdmin" element={<FrontAdmin />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/form" element={<PublicForm />} />
       {/* Protected routes — require a signed-in user */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
