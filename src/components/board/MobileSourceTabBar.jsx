@@ -9,9 +9,13 @@ const ICONS = {
 };
 
 /**
- * iOS-style bottom tab bar for switching between board sources. Mobile only
- * — `md:hidden` should be added to the wrapping div / className when used.
+ * iOS-style bottom tab bar for switching between board sources. Mobile + tablet
+ * only — `lg:hidden` should be added to the wrapping div / className when used.
  * Spans full width and respects the iOS safe area inset.
+ *
+ * Optional `extraSlot` is rendered as an additional tab on the far right
+ * (e.g. notification bell on mobile/tablet, where the bell has been moved
+ * out of the top header to save vertical space).
  */
 export default function MobileSourceTabBar({
   activeTab,
@@ -19,16 +23,18 @@ export default function MobileSourceTabBar({
   boards,
   allowedKeys,
   className = "",
+  extraSlot = null,
 }) {
   if (!boards || boards.length <= 1) return null;
   const allowed = allowedKeys ? new Set(allowedKeys) : null;
+  const totalColumns = boards.length + (extraSlot ? 1 : 0);
 
   return (
     <nav
       className={`shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-1px_0_rgba(0,0,0,0.04),0_-8px_24px_rgba(0,0,0,0.08)] ${className}`}
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${boards.length}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${totalColumns}, minmax(0, 1fr))`,
         // Respect the iOS home-indicator safe area. `max(...)` keeps a
         // minimum 4px bottom inset on devices/browsers that report 0 (Android,
         // older iOS, desktop dev) so labels never touch the screen edge.
@@ -74,6 +80,11 @@ export default function MobileSourceTabBar({
           </button>
         );
       })}
+      {extraSlot && (
+        <div className="flex items-center justify-center py-2">
+          {extraSlot}
+        </div>
+      )}
     </nav>
   );
 }

@@ -9,6 +9,7 @@ import AdminFavicon from "../components/AdminFavicon";
 import MigrationPopup from "../components/MigrationPopup";
 import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
 import MobileSourceTabBar from "../components/board/MobileSourceTabBar";
+import TabBarNotificationBell from "../components/board/TabBarNotificationBell";
 import WebAppMeasures from "../components/board/WebAppMeasures";
 import Tutorial, { hasSeenTutorial } from "../components/board/Tutorial";
 import useUnreadMessages from "../hooks/useUnreadMessages";
@@ -875,17 +876,34 @@ export default function ApplicationBoard() {
         </div>
       </div>
 
-      {/* iOS-style mobile bottom tab bar — source selector (mobile only).
+      {/* iOS-style bottom tab bar — source selector (mobile + tablet, < lg).
           Wrapped in a div because the inner <nav> uses inline `display:grid`
-          which would otherwise override Tailwind's `sm:hidden` class.
-          We extend the wrapper edge-to-edge (no negative bottom margin) so the
-          home-indicator safe-area padding inside <nav> can paint correctly. */}
-      <div className="sm:hidden -mx-4 mt-2 relative z-10">
+          which would otherwise override Tailwind's `lg:hidden` class.
+          The notification bell lives here too — it has been removed from the
+          top header on mobile/tablet to free up vertical space. */}
+      <div className="lg:hidden -mx-4 mt-2 relative z-10">
         <MobileSourceTabBar
           activeTab={activeTab}
           onTabChange={setActiveTab}
           boards={allowedBoards}
           allowedKeys={allowedBoards.map((b) => b.key)}
+          extraSlot={
+            <TabBarNotificationBell
+              unreadMessages={unreadMessages}
+              totalUnread={totalUnread}
+              markAsRead={markAsRead}
+              onSelect={(ticket, messageId, tabKey) => {
+                if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
+                setSearchQuery("");
+                setHiddenColumns([]);
+                setShowArchived(!!ticket?.archived);
+                setHighlightedTicketId(ticket?.id || null);
+                setTimeout(() => setHighlightedTicketId(null), 3000);
+                setHighlightMessageId(messageId);
+                if (viewMode !== "inbox") setSelectedTicket(ticket);
+              }}
+            />
+          }
         />
       </div>
 

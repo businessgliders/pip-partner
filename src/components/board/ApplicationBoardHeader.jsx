@@ -16,6 +16,8 @@ import NotificationCenter from "@/components/admin/NotificationCenter";
 import BoardTabs from "@/components/board/BoardTabs";
 import HeaderSearchBar from "@/components/board/HeaderSearchBar";
 
+export { default as HeaderNotificationBell } from "@/components/admin/NotificationCenter";
+
 const LOGO_URL =
   "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c51835c8a_PiPPartner.png";
 
@@ -39,12 +41,12 @@ function ViewIconButton({ active, onClick, icon: Icon, title }) {
  * Unified header.
  *
  * Layout breakdown:
- *   Desktop (lg+):    [Logo] [Source tabs] [View filter] [Search trigger] [Bell] [User]
- *   Tablet (md..lg):  Row 1 = [Logo] [Source tabs] [View filter] [User]
- *                     Row 2 = [Glass search expand] [Bell] (when search is closed,
- *                             the trigger sits next to the bell on row 2)
- *   Mobile (< md):    Row 1 = [Logo] [Source tabs (compact icon-only via BoardTabs)] [User]
- *                     Row 2 = [View filter] [Search trigger] [Bell]
+ *   Desktop (lg+):       [Logo] [Source tabs] [View filter] [Search trigger] [Bell] [Settings] [User]
+ *   Tablet/Mobile (<lg): [Logo] [View filter] [Search trigger] [User]
+ *                        — Source tabs (Franchise/Instructor/Front desk) move
+ *                          into the bottom MobileSourceTabBar (iOS-style).
+ *                        — Notification bell moves into the same bottom bar.
+ *                        — Settings gear is hidden (admins reach it via UserMenu).
  *
  * The expanded search bar always slides in BELOW the header rows as a separate
  * glass panel (HeaderSearchBar).
@@ -225,8 +227,9 @@ export default function ApplicationBoardHeader({
             />
           </a>
 
-          {/* Source tabs — centred on mobile, left-aligned (after logo) on md+. */}
-          <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar -ml-1 flex justify-center md:justify-start">
+          {/* Source tabs — desktop only. On mobile/tablet (< lg) they live in
+              the bottom MobileSourceTabBar instead. */}
+          <div className="hidden lg:flex flex-1 min-w-0 overflow-x-auto hide-scrollbar -ml-1 justify-start">
             <BoardTabs
               activeTab={activeTab}
               onTabChange={setActiveTab}
@@ -235,9 +238,11 @@ export default function ApplicationBoardHeader({
             />
           </div>
 
-          {/* Tablet row-1 cluster — view filter only (search + bell move to row 2). */}
-          <div className="hidden md:flex lg:hidden items-center gap-2 shrink-0">
+          {/* Mobile/tablet row-1 cluster — view filter occupies the space where
+              source tabs used to be, plus inline search trigger. */}
+          <div className="flex lg:hidden flex-1 min-w-0 items-center justify-center gap-2 overflow-x-auto hide-scrollbar">
             {viewFilterCluster}
+            {searchTrigger}
           </div>
 
           {/* Desktop row-1 cluster — view filter + search trigger + bell. */}
@@ -247,12 +252,13 @@ export default function ApplicationBoardHeader({
             {notifBell}
           </div>
 
-          {/* Settings gear + User menu — always row 1, far right */}
+          {/* Settings gear — desktop only (mobile/tablet drop it; admins still
+              reach Settings via the user menu). */}
           {isAdmin && (
             <Link
               to="/Settings"
               title="Settings"
-              className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-all"
+              className="hidden lg:flex shrink-0 h-8 w-8 rounded-full items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-all"
             >
               <SettingsIcon className="w-4 h-4" />
             </Link>
@@ -262,24 +268,11 @@ export default function ApplicationBoardHeader({
           </div>
         </div>
 
-        {/* ─── ROW 2 (mobile) ──────────────────────────────────────
-            View filter centred, with search + bell on the right.
-        */}
-        <div className="md:hidden mt-2 relative flex items-center min-h-[36px]">
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-            {viewFilterCluster}
-          </div>
-          <div className="ml-auto flex items-center gap-1 shrink-0 relative z-10">
-            {searchTrigger}
-            {notifBell}
-          </div>
-        </div>
-
-        {/* ─── ROW 2 (tablet only) ─────────────────────────────────
-            Search (expands inline) + bell, right-aligned.
-        */}
-        <div className="hidden md:flex lg:hidden mt-2 items-center justify-end gap-2">
-          {searchOpen ? (
+        {/* Tablet inline search expand — when the search trigger on row 1 is
+            tapped, the search bar expands into row 2 here (desktop has its own
+            slide-down panel below). */}
+        {searchOpen && (
+          <div className="lg:hidden mt-2">
             <HeaderSearchBar
               inline
               open
@@ -287,16 +280,13 @@ export default function ApplicationBoardHeader({
               value={searchQuery}
               onChange={setSearchQuery}
             />
-          ) : (
-            searchTrigger
-          )}
-          {notifBell}
-        </div>
+          </div>
+        )}
       </header>
 
-      {/* Expanded search panel — sits below the header on mobile + desktop.
-          Tablet (md..lg) uses the inline variant in row 2 instead. */}
-      <div className="md:hidden lg:block">
+      {/* Expanded search panel — desktop only. Mobile/tablet renders the
+          inline variant inside the header itself (row 2). */}
+      <div className="hidden lg:block">
         <HeaderSearchBar
           open={searchOpen}
           onClose={() => setSearchOpen(false)}
