@@ -2,19 +2,24 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
-const TUTORIAL_STORAGE_KEY = "pip_partner_tutorial_seen_v1";
+const TUTORIAL_STORAGE_KEY_BASE = "pip_partner_tutorial_seen_v1";
 
-export function hasSeenTutorial() {
+function keyFor(userEmail) {
+  const suffix = (userEmail || "").toLowerCase().trim();
+  return suffix ? `${TUTORIAL_STORAGE_KEY_BASE}:${suffix}` : TUTORIAL_STORAGE_KEY_BASE;
+}
+
+export function hasSeenTutorial(userEmail) {
   try {
-    return localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
+    return localStorage.getItem(keyFor(userEmail)) === "true";
   } catch {
     return false;
   }
 }
 
-export function markTutorialSeen() {
+export function markTutorialSeen(userEmail) {
   try {
-    localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+    localStorage.setItem(keyFor(userEmail), "true");
   } catch {
     /* noop */
   }
@@ -54,7 +59,7 @@ const STEPS = [
   },
 ];
 
-export default function Tutorial({ onClose }) {
+export default function Tutorial({ onClose, userEmail }) {
   const [step, setStep] = useState(0);
   const total = STEPS.length;
   const current = STEPS[step];
@@ -62,7 +67,7 @@ export default function Tutorial({ onClose }) {
   const isLast = step === total - 1;
 
   const close = () => {
-    markTutorialSeen();
+    markTutorialSeen(userEmail);
     onClose?.();
   };
   const next = () => (isLast ? close() : setStep((s) => s + 1));

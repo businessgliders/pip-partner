@@ -153,7 +153,7 @@ export default function ApplicationBoard() {
 
   // First-load onboarding tutorial. Suppressed for info@pilatesinpinkstudio.com
   // (which uses the influencer-only mailbox migration popup instead).
-  const [showTutorial, setShowTutorial] = useState(() => !hasSeenTutorial());
+  const [showTutorial, setShowTutorial] = useState(() => !hasSeenTutorial(user?.email));
   useEffect(() => {
     if ((user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com") {
       setShowTutorial(false);
@@ -539,7 +539,7 @@ export default function ApplicationBoard() {
       <WebAppMeasures />
       <AdminFavicon title="Pilates in Pink™ — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
-      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
+      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} userEmail={user?.email} />}
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"

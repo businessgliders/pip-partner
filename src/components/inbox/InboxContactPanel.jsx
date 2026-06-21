@@ -1,11 +1,15 @@
 import React from "react";
 import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { useQueryClient } from "@tanstack/react-query";
 import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
+import InternalNotesSection from "@/components/admin/InternalNotesSection";
 import {
   displayName,
   initials,
   avatarGradient,
+  entityForSource,
 } from "./inboxConfig";
 
 function Field({ label, value }) {
@@ -26,10 +30,44 @@ export default function InboxContactPanel({
   detailFields = [],
   accent = "#b67651",
   onClose,
+  currentUser,
 }) {
+  const queryClient = useQueryClient();
+  const entity = entityForSource(sourceKey);
+
   if (!ticket) return null;
   const name = displayName(ticket);
   const phone = [ticket.phone_country, ticket.phone].filter(Boolean).join(" ");
+
+  const notes = Array.isArray(ticket.internal_notes) ? ticket.internal_notes : [];
+
+  const saveNotes = async (next) => {
+    await base44.entities[entity].update(ticket.id, { internal_notes: next });
+    queryClient.invalidateQueries({ queryKey: ["app-board", entity] });
+  };
+
+  const handleAddNote = async (comment) => {
+    const next = [
+      ...notes,
+      {
+        user_email: currentUser?.email || "",
+        user_name: currentUser?.full_name || currentUser?.email || "Staff",
+        comment,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+    await saveNotes(next);
+  };
+
+  const handleUpdateNote = async (index, comment) => {
+    const next = notes.map((n, i) => (i === index ? { ...n, comment } : n));
+    await saveNotes(next);
+  };
+
+  const handleDeleteNote = async (index) => {
+    const next = notes.filter((_, i) => i !== index);
+    await saveNotes(next);
+  };
 
   return (
     <div className="h-full flex flex-col bg-white/95 rounded-2xl border border-white/40 backdrop-blur shadow-lg overflow-hidden">
@@ -129,6 +167,15 @@ export default function InboxContactPanel({
             return <Field key={f.key} label={f.label} value={v} />;
           })}
         </div>
+
+        <InternalNotesSection
+          notes={notes}
+          onAddNote={handleAddNote}
+          onUpdateNote={handleUpdateNote}
+          onDeleteNote={handleDeleteNote}
+          currentUserEmail={currentUser?.email}
+          accentColor={accent}
+        />
       </div>
     </div>
   );

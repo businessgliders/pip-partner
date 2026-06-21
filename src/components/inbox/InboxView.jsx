@@ -475,6 +475,7 @@ export default function InboxView({
                     sourceKey={sourceKey}
                     detailFields={detailFieldsBySource[sourceKey] || []}
                     accent={accent}
+                    currentUser={user}
                   />
                 </div>
 
@@ -496,6 +497,7 @@ export default function InboxView({
               sourceKey={sourceKey}
               detailFields={detailFieldsBySource[sourceKey] || []}
               accent={accent}
+              currentUser={user}
             />
           </div>
         )}
