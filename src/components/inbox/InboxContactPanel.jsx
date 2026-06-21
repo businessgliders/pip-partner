@@ -138,8 +138,18 @@ export default function InboxContactPanel({
           </div>
         )}
 
+        <InternalNotesSection
+          notes={notes}
+          onAddNote={handleAddNote}
+          onUpdateNote={handleUpdateNote}
+          onDeleteNote={handleDeleteNote}
+          currentUserEmail={currentUser?.email}
+          accentColor={accent}
+        />
+
         <div>
           {detailFields.map((f) => {
+            if (f.key === "phone") return null;
             const v = typeof f.get === "function" ? f.get(ticket) : ticket[f.key];
             if (v === undefined || v === null || v === "") return null;
             if (f.key === "resume_url") {
@@ -167,15 +177,6 @@ export default function InboxContactPanel({
             return <Field key={f.key} label={f.label} value={v} />;
           })}
         </div>
-
-        <InternalNotesSection
-          notes={notes}
-          onAddNote={handleAddNote}
-          onUpdateNote={handleUpdateNote}
-          onDeleteNote={handleDeleteNote}
-          currentUserEmail={currentUser?.email}
-          accentColor={accent}
-        />
       </div>
     </div>
   );
