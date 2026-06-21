@@ -96,11 +96,60 @@ export default function useUnreadMessages(userEmail) {
     [normalizedEmail, queryClient]
   );
 
+  const markAllAsRead = useCallback(
+    async (messageIds) => {
+      if (!normalizedEmail) return;
+      const current = queryClient.getQueryData(queryKey) || [];
+      const idSet = messageIds ? new Set(messageIds) : null;
+      const targets = current.filter((m) => {
+        if (idSet && !idSet.has(m.id)) return false;
+        if (m.direction !== "inbound") return false;
+        const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+        return !readBy.some((e) => (e || "").toLowerCase() === normalizedEmail);
+      });
+      if (targets.length === 0) return;
+
+      const nowIso = new Date().toISOString();
+      const updates = targets.map((t) => {
+        const newReadBy = [...(Array.isArray(t.read_by) ? t.read_by : []), normalizedEmail];
+        const newReadAt = [
+          ...(Array.isArray(t.read_at) ? t.read_at : []),
+          { email: normalizedEmail, timestamp: nowIso },
+        ];
+        return { id: t.id, read_by: newReadBy, read_at: newReadAt };
+      });
+
+      // Optimistic update
+      queryClient.setQueryData(queryKey, (old = []) =>
+        old.map((m) => {
+          const u = updates.find((x) => x.id === m.id);
+          return u ? { ...m, read_by: u.read_by, read_at: u.read_at } : m;
+        })
+      );
+
+      try {
+        await Promise.all(
+          updates.map((u) =>
+            base44.entities.EmailMessage.update(u.id, {
+              read_by: u.read_by,
+              read_at: u.read_at,
+            })
+          )
+        );
+      } catch (e) {
+        queryClient.invalidateQueries({ queryKey });
+        throw e;
+      }
+    },
+    [normalizedEmail, queryClient]
+  );
+
   return {
     unreadMessages,
     unreadCountByTicket,
     totalUnread,
     markAsRead,
+    markAllAsRead,
     isLoading,
   };
 }

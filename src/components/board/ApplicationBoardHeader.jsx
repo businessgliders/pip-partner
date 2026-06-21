@@ -66,6 +66,7 @@ export default function ApplicationBoardHeader({
   unreadMessages,
   totalUnread,
   markAsRead,
+  markAllAsRead,
   setActiveTab,
   setHiddenColumns,
   setSelectedTicket,
@@ -195,6 +196,7 @@ export default function ApplicationBoardHeader({
       unreadMessages={unreadMessages}
       totalUnread={totalUnread}
       markAsRead={markAsRead}
+      markAllAsRead={markAllAsRead}
       onSelect={handleNotificationSelect}
     />
   );

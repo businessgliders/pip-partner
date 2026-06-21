@@ -108,7 +108,7 @@ export default function ApplicationBoard() {
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
   const showMapView = board?.key === "franchise";
 
-  const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead } = useUnreadMessages(user?.email);
+  const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead, markAllAsRead } = useUnreadMessages(user?.email);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [highlightMessageId, setHighlightMessageId] = useState(null);
@@ -598,6 +598,7 @@ export default function ApplicationBoard() {
             unreadMessages={unreadMessages}
             totalUnread={totalUnread}
             markAsRead={markAsRead}
+            markAllAsRead={markAllAsRead}
             setActiveTab={setActiveTab}
             setHiddenColumns={setHiddenColumns}
             setSelectedTicket={setSelectedTicket}
@@ -892,6 +893,7 @@ export default function ApplicationBoard() {
               unreadMessages={unreadMessages}
               totalUnread={totalUnread}
               markAsRead={markAsRead}
+              markAllAsRead={markAllAsRead}
               onSelect={(ticket, messageId, tabKey) => {
                 if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
                 setSearchQuery("");
