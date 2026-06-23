@@ -88,6 +88,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Franchise bookings include the internal team as optional guests so they
+    // get the calendar invite. Excluded if the booker themselves is one of
+    // them (avoids inviting yourself).
+    const FRANCHISE_TEAM_GUESTS = [
+      'gurpreen@pilatesinpinkstudio.com',
+      'rashmeen@pilatesinpinkstudio.com',
+      'sahil@pilatesinpinkstudio.com',
+    ];
+    const guests =
+      boardKey === 'franchise'
+        ? FRANCHISE_TEAM_GUESTS.filter(
+            (g) => g.toLowerCase() !== String(email || '').toLowerCase()
+          )
+        : [];
+
     const payload = {
       start,
       eventTypeId: Number(eventTypeId),
@@ -97,6 +112,7 @@ Deno.serve(async (req) => {
         timeZone,
         language: 'en',
       },
+      ...(guests.length ? { guests } : {}),
       ...(phone ? { bookingFieldsResponses: { phone } } : {}),
       ...(notes ? { metadata: { notes: String(notes).slice(0, 500) } } : {}),
     };
