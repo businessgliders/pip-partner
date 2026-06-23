@@ -452,16 +452,20 @@ export default function ApplicationBoard() {
     ];
     // Clear manual_sort_index on cross-column move so the card sorts by its
     // new column's default order rather than carrying a stale position.
-    updateMutation.mutate({
-      id: ticket.id,
-      data: { status: newStatus, status_history: updated, manual_sort_index: null },
-    });
+    // Un-archive if archived — status changes bring tickets back into the
+    // active board under their new status.
+    const data = { status: newStatus, status_history: updated, manual_sort_index: null };
+    if (ticket.archived) data.archived = false;
+    updateMutation.mutate({ id: ticket.id, data });
   };
 
   const handleStatusChange = (ticket, newStatus, note = "", byName = "") => {
     const history = Array.isArray(ticket.status_history) ? ticket.status_history : [];
     const updated = [...history, { status: newStatus, note, by_name: byName, timestamp: new Date().toISOString() }];
-    updateMutation.mutate({ id: ticket.id, data: { status: newStatus, status_history: updated } });
+    // Un-archive on status change — see commitStatusChange.
+    const data = { status: newStatus, status_history: updated };
+    if (ticket.archived) data.archived = false;
+    updateMutation.mutate({ id: ticket.id, data });
   };
 
   const handleArchiveSome = async (targetStatus) => {

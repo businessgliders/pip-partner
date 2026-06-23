@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { statusChip, statusLabel, statusOrderFor, entityForSource } from "./inboxConfig";
+import { statusChip, statusLabel, statusOrderFor, entityForSource, UPCOMING_MEETINGS_KEY } from "./inboxConfig";
 
 /**
  * Pill-styled status dropdown. Updates the ticket's status (with history) and
@@ -17,7 +17,8 @@ import { statusChip, statusLabel, statusOrderFor, entityForSource } from "./inbo
 export default function InboxStatusDropdown({ ticket, sourceKey, variant = "light" }) {
   const queryClient = useQueryClient();
   const entity = entityForSource(sourceKey);
-  const statuses = statusOrderFor(sourceKey);
+  // Exclude the "upcoming" pseudo-status — it's a rail filter, not a real status.
+  const statuses = statusOrderFor(sourceKey).filter((s) => s !== UPCOMING_MEETINGS_KEY);
 
   const mutation = useMutation({
     mutationFn: (newStatus) => {
@@ -26,10 +27,14 @@ export default function InboxStatusDropdown({ ticket, sourceKey, variant = "ligh
         ...history,
         { status: newStatus, timestamp: new Date().toISOString() },
       ];
-      return base44.entities[entity].update(ticket.id, {
+      // Changing status on an archived ticket un-archives it so it returns to
+      // the active inbox under its new status (instead of being hidden away).
+      const patch = {
         status: newStatus,
         status_history: updated,
-      });
+      };
+      if (ticket.archived) patch.archived = false;
+      return base44.entities[entity].update(ticket.id, patch);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["app-board", entity] });
