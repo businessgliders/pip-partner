@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -64,6 +64,15 @@ export default function SubmissionDetailModal({
   const queryClient = useQueryClient();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const threadRef = useRef(null);
+  // One-shot "jiggle" animation key. Bumped every time the modal opens via a
+  // notification click (signalled by a non-empty highlightMessageId). The key
+  // change re-mounts the animated class so the keyframe plays exactly once.
+  const [jiggleKey, setJiggleKey] = useState(0);
+  useEffect(() => {
+    if (open && highlightMessageId) {
+      setJiggleKey((k) => k + 1);
+    }
+  }, [open, highlightMessageId]);
   if (!row) return null;
 
   // Intercept modal close (backdrop, Esc, or close button) so that any unsaved
@@ -157,7 +166,12 @@ export default function SubmissionDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-7xl sm:max-w-2xl md:max-w-4xl lg:max-w-7xl xl:max-w-[81rem] max-h-[92vh] overflow-hidden p-0">
+      <DialogContent
+        key={`jiggle-${jiggleKey}`}
+        className={`max-w-7xl sm:max-w-2xl md:max-w-4xl lg:max-w-7xl xl:max-w-[81rem] max-h-[92vh] overflow-hidden p-0 ${
+          jiggleKey > 0 ? "pip-jiggle" : ""
+        }`}
+      >
         <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-[3fr_2fr] max-h-[92vh]">
           {/* Left: Contact + Email Communications */}
            <div

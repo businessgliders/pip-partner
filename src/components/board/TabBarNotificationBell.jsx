@@ -12,6 +12,7 @@ export default function TabBarNotificationBell({
   totalUnread = 0,
   markAsRead,
   markAllAsRead,
+  markAllAsUnread,
   onSelect,
 }) {
   const [open, setOpen] = useState(false);
@@ -49,6 +50,7 @@ export default function TabBarNotificationBell({
           totalUnread={totalUnread}
           markAsRead={markAsRead}
           markAllAsRead={markAllAsRead}
+          markAllAsUnread={markAllAsUnread}
           onSelect={onSelect}
           onClose={() => setOpen(false)}
           cacheKeyPrefix="notif-tickets-tabbar"

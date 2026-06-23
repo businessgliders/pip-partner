@@ -8,6 +8,7 @@ export default function NotificationCenter({
   totalUnread,
   markAsRead,
   markAllAsRead,
+  markAllAsUnread,
   onSelect,
 }) {
   const [open, setOpen] = useState(false);
@@ -38,6 +39,7 @@ export default function NotificationCenter({
           totalUnread={totalUnread}
           markAsRead={markAsRead}
           markAllAsRead={markAllAsRead}
+          markAllAsUnread={markAllAsUnread}
           onSelect={onSelect}
           onClose={() => setOpen(false)}
           cacheKeyPrefix="notif-tickets"

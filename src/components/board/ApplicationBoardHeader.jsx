@@ -67,6 +67,7 @@ export default function ApplicationBoardHeader({
   totalUnread,
   markAsRead,
   markAllAsRead,
+  markAllAsUnread,
   setActiveTab,
   setHiddenColumns,
   setSelectedTicket,
@@ -88,9 +89,10 @@ export default function ApplicationBoardHeader({
     setHighlightedTicketId(ticket?.id || null);
     setTimeout(() => setHighlightedTicketId(null), 3000);
     setHighlightMessageId(messageId);
-    if (currentViewMode !== "inbox") {
-      setSelectedTicket(ticket);
-    }
+    // Always open the detail modal on notification click — works across all
+    // views (inbox, board, calendar, etc.). The modal applies a brief jiggle
+    // animation so the user sees which item the notification opened.
+    setSelectedTicket(ticket);
   };
 
   const showInbox = !isInfluencerOnly && activeTab !== "influencer";
@@ -197,6 +199,7 @@ export default function ApplicationBoardHeader({
       totalUnread={totalUnread}
       markAsRead={markAsRead}
       markAllAsRead={markAllAsRead}
+      markAllAsUnread={markAllAsUnread}
       onSelect={handleNotificationSelect}
     />
   );

@@ -99,3 +99,19 @@
 }
 
 /* Kanban styling now lives in MasterKanbanGlassTheme (injected at runtime). */
+
+/* Jiggle animation — used by the submission detail modal when it's opened
+   from a notification click, to draw the user's eye to the item that was
+   just opened. Short, single-shot. */
+@keyframes pip-jiggle {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  15%  { transform: translate3d(-6px, 0, 0) rotate(-0.6deg); }
+  30%  { transform: translate3d(6px, 0, 0) rotate(0.6deg); }
+  45%  { transform: translate3d(-4px, 0, 0) rotate(-0.4deg); }
+  60%  { transform: translate3d(4px, 0, 0) rotate(0.4deg); }
+  75%  { transform: translate3d(-2px, 0, 0) rotate(-0.2deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+.pip-jiggle {
+  animation: pip-jiggle 0.6s ease-in-out both;
+}

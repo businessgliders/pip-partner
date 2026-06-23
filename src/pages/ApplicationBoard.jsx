@@ -108,7 +108,7 @@ export default function ApplicationBoard() {
   const board = useMemo(() => BOARD_TYPES.find((b) => b.key === activeTab), [activeTab]);
   const showMapView = board?.key === "franchise";
 
-  const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead, markAllAsRead } = useUnreadMessages(user?.email);
+  const { unreadMessages, unreadCountByTicket, totalUnread, markAsRead, markAllAsRead, markAllAsUnread } = useUnreadMessages(user?.email);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [highlightMessageId, setHighlightMessageId] = useState(null);
@@ -611,6 +611,7 @@ export default function ApplicationBoard() {
             totalUnread={totalUnread}
             markAsRead={markAsRead}
             markAllAsRead={markAllAsRead}
+            markAllAsUnread={markAllAsUnread}
             setActiveTab={setActiveTab}
             setHiddenColumns={setHiddenColumns}
             setSelectedTicket={setSelectedTicket}
@@ -906,6 +907,7 @@ export default function ApplicationBoard() {
               totalUnread={totalUnread}
               markAsRead={markAsRead}
               markAllAsRead={markAllAsRead}
+              markAllAsUnread={markAllAsUnread}
               onSelect={(ticket, messageId, tabKey) => {
                 if (tabKey && tabKey !== activeTab) setActiveTab(tabKey);
                 setSearchQuery("");
@@ -914,7 +916,9 @@ export default function ApplicationBoard() {
                 setHighlightedTicketId(ticket?.id || null);
                 setTimeout(() => setHighlightedTicketId(null), 3000);
                 setHighlightMessageId(messageId);
-                if (viewMode !== "inbox") setSelectedTicket(ticket);
+                // Always open the detail modal on notification click — works
+                // across every view (inbox, board, calendar, etc.).
+                setSelectedTicket(ticket);
               }}
             />
           }

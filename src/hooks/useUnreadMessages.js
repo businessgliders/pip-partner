@@ -144,12 +144,63 @@ export default function useUnreadMessages(userEmail) {
     [normalizedEmail, queryClient]
   );
 
+  // Mark the given message IDs as UNREAD for the current user — removes the
+  // user from `read_by` and the matching entry from `read_at`. Used by the
+  // notification center's "Mark all as unread" toggle so a session of read
+  // items can be reverted in one click.
+  const markAllAsUnread = useCallback(
+    async (messageIds) => {
+      if (!normalizedEmail || !messageIds || messageIds.length === 0) return;
+      const current = queryClient.getQueryData(queryKey) || [];
+      const idSet = new Set(messageIds);
+      const targets = current.filter((m) => {
+        if (!idSet.has(m.id)) return false;
+        const readBy = Array.isArray(m.read_by) ? m.read_by : [];
+        return readBy.some((e) => (e || "").toLowerCase() === normalizedEmail);
+      });
+      if (targets.length === 0) return;
+
+      const updates = targets.map((t) => {
+        const newReadBy = (Array.isArray(t.read_by) ? t.read_by : []).filter(
+          (e) => (e || "").toLowerCase() !== normalizedEmail
+        );
+        const newReadAt = (Array.isArray(t.read_at) ? t.read_at : []).filter(
+          (entry) => (entry?.email || "").toLowerCase() !== normalizedEmail
+        );
+        return { id: t.id, read_by: newReadBy, read_at: newReadAt };
+      });
+
+      queryClient.setQueryData(queryKey, (old = []) =>
+        old.map((m) => {
+          const u = updates.find((x) => x.id === m.id);
+          return u ? { ...m, read_by: u.read_by, read_at: u.read_at } : m;
+        })
+      );
+
+      try {
+        await Promise.all(
+          updates.map((u) =>
+            base44.entities.EmailMessage.update(u.id, {
+              read_by: u.read_by,
+              read_at: u.read_at,
+            })
+          )
+        );
+      } catch (e) {
+        queryClient.invalidateQueries({ queryKey });
+        throw e;
+      }
+    },
+    [normalizedEmail, queryClient]
+  );
+
   return {
     unreadMessages,
     unreadCountByTicket,
     totalUnread,
     markAsRead,
     markAllAsRead,
+    markAllAsUnread,
     isLoading,
   };
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { CheckCheck, Trash2 } from "lucide-react";
+import { CheckCheck, Trash2, Mail } from "lucide-react";
 
 const ENTITY_TO_TAB_KEY = {
   FranchiseInquiry: "franchise",
@@ -69,6 +69,7 @@ export default function NotificationList({
   totalUnread,
   markAsRead,
   markAllAsRead,
+  markAllAsUnread,
   onSelect,
   onClose,
   cacheKeyPrefix = "notif-tickets",
@@ -179,9 +180,30 @@ export default function NotificationList({
     }
   };
 
+  const handleMarkAllUnread = async () => {
+    const ids = items.map((i) => i.m.id);
+    if (ids.length === 0) return;
+    setSessionReadIds(new Set());
+    try {
+      await markAllAsUnread?.(ids);
+    } catch {
+      // swallow
+    }
+  };
+
   const handleClearAll = () => {
     setClearedIds(new Set(displayedIds));
   };
+
+  // Are all currently displayed items already read? If so, the "Mark all read"
+  // button flips into "Mark all unread" so the toggle is reversible.
+  const allDisplayedAreRead =
+    items.length > 0 &&
+    items.every((i) => {
+      if (sessionReadIds.has(i.m.id)) return true;
+      const readBy = Array.isArray(i.m.read_by) ? i.m.read_by : [];
+      return readBy.length > 0;
+    });
 
   return (
     <>
@@ -194,15 +216,27 @@ export default function NotificationList({
         </div>
         {items.length > 0 && (
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={handleMarkAllRead}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 hover:text-gray-900 px-2 py-1 rounded-md hover:bg-white/60"
-              title="Mark all as read"
-            >
-              <CheckCheck className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Mark all read</span>
-            </button>
+            {allDisplayedAreRead ? (
+              <button
+                type="button"
+                onClick={handleMarkAllUnread}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 hover:text-gray-900 px-2 py-1 rounded-md hover:bg-white/60"
+                title="Mark all as unread"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Mark all unread</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleMarkAllRead}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 hover:text-gray-900 px-2 py-1 rounded-md hover:bg-white/60"
+                title="Mark all as read"
+              >
+                <CheckCheck className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Mark all read</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={handleClearAll}
