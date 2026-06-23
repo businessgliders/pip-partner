@@ -188,12 +188,31 @@ function MessageDialog({ open, onOpenChange, message }) {
             <strong>Error:</strong> {message.send_error}
           </div>
         )}
-        <div
-          className="prose prose-sm max-w-none break-words [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_td]:whitespace-normal [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
-          dangerouslySetInnerHTML={{
-            __html: message.full_body_html || message.body_html || `<pre>${message.body_text || ""}</pre>`,
-          }}
-        />
+        {/* Render the email HTML "as sent" — no prose reset, no table-fixed,
+            no width overrides. We only:
+              • isolate styles so the surrounding modal CSS doesn't leak in
+              • allow wide tables to scroll horizontally instead of being
+                squished/truncated
+              • force links to open in a new tab for safety
+        */}
+        <div className="overflow-x-auto">
+          <div
+            style={{ isolation: "isolate", all: "revert" }}
+            ref={(el) => {
+              if (!el) return;
+              el.querySelectorAll("a").forEach((a) => {
+                a.setAttribute("target", "_blank");
+                a.setAttribute("rel", "noopener noreferrer");
+              });
+            }}
+            dangerouslySetInnerHTML={{
+              __html:
+                message.full_body_html ||
+                message.body_html ||
+                `<pre style="white-space:pre-wrap;word-break:break-word;font-family:inherit;">${message.body_text || ""}</pre>`,
+            }}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
