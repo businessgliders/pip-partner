@@ -153,11 +153,19 @@ export default function ApplicationBoard() {
 
   // First-load onboarding tutorial. Suppressed for info@pilatesinpinkstudio.com
   // (which uses the influencer-only mailbox migration popup instead).
-  const [showTutorial, setShowTutorial] = useState(() => !hasSeenTutorial(user?.email));
+  // Defer the seen-check until user.email is available — checking with `undefined`
+  // on first render reads the unsuffixed storage key, which is never written by
+  // close (close writes the email-suffixed key), so the popup would re-appear on
+  // every reload.
+  const [showTutorial, setShowTutorial] = useState(false);
   useEffect(() => {
-    if ((user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com") {
+    const email = (user?.email || "").toLowerCase();
+    if (!email) return;
+    if (email === "info@pilatesinpinkstudio.com") {
       setShowTutorial(false);
+      return;
     }
+    if (!hasSeenTutorial(email)) setShowTutorial(true);
   }, [user?.email]);
 
   useEffect(() => {
