@@ -46,8 +46,14 @@ export function statusLabel(boardKey, status) {
 // optional `label` (heading shown above the group) and an ordered list of
 // status keys. Sources without an entry fall back to a single ungrouped list
 // of all the board's statuses.
+// Pseudo-status key used by the rail to surface tickets with an UPCOMING
+// Cal.com booking, regardless of their pipeline status. It's not a real
+// entity status — InboxView intercepts it during filtering.
+export const UPCOMING_MEETINGS_KEY = "upcoming";
+
 export const INBOX_STATUS_GROUPS = {
   franchise: [
+    { statuses: [UPCOMING_MEETINGS_KEY] },
     { label: "Step 1", statuses: ["new", "scheduled", "qualified"] },
     { label: "Step 2", statuses: ["site_selection", "lease", "build_out", "training"] },
     { label: "Other", statuses: ["closed", "ghosted"] },

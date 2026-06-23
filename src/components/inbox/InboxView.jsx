@@ -14,6 +14,7 @@ import {
   entityForSource,
   statusLabel,
   displayName,
+  UPCOMING_MEETINGS_KEY,
 } from "./inboxConfig";
 import { getDefaultSort, sortTickets } from "./inboxSort";
 
@@ -125,12 +126,19 @@ export default function InboxView({
   );
 
   // Per-status counts for the left rail (non-archived only).
+  // Includes the "upcoming" pseudo-status (franchise only): tickets that have
+  // a Cal.com booking whose start time is in the future.
   const statusCounts = useMemo(() => {
     const c = {};
     statuses.forEach((s) => (c[s] = 0));
+    const now = Date.now();
     tickets.forEach((t) => {
       if (t.archived) return;
       if (c[t.status] !== undefined) c[t.status]++;
+      const startIso = t._cal_booking?.start;
+      if (startIso && new Date(startIso).getTime() >= now) {
+        c[UPCOMING_MEETINGS_KEY] = (c[UPCOMING_MEETINGS_KEY] || 0) + 1;
+      }
     });
     return c;
   }, [tickets, statuses]);
@@ -142,12 +150,18 @@ export default function InboxView({
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const now = Date.now();
     return tickets.filter((t) => {
       if (showArchived) {
         if (!t.archived) return false;
       } else {
         if (t.archived) return false;
-        if (statusFilter && t.status !== statusFilter) return false;
+        if (statusFilter === UPCOMING_MEETINGS_KEY) {
+          const startIso = t._cal_booking?.start;
+          if (!startIso || new Date(startIso).getTime() < now) return false;
+        } else if (statusFilter && t.status !== statusFilter) {
+          return false;
+        }
       }
       if (!q) return true;
       return (
@@ -183,6 +197,8 @@ export default function InboxView({
 
   const title = showArchived
     ? "Archived"
+    : statusFilter === UPCOMING_MEETINGS_KEY
+    ? "Upcoming Meetings"
     : statusFilter
     ? statusLabel(sourceKey, statusFilter)
     : meta.label;
