@@ -15,6 +15,7 @@ import {
   statusLabel,
   displayName,
   UPCOMING_MEETINGS_KEY,
+  notInterestedStatusFor,
 } from "./inboxConfig";
 import { getDefaultSort, sortTickets } from "./inboxSort";
 
@@ -44,7 +45,7 @@ export default function InboxView({
   const [statusFilter, setStatusFilter] = useState(() => statusOrderFor(sourceKey)[0] || null);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-  const [showArchived, setShowArchived] = useState(false);
+  const notInterestedKey = notInterestedStatusFor(sourceKey);
   // Mobile/tablet (< xl) tab to switch the right pane between the conversation
   // and the contact details. Resets to "conversation" whenever the selected
   // ticket changes so opening a new conversation always lands on the email view.
@@ -57,7 +58,6 @@ export default function InboxView({
     setStatusFilter(statusOrderFor(sourceKey)[0] || null);
     setSearch("");
     setSelectedId(null);
-    setShowArchived(false);
   }, [sourceKey]);
 
   useEffect(() => {
@@ -125,15 +125,20 @@ export default function InboxView({
     [rawTickets, calBookings, lastEmailByTicket]
   );
 
-  // Per-status counts for the left rail (non-archived only).
-  // Includes the "upcoming" pseudo-status (franchise only): tickets that have
-  // a Cal.com booking whose start time is in the future.
+  // Per-status counts for the left rail. Archived tickets are folded into
+  // the "Not Interested" bucket (closed for franchise; declined otherwise)
+  // so they're reachable from a single rail item. Includes the "upcoming"
+  // pseudo-status (franchise only): tickets that have a Cal.com booking
+  // whose start time is in the future.
   const statusCounts = useMemo(() => {
     const c = {};
     statuses.forEach((s) => (c[s] = 0));
     const now = Date.now();
     tickets.forEach((t) => {
-      if (t.archived) return;
+      if (t.archived) {
+        if (c[notInterestedKey] !== undefined) c[notInterestedKey]++;
+        return;
+      }
       if (c[t.status] !== undefined) c[t.status]++;
       const startIso = t._cal_booking?.start;
       if (startIso && new Date(startIso).getTime() >= now) {
@@ -141,19 +146,16 @@ export default function InboxView({
       }
     });
     return c;
-  }, [tickets, statuses]);
-
-  const archivedCount = useMemo(
-    () => tickets.filter((t) => t.archived).length,
-    [tickets]
-  );
+  }, [tickets, statuses, notInterestedKey]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const now = Date.now();
     return tickets.filter((t) => {
-      if (showArchived) {
-        if (!t.archived) return false;
+      // "Not Interested" filter shows both declined/closed tickets AND any
+      // archived tickets, merged together.
+      if (statusFilter === notInterestedKey) {
+        if (!t.archived && t.status !== notInterestedKey) return false;
       } else {
         if (t.archived) return false;
         if (statusFilter === UPCOMING_MEETINGS_KEY) {
@@ -173,7 +175,7 @@ export default function InboxView({
         (t.preferred_studio || "").toLowerCase().includes(q)
       );
     });
-  }, [tickets, search, statusFilter, showArchived]);
+  }, [tickets, search, statusFilter, notInterestedKey]);
 
   // Auto-select the first available thread whenever nothing is selected —
   // DESKTOP ONLY (>= lg / 1024px). On mobile and tablet, we want users to
@@ -187,21 +189,19 @@ export default function InboxView({
       typeof window !== "undefined" &&
       window.matchMedia("(min-width: 1024px)").matches;
     if (!isDesktop) return;
-    const statusKey = showArchived ? null : statusFilter;
-    const sortMode = getDefaultSort(sourceKey, statusKey);
+    const sortMode = getDefaultSort(sourceKey, statusFilter);
     const sorted = sortTickets(filtered, sortMode);
     if (sorted.length > 0) setSelectedId(sorted[0].id);
-  }, [filtered, selectedId, sourceKey, statusFilter, showArchived]);
+  }, [filtered, selectedId, sourceKey, statusFilter]);
 
   const selectedTicket = tickets.find((t) => t.id === selectedId) || null;
 
-  const title = showArchived
-    ? "Archived"
-    : statusFilter === UPCOMING_MEETINGS_KEY
-    ? "Upcoming Meetings"
-    : statusFilter
-    ? statusLabel(sourceKey, statusFilter)
-    : meta.label;
+  const title =
+    statusFilter === UPCOMING_MEETINGS_KEY
+      ? "Upcoming Meetings"
+      : statusFilter
+      ? statusLabel(sourceKey, statusFilter)
+      : meta.label;
 
   return (
     <div className="flex flex-col h-full">
@@ -216,7 +216,6 @@ export default function InboxView({
             active={statusFilter}
             onChange={(s) => {
               setStatusFilter(s);
-              setShowArchived(false);
               // Clear so the auto-select effect picks the first ticket of the
               // newly-filtered list across the thread + conversation + contact
               // panels.
@@ -224,13 +223,6 @@ export default function InboxView({
             }}
             counts={statusCounts}
             accent={accent}
-            archivedActive={showArchived}
-            onArchived={() => {
-              setShowArchived(true);
-              setStatusFilter(null);
-              setSelectedId(null);
-            }}
-            archivedCount={archivedCount}
           />
         </div>
 
@@ -241,7 +233,7 @@ export default function InboxView({
           } flex-col min-h-0`}
         >
           <InboxThreadList
-            key={`${sourceKey}-${showArchived ? "archived" : statusFilter || "all"}`}
+            key={`${sourceKey}-${statusFilter || "all"}`}
             title={title}
             count={filtered.length}
             tickets={filtered}
@@ -250,7 +242,7 @@ export default function InboxView({
             search={search}
             setSearch={setSearch}
             sourceKey={sourceKey}
-            statusKey={showArchived ? null : statusFilter}
+            statusKey={statusFilter}
             unreadByTicket={unreadCountByTicket}
             isLoading={isLoading}
           />

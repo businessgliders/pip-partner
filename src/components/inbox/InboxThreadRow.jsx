@@ -1,5 +1,5 @@
 import React from "react";
-import { ExternalLink, CalendarDays } from "lucide-react";
+import { ExternalLink, CalendarDays, Archive } from "lucide-react";
 import { format } from "date-fns";
 import {
   displayName,
@@ -63,6 +63,12 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
         </div>
 
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          {ticket.archived && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 inline-flex items-center gap-1">
+              <Archive className="w-2.5 h-2.5" />
+              Archived
+            </span>
+          )}
           {isHiring && ticket.resume_url ? (
             <a
               href={ticket.resume_url}

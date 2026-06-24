@@ -1,5 +1,5 @@
 import React from "react";
-import { Archive, CalendarDays } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { statusLabel, statusGroupsFor, UPCOMING_MEETINGS_KEY } from "./inboxConfig";
 
 /**
@@ -14,9 +14,6 @@ export default function InboxStatusRail({
   onChange,
   counts = {},
   accent = "#b67651",
-  archivedActive = false,
-  onArchived,
-  archivedCount = 0,
 }) {
   const groups = statusGroupsFor(sourceKey);
   // For instructor / frontadmin, ALWAYS render every status in the rail on
@@ -38,7 +35,7 @@ export default function InboxStatusRail({
             </div>
           )}
           {group.statuses.map((s) => {
-            const isActive = !archivedActive && active === s;
+            const isActive = active === s;
             const c = counts[s] || 0;
 
             // Special-case the "upcoming meetings" pseudo-status: render as a
@@ -79,15 +76,6 @@ export default function InboxStatusRail({
               hideClass = "flex";
             }
 
-            // "declined" (Not Interested) hosts an inline archived sub-button
-            // for instructor/frontadmin so the archived view is reachable from
-            // there (the standalone Archived rail icon is hidden for these
-            // sources).
-            const showArchivedInside =
-              (sourceKey === "instructor" || sourceKey === "frontadmin") &&
-              s === "declined" &&
-              archivedCount > 0;
-
             return (
               <button
                 key={s}
@@ -105,55 +93,11 @@ export default function InboxStatusRail({
                     ? "No Interest"
                     : statusLabel(sourceKey, s).split(" ")[0]}
                 </span>
-                {showArchivedInside && (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    title={`Archived (${archivedCount})`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onArchived) onArchived();
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (onArchived) onArchived();
-                      }
-                    }}
-                    style={archivedActive ? { background: accent, color: "#fff" } : undefined}
-                    className={`mt-1 w-full inline-flex flex-col items-center gap-0.5 py-1 rounded-lg text-[9px] font-medium leading-none transition-all ${
-                      archivedActive
-                        ? "shadow-md"
-                        : "text-white/70 bg-white/10 hover:bg-white/20"
-                    }`}
-                  >
-                    <Archive className="w-3 h-3" />
-                    <span>{archivedCount}</span>
-                  </span>
-                )}
               </button>
             );
           })}
         </React.Fragment>
       ))}
-
-      {/* Standalone Archived rail icon — shown for franchise only.
-          Instructor/frontadmin surface archived inside the Not Interested item. */}
-      {onArchived && sourceKey !== "instructor" && sourceKey !== "frontadmin" && (
-        <button
-          type="button"
-          onClick={onArchived}
-          title="Archived"
-          style={archivedActive ? { background: accent, color: "#fff" } : undefined}
-          className={`mt-auto w-full flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
-            archivedActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
-          }`}
-        >
-          <Archive className="w-4 h-4" />
-          <span className="block w-full px-0.5 truncate text-center">{archivedCount > 0 ? archivedCount : "Archived"}</span>
-        </button>
-      )}
     </div>
   );
 }

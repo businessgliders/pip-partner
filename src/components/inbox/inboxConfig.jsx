@@ -74,6 +74,13 @@ export const INBOX_STATUS_GROUPS = {
   ],
 };
 
+// The "Not Interested" status key per source — franchise uses `closed`,
+// instructor/frontadmin/influencer use `declined`. Archived tickets are
+// merged into this bucket in the inbox so they're reachable from one place.
+export function notInterestedStatusFor(sourceKey) {
+  return sourceKey === "franchise" ? "closed" : "declined";
+}
+
 export function statusGroupsFor(sourceKey) {
   if (INBOX_STATUS_GROUPS[sourceKey]) return INBOX_STATUS_GROUPS[sourceKey];
   const b = BOARD_TYPES.find((x) => x.key === sourceKey);
