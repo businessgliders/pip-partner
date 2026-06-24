@@ -35,23 +35,10 @@ function markSeen(email) {
 }
 
 const HIGHLIGHTS = [
-  {
-    title: "New Step 1 statuses",
-    body:
-      "The franchise pipeline now uses New → Discovery → No Show → NDA → FDD → Signed. Old statuses (Scheduled, Discussion, Contacted, Qualified) were auto-migrated.",
-  },
-  {
-    title: "Step 2 unchanged",
-    body: "Site Selection → Lease → Build-Out → Training remain the same.",
-  },
-  {
-    title: "Renamed: Not Interested",
-    body: "\"Declined\" is now \"Not Interested\" everywhere.",
-  },
-  {
-    title: "Cleaner status dropdown",
-    body: "The status picker now groups options into Step 1 / Step 2 / Other columns for faster scanning.",
-  },
+  { title: "New Step 1 statuses" },
+  { title: "Step 2 unchanged" },
+  { title: "Renamed: Not Interested" },
+  { title: "Cleaner status dropdown" },
 ];
 
 export default function WhatsNewPopup({ userEmail, onClose }) {
@@ -116,17 +103,12 @@ export default function WhatsNewPopup({ userEmail, onClose }) {
             {/* Highlights */}
             <div className="px-6 py-5 space-y-3.5">
               {HIGHLIGHTS.map((h, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="shrink-0 w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mt-0.5">
+                <div key={i} className="flex items-center gap-3">
+                  <div className="shrink-0 w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center">
                     <Check className="w-3.5 h-3.5" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-900">
-                      {h.title}
-                    </div>
-                    <div className="text-xs text-slate-600 leading-relaxed mt-0.5">
-                      {h.body}
-                    </div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    {h.title}
                   </div>
                 </div>
               ))}
@@ -136,7 +118,10 @@ export default function WhatsNewPopup({ userEmail, onClose }) {
             <div className="px-6 pb-5">
               <button
                 onClick={handleClose}
-                className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium transition flex items-center justify-center gap-2"
+                className="w-full h-11 rounded-xl text-white text-sm font-medium transition flex items-center justify-center gap-2"
+                style={{
+                  background: "linear-gradient(to bottom, #5a3a42, #2b1a1f)",
+                }}
               >
                 <Check className="w-4 h-4" />
                 Mark as read
