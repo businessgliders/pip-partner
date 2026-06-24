@@ -19,10 +19,10 @@ export default function InboxStatusRail({
   archivedCount = 0,
 }) {
   const groups = statusGroupsFor(sourceKey);
-  // On desktop (lg+), always render every status in the rail regardless of
-  // count, across ALL sources (franchise / instructor / frontadmin). On
-  // mobile/tablet, empty statuses stay hidden so the rail isn't cluttered.
-  const showEmptyStatusesOnDesktop = true;
+  // For instructor / frontadmin, ALWAYS render every status in the rail on
+  // desktop regardless of count. For franchise, keep the existing
+  // "hide-when-empty" behavior so the rail doesn't get cluttered.
+  const showEmptyStatusesOnDesktop = sourceKey === "instructor" || sourceKey === "frontadmin";
 
   return (
     <div className="flex flex-col gap-1 px-0.5 md:px-1.5 py-3 w-12 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
@@ -79,14 +79,14 @@ export default function InboxStatusRail({
               hideClass = "flex";
             }
 
-            // "Not Interested" hosts an inline archived sub-button so the
-            // archived view is reachable from inside this status. Franchise
-            // uses "closed" as its Not Interested key; instructor/frontadmin
-            // use "declined". The standalone Archived rail icon is hidden
-            // for all of these sources.
-            const notInterestedKey = sourceKey === "franchise" ? "closed" : "declined";
+            // "declined" (Not Interested) hosts an inline archived sub-button
+            // for instructor/frontadmin so the archived view is reachable from
+            // there (the standalone Archived rail icon is hidden for these
+            // sources).
             const showArchivedInside =
-              s === notInterestedKey && archivedCount > 0;
+              (sourceKey === "instructor" || sourceKey === "frontadmin") &&
+              s === "declined" &&
+              archivedCount > 0;
 
             return (
               <button
@@ -101,7 +101,7 @@ export default function InboxStatusRail({
               >
                 <span className="text-base font-bold leading-none">{c}</span>
                 <span className="block w-full px-0.5 text-[9px] truncate capitalize text-center">
-                  {s === notInterestedKey
+                  {s === "declined"
                     ? "No Interest"
                     : statusLabel(sourceKey, s).split(" ")[0]}
                 </span>
@@ -138,8 +138,22 @@ export default function InboxStatusRail({
         </React.Fragment>
       ))}
 
-      {/* Standalone Archived rail icon removed — all sources now surface
-          archived inside their "Not Interested" / "Closed" rail item. */}
+      {/* Standalone Archived rail icon — shown for franchise only.
+          Instructor/frontadmin surface archived inside the Not Interested item. */}
+      {onArchived && sourceKey !== "instructor" && sourceKey !== "frontadmin" && (
+        <button
+          type="button"
+          onClick={onArchived}
+          title="Archived"
+          style={archivedActive ? { background: accent, color: "#fff" } : undefined}
+          className={`mt-auto w-full flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+            archivedActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
+          }`}
+        >
+          <Archive className="w-4 h-4" />
+          <span className="block w-full px-0.5 truncate text-center">{archivedCount > 0 ? archivedCount : "Archived"}</span>
+        </button>
+      )}
     </div>
   );
 }
