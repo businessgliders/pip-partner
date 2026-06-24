@@ -4,17 +4,23 @@
 // Falls back to a neutral white-glass palette when a status isn't listed.
 
 const FRANCHISE = {
-  new:            { colorClasses: "from-stone-600/40 to-stone-500/20 border-stone-400/50",     headerClasses: "bg-stone-700/70 border-stone-600/60" },
-  scheduled:      { colorClasses: "from-amber-700/35 to-amber-600/15 border-amber-500/50",   headerClasses: "bg-amber-700/70 border-amber-600/60" },
-  discussion:     { colorClasses: "from-rose-700/35 to-rose-600/15 border-rose-500/50",       headerClasses: "bg-rose-800/70 border-rose-700/60" },
-  qualified:      { colorClasses: "from-emerald-700/35 to-emerald-600/15 border-emerald-500/50", headerClasses: "bg-emerald-800/70 border-emerald-700/60" },
-  site_selection: { colorClasses: "from-indigo-700/35 to-indigo-600/15 border-indigo-500/50",   headerClasses: "bg-indigo-800/70 border-indigo-700/60" },
-  lease:          { colorClasses: "from-teal-700/35 to-teal-600/15 border-teal-500/50",         headerClasses: "bg-teal-800/70 border-teal-700/60" },
-  build_out:      { colorClasses: "from-orange-700/35 to-orange-600/15 border-orange-500/50",   headerClasses: "bg-orange-800/70 border-orange-700/60" },
-  training:       { colorClasses: "from-lime-700/35 to-lime-600/15 border-lime-500/50",         headerClasses: "bg-lime-800/70 border-lime-700/60" },
-  closed:         { colorClasses: "from-slate-700/35 to-slate-600/15 border-slate-500/50",      headerClasses: "bg-slate-800/70 border-slate-700/60" },
+  new:            { colorClasses: "from-stone-600/40 to-stone-500/20 border-stone-400/50",       headerClasses: "bg-stone-700/70 border-stone-600/60" },
+  discovery:      { colorClasses: "from-amber-700/35 to-amber-600/15 border-amber-500/50",       headerClasses: "bg-amber-700/70 border-amber-600/60" },
+  no_show:        { colorClasses: "from-rose-700/35 to-rose-600/15 border-rose-500/50",          headerClasses: "bg-rose-800/70 border-rose-700/60" },
+  nda:            { colorClasses: "from-cyan-700/35 to-cyan-600/15 border-cyan-500/50",          headerClasses: "bg-cyan-800/70 border-cyan-700/60" },
+  fdd:            { colorClasses: "from-emerald-700/35 to-emerald-600/15 border-emerald-500/50", headerClasses: "bg-emerald-800/70 border-emerald-700/60" },
+  signed:         { colorClasses: "from-fuchsia-700/35 to-fuchsia-600/15 border-fuchsia-500/50", headerClasses: "bg-fuchsia-800/70 border-fuchsia-700/60" },
+  site_selection: { colorClasses: "from-indigo-700/35 to-indigo-600/15 border-indigo-500/50",    headerClasses: "bg-indigo-800/70 border-indigo-700/60" },
+  lease:          { colorClasses: "from-teal-700/35 to-teal-600/15 border-teal-500/50",          headerClasses: "bg-teal-800/70 border-teal-700/60" },
+  build_out:      { colorClasses: "from-orange-700/35 to-orange-600/15 border-orange-500/50",    headerClasses: "bg-orange-800/70 border-orange-700/60" },
+  training:       { colorClasses: "from-lime-700/35 to-lime-600/15 border-lime-500/50",          headerClasses: "bg-lime-800/70 border-lime-700/60" },
+  closed:         { colorClasses: "from-slate-700/35 to-slate-600/15 border-slate-500/50",       headerClasses: "bg-slate-800/70 border-slate-700/60" },
   ghosted:        { colorClasses: "from-violet-700/35 to-violet-600/15 border-violet-500/50",    headerClasses: "bg-violet-800/70 border-violet-700/60" },
-  contacted:      { colorClasses: "from-cyan-700/35 to-cyan-600/15 border-cyan-500/50",         headerClasses: "bg-cyan-800/70 border-cyan-700/60" },
+  // Legacy aliases — same color as their replacement so old records look right.
+  scheduled:      { colorClasses: "from-amber-700/35 to-amber-600/15 border-amber-500/50",       headerClasses: "bg-amber-700/70 border-amber-600/60" },
+  discussion:     { colorClasses: "from-amber-700/35 to-amber-600/15 border-amber-500/50",       headerClasses: "bg-amber-700/70 border-amber-600/60" },
+  qualified:      { colorClasses: "from-emerald-700/35 to-emerald-600/15 border-emerald-500/50", headerClasses: "bg-emerald-800/70 border-emerald-700/60" },
+  contacted:      { colorClasses: "from-amber-700/35 to-amber-600/15 border-amber-500/50",       headerClasses: "bg-amber-700/70 border-amber-600/60" },
 };
 
 const HIRING = {

@@ -17,15 +17,21 @@ export const SOURCE_META = {
 const STATUS_CHIPS = {
   // Franchise pipeline
   new: "bg-emerald-100 text-emerald-700",
-  scheduled: "bg-sky-100 text-sky-700",
-  discussion: "bg-amber-100 text-amber-700",
-  qualified: "bg-violet-100 text-violet-700",
+  discovery: "bg-amber-100 text-amber-700",
+  no_show: "bg-rose-100 text-rose-700",
+  nda: "bg-cyan-100 text-cyan-700",
+  fdd: "bg-violet-100 text-violet-700",
+  signed: "bg-fuchsia-100 text-fuchsia-700",
   site_selection: "bg-indigo-100 text-indigo-700",
   lease: "bg-blue-100 text-blue-700",
   build_out: "bg-cyan-100 text-cyan-700",
   training: "bg-teal-100 text-teal-700",
   closed: "bg-slate-100 text-slate-600",
   ghosted: "bg-rose-100 text-rose-700",
+  // Legacy aliases
+  scheduled: "bg-amber-100 text-amber-700",
+  discussion: "bg-amber-100 text-amber-700",
+  qualified: "bg-violet-100 text-violet-700",
   contacted: "bg-amber-100 text-amber-700",
   // Instructor / Front Desk pipeline
   pending: "bg-emerald-100 text-emerald-700",
@@ -54,7 +60,7 @@ export const UPCOMING_MEETINGS_KEY = "upcoming";
 export const INBOX_STATUS_GROUPS = {
   franchise: [
     { statuses: [UPCOMING_MEETINGS_KEY] },
-    { label: "Step 1", statuses: ["new", "scheduled", "qualified"] },
+    { label: "Step 1", statuses: ["new", "discovery", "no_show", "nda", "fdd", "signed"] },
     { label: "Step 2", statuses: ["site_selection", "lease", "build_out", "training"] },
     { label: "Other", statuses: ["closed", "ghosted"] },
   ],

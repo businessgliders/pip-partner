@@ -66,9 +66,10 @@ export default function InboxStatusRail({
               );
             }
 
-            // Hide empty statuses on mobile/tablet (< md). Keep them on desktop
-            // so the rail layout stays stable for power users.
-            const hideWhenEmpty = c === 0 && !isActive ? "hidden md:flex" : "flex";
+            // Hide empty statuses on all breakpoints (mobile, tablet, AND
+            // desktop) — when count is 0 and the status isn't currently
+            // selected, drop it from the rail entirely.
+            const hideWhenEmpty = c === 0 && !isActive ? "hidden" : "flex";
             return (
               <button
                 key={s}

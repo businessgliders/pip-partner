@@ -6,16 +6,31 @@
 export const STATUS_META = {
   franchise: {
     new: { label: "New", description: "Just submitted — needs first outreach" },
-    scheduled: { label: "Discovery Call", description: "Intro call booked or held" },
-    discussion: { label: "Discussion", description: "Active back-and-forth after the call" },
-    qualified: { label: "Ready to Sign", description: "Vetted and approved to move forward" },
+    discovery: { label: "Discovery", description: "Discovery call booked or held" },
+    no_show: { label: "No Show", description: "Missed the scheduled discovery call" },
+    nda: { label: "NDA", description: "NDA sent — awaiting signature" },
+    fdd: { label: "FDD", description: "FDD shared — 14-day review period" },
+    signed: { label: "Signed", description: "Franchise agreement signed" },
     site_selection: { label: "Site Selection", description: "Scouting and approving the studio location" },
     lease: { label: "Lease", description: "Negotiating and signing the lease" },
     build_out: { label: "Build-Out", description: "Construction and studio fit-out in progress" },
     training: { label: "Training", description: "Owner and staff onboarding before launch" },
-    closed: { label: "Declined", description: "Franchise agreement signed" },
+    closed: { label: "Not Interested", description: "Lead opted out or was disqualified" },
     ghosted: { label: "Ghosted", description: "No reply after multiple follow-ups" },
-    contacted: { label: "Contacted", description: "Reached out, awaiting response" },
+    // Legacy aliases — kept so any historical records still display sensibly.
+    scheduled: { label: "Discovery", description: "Discovery call booked or held" },
+    discussion: { label: "Discovery", description: "Active back-and-forth after the call" },
+    qualified: { label: "FDD", description: "FDD shared — 14-day review period" },
+    contacted: { label: "Discovery", description: "Reached out, awaiting response" },
+  },
+  instructor: {
+    declined: { label: "Not Interested", description: "Lead opted out or was disqualified" },
+  },
+  frontadmin: {
+    declined: { label: "Not Interested", description: "Lead opted out or was disqualified" },
+  },
+  influencer: {
+    declined: { label: "Not Interested", description: "Lead opted out or was disqualified" },
   },
 };
 
@@ -33,8 +48,8 @@ export const BOARD_TYPES = [
     label: "Franchise",
     entity: "FranchiseInquiry",
     tabKey: "franchise",
-    statuses: ["new", "scheduled", "discussion", "ghosted", "qualified", "site_selection", "lease", "build_out", "training", "closed"],
-    stepOne: ["new", "scheduled", "discussion", "qualified"],
+    statuses: ["new", "discovery", "no_show", "nda", "fdd", "signed", "ghosted", "site_selection", "lease", "build_out", "training", "closed"],
+    stepOne: ["new", "discovery", "no_show", "nda", "fdd", "signed"],
     stepTwo: ["site_selection", "lease", "build_out", "training"],
     categoryField: "province",
     color: "#b67651",

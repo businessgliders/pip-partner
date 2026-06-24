@@ -4,10 +4,16 @@ import { ChevronDown, ChevronRight, ChevronUp, ArrowUpDown, Mail, Phone, MapPin,
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700",
+  discovery: "bg-amber-100 text-amber-700",
+  no_show: "bg-rose-100 text-rose-700",
+  nda: "bg-cyan-100 text-cyan-700",
+  fdd: "bg-violet-100 text-violet-700",
+  signed: "bg-fuchsia-100 text-fuchsia-700",
   scheduled: "bg-purple-100 text-purple-700",
   contacted: "bg-amber-100 text-amber-700",
   qualified: "bg-emerald-100 text-emerald-700",
   closed: "bg-slate-200 text-slate-600",
+  ghosted: "bg-violet-100 text-violet-700",
   pending: "bg-blue-100 text-blue-700",
   reviewed: "bg-amber-100 text-amber-700",
   invited: "bg-emerald-100 text-emerald-700",
@@ -15,12 +21,40 @@ const STATUS_COLORS = {
   declined: "bg-rose-100 text-rose-700",
 };
 
+// Centralized status → display label. Renames "declined" → "Not Interested"
+// across all boards (franchise/instructor/frontadmin/influencer) without
+// changing the underlying status key.
+const STATUS_LABELS = {
+  new: "New",
+  discovery: "Discovery",
+  no_show: "No Show",
+  nda: "NDA",
+  fdd: "FDD",
+  signed: "Signed",
+  site_selection: "Site Selection",
+  lease: "Lease",
+  build_out: "Build-Out",
+  training: "Training",
+  closed: "Not Interested",
+  ghosted: "Ghosted",
+  scheduled: "Discovery",
+  discussion: "Discovery",
+  qualified: "FDD",
+  contacted: "Discovery",
+  pending: "Pending",
+  reviewed: "Reviewed",
+  invited: "Invited",
+  approved: "Approved",
+  declined: "Not Interested",
+};
+
 function StatusBadge({ status }) {
   if (!status) return null;
   const cls = STATUS_COLORS[status] || "bg-slate-100 text-slate-600";
+  const label = STATUS_LABELS[status] || status;
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${cls}`}>
-      {status}
+      {label}
     </span>
   );
 }
