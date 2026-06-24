@@ -11,7 +11,6 @@ import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
 import MobileSourceTabBar from "../components/board/MobileSourceTabBar";
 import TabBarNotificationBell from "../components/board/TabBarNotificationBell";
 import WebAppMeasures from "../components/board/WebAppMeasures";
-import Tutorial, { hasSeenTutorial } from "../components/board/Tutorial";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
@@ -150,23 +149,6 @@ export default function ApplicationBoard() {
   // Optional cross-column confirm dialog state (only used when
   // STATUS_CHANGE_REQUIRES_DIALOG is true).
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
-
-  // First-load onboarding tutorial. Suppressed for info@pilatesinpinkstudio.com
-  // (which uses the influencer-only mailbox migration popup instead).
-  // Defer the seen-check until user.email is available — checking with `undefined`
-  // on first render reads the unsuffixed storage key, which is never written by
-  // close (close writes the email-suffixed key), so the popup would re-appear on
-  // every reload.
-  const [showTutorial, setShowTutorial] = useState(false);
-  useEffect(() => {
-    const email = (user?.email || "").toLowerCase();
-    if (!email) return;
-    if (email === "info@pilatesinpinkstudio.com") {
-      setShowTutorial(false);
-      return;
-    }
-    if (!hasSeenTutorial(email)) setShowTutorial(true);
-  }, [user?.email]);
 
   useEffect(() => {
     setSearchQuery("");
@@ -551,7 +533,6 @@ export default function ApplicationBoard() {
       <WebAppMeasures />
       <AdminFavicon title="Pilates in Pink™ — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
-      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} userEmail={user?.email} />}
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"
