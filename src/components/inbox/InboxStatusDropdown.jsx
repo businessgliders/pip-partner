@@ -8,17 +8,27 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { statusChip, statusLabel, statusOrderFor, entityForSource, UPCOMING_MEETINGS_KEY } from "./inboxConfig";
+import { statusChip, statusLabel, statusGroupsFor, entityForSource, UPCOMING_MEETINGS_KEY } from "./inboxConfig";
 
 /**
  * Pill-styled status dropdown. Updates the ticket's status (with history) and
  * invalidates the shared ApplicationBoard query so other views refresh.
+ *
+ * Layout: statuses are rendered in COLUMNS, one per group defined in
+ * inboxConfig.INBOX_STATUS_GROUPS (Step 1 / Step 2 / Other for franchise).
+ * Each group has its own labeled column inside the popover for easy scanning.
  */
 export default function InboxStatusDropdown({ ticket, sourceKey, variant = "light" }) {
   const queryClient = useQueryClient();
   const entity = entityForSource(sourceKey);
-  // Exclude the "upcoming" pseudo-status — it's a rail filter, not a real status.
-  const statuses = statusOrderFor(sourceKey).filter((s) => s !== UPCOMING_MEETINGS_KEY);
+  // Drop the "upcoming" pseudo-group (it's a rail filter, not a real status)
+  // and any empty groups, so we only render real status columns.
+  const groups = statusGroupsFor(sourceKey)
+    .map((g) => ({
+      ...g,
+      statuses: (g.statuses || []).filter((s) => s !== UPCOMING_MEETINGS_KEY),
+    }))
+    .filter((g) => g.statuses.length > 0);
 
   const mutation = useMutation({
     mutationFn: (newStatus) => {
@@ -55,27 +65,39 @@ export default function InboxStatusDropdown({ ticket, sourceKey, variant = "ligh
           <ChevronDown className="w-3 h-3" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48">
-        {statuses.map((s) => (
-          <DropdownMenuItem
-            key={s}
-            onClick={() => {
-              if (s !== ticket.status) mutation.mutate(s);
-            }}
-            className="text-xs"
-          >
-            <span
-              className={`mr-2 inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${statusChip(
-                s
-              )}`}
-            >
-              {statusLabel(sourceKey, s)}
-            </span>
-            {ticket.status === s && (
-              <Check className="w-3 h-3 ml-auto text-slate-500" />
-            )}
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent align="start" className="p-2">
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: `repeat(${groups.length}, minmax(8.5rem, 1fr))` }}
+        >
+          {groups.map((g, gi) => (
+            <div key={gi} className="flex flex-col gap-1">
+              {g.label && (
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1.5 pb-1 border-b border-slate-200">
+                  {g.label}
+                </div>
+              )}
+              {g.statuses.map((s) => (
+                <DropdownMenuItem
+                  key={s}
+                  onClick={() => {
+                    if (s !== ticket.status) mutation.mutate(s);
+                  }}
+                  className="text-xs px-1.5 py-1 cursor-pointer"
+                >
+                  <span
+                    className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusChip(s)}`}
+                  >
+                    {statusLabel(sourceKey, s)}
+                  </span>
+                  {ticket.status === s && (
+                    <Check className="w-3 h-3 ml-auto text-slate-500" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </div>
+          ))}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
