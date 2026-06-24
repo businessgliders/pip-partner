@@ -11,6 +11,7 @@ import ApplicationBoardHeader from "../components/board/ApplicationBoardHeader";
 import MobileSourceTabBar from "../components/board/MobileSourceTabBar";
 import TabBarNotificationBell from "../components/board/TabBarNotificationBell";
 import WebAppMeasures from "../components/board/WebAppMeasures";
+import WhatsNewPopup, { hasSeenWhatsNew } from "../components/board/WhatsNewPopup";
 import useUnreadMessages from "../hooks/useUnreadMessages";
 import { useAuth } from "@/lib/AuthContext";
 import { MasterKanbanBoard, MasterKanbanGlassTheme } from "@/components/master-kanban";
@@ -149,6 +150,16 @@ export default function ApplicationBoard() {
   // Optional cross-column confirm dialog state (only used when
   // STATUS_CHANGE_REQUIRES_DIALOG is true).
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
+
+  // "What's New" popup — surfaces release highlights on first load, then
+  // persists per-user (suffixed by RELEASE_KEY) so it shows once per release.
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
+  useEffect(() => {
+    const email = (user?.email || "").toLowerCase();
+    if (!email) return;
+    if (email === "info@pilatesinpinkstudio.com") return; // shows migration popup instead
+    if (!hasSeenWhatsNew(email)) setShowWhatsNew(true);
+  }, [user?.email]);
 
   useEffect(() => {
     setSearchQuery("");
@@ -533,6 +544,9 @@ export default function ApplicationBoard() {
       <WebAppMeasures />
       <AdminFavicon title="Pilates in Pink™ — Application Board" />
       {(user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com" && <MigrationPopup />}
+      {showWhatsNew && (
+        <WhatsNewPopup userEmail={user?.email} onClose={() => setShowWhatsNew(false)} />
+      )}
       <div
         aria-hidden="true"
         className="absolute inset-0 overflow-hidden pointer-events-none select-none"
