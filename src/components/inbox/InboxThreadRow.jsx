@@ -10,6 +10,7 @@ import {
   statusChip,
   statusLabel,
 } from "./inboxConfig";
+import FddCountdownPill from "@/components/board/FddCountdownPill";
 
 export default function InboxThreadRow({ ticket, sourceKey, active, unread, onClick }) {
   const name = displayName(ticket);
@@ -99,6 +100,10 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
 
           {ticket.app_number && (
             <span className="text-[10px] text-slate-400">#{ticket.app_number}</span>
+          )}
+
+          {isFranchise && ticket.status === "fdd" && (
+            <FddCountdownPill ticket={ticket} />
           )}
         </div>
 
