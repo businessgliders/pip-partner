@@ -83,7 +83,9 @@ export default function InboxStatusRail({
               >
                 <span className="text-base font-bold leading-none">{c}</span>
                 <span className="block w-full px-0.5 text-[9px] truncate capitalize text-center">
-                  {statusLabel(sourceKey, s).split(" ")[0]}
+                  {s === "declined"
+                    ? "No Interest"
+                    : statusLabel(sourceKey, s).split(" ")[0]}
                 </span>
               </button>
             );
