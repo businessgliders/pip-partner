@@ -8,7 +8,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Archive } from "lucide-react";
 import { statusChip, statusLabel, statusGroupsFor, entityForSource, UPCOMING_MEETINGS_KEY } from "./inboxConfig";
+
+// Pseudo status key used to surface the "Archive" action inside the dropdown's
+// "Other" group. It's not a real entity status — selecting it archives the
+// ticket rather than changing its status.
+const ARCHIVE_ACTION_KEY = "__archive__";
 
 /**
  * Pill-styled status dropdown. Updates the ticket's status (with history) and
@@ -22,16 +28,27 @@ export default function InboxStatusDropdown({ ticket, sourceKey, variant = "ligh
   const queryClient = useQueryClient();
   const entity = entityForSource(sourceKey);
   // Drop the "upcoming" pseudo-group (it's a rail filter, not a real status)
-  // and any empty groups, so we only render real status columns.
+  // and any empty groups, so we only render real status columns. Append an
+  // "Archive" action into the "Other" group so it's reachable from this menu.
   const groups = statusGroupsFor(sourceKey)
     .map((g) => ({
       ...g,
       statuses: (g.statuses || []).filter((s) => s !== UPCOMING_MEETINGS_KEY),
     }))
-    .filter((g) => g.statuses.length > 0);
+    .filter((g) => g.statuses.length > 0)
+    .map((g) =>
+      g.label === "Other"
+        ? { ...g, statuses: [...g.statuses, ARCHIVE_ACTION_KEY] }
+        : g
+    );
 
   const mutation = useMutation({
     mutationFn: (newStatus) => {
+      // Special "Archive" pseudo-action — just flips the archived flag on the
+      // ticket; no status change, no status_history entry.
+      if (newStatus === ARCHIVE_ACTION_KEY) {
+        return base44.entities[entity].update(ticket.id, { archived: true });
+      }
       const history = Array.isArray(ticket.status_history) ? ticket.status_history : [];
       const updated = [
         ...history,
@@ -77,24 +94,45 @@ export default function InboxStatusDropdown({ ticket, sourceKey, variant = "ligh
                   {g.label}
                 </div>
               )}
-              {g.statuses.map((s) => (
-                <DropdownMenuItem
-                  key={s}
-                  onClick={() => {
-                    if (s !== ticket.status) mutation.mutate(s);
-                  }}
-                  className="text-xs px-1.5 py-1 cursor-pointer"
-                >
-                  <span
-                    className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusChip(s)}`}
+              {g.statuses.map((s) => {
+                if (s === ARCHIVE_ACTION_KEY) {
+                  return (
+                    <DropdownMenuItem
+                      key={s}
+                      onClick={() => {
+                        if (!ticket.archived) mutation.mutate(ARCHIVE_ACTION_KEY);
+                      }}
+                      className="text-xs px-1.5 py-1 cursor-pointer"
+                    >
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap bg-slate-200 text-slate-700">
+                        <Archive className="w-3 h-3" />
+                        Archived
+                      </span>
+                      {ticket.archived && (
+                        <Check className="w-3 h-3 ml-auto text-slate-500" />
+                      )}
+                    </DropdownMenuItem>
+                  );
+                }
+                return (
+                  <DropdownMenuItem
+                    key={s}
+                    onClick={() => {
+                      if (s !== ticket.status) mutation.mutate(s);
+                    }}
+                    className="text-xs px-1.5 py-1 cursor-pointer"
                   >
-                    {statusLabel(sourceKey, s)}
-                  </span>
-                  {ticket.status === s && (
-                    <Check className="w-3 h-3 ml-auto text-slate-500" />
-                  )}
-                </DropdownMenuItem>
-              ))}
+                    <span
+                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusChip(s)}`}
+                    >
+                      {statusLabel(sourceKey, s)}
+                    </span>
+                    {ticket.status === s && (
+                      <Check className="w-3 h-3 ml-auto text-slate-500" />
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
             </div>
           ))}
         </div>

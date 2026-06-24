@@ -19,6 +19,10 @@ export default function InboxStatusRail({
   archivedCount = 0,
 }) {
   const groups = statusGroupsFor(sourceKey);
+  // For instructor / frontadmin, ALWAYS render every status in the rail on
+  // desktop regardless of count. For franchise, keep the existing
+  // "hide-when-empty" behavior so the rail doesn't get cluttered.
+  const showEmptyStatusesOnDesktop = sourceKey === "instructor" || sourceKey === "frontadmin";
 
   return (
     <div className="flex flex-col gap-1 px-0.5 md:px-1.5 py-3 w-12 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
@@ -66,10 +70,24 @@ export default function InboxStatusRail({
               );
             }
 
-            // Hide empty statuses on all breakpoints (mobile, tablet, AND
-            // desktop) — when count is 0 and the status isn't currently
-            // selected, drop it from the rail entirely.
-            const hideWhenEmpty = c === 0 && !isActive ? "hidden" : "flex";
+            // Hide empty statuses when count is 0 and not selected. On
+            // instructor/frontadmin we keep them visible on desktop (lg+).
+            let hideClass;
+            if (c === 0 && !isActive) {
+              hideClass = showEmptyStatusesOnDesktop ? "hidden lg:flex" : "hidden";
+            } else {
+              hideClass = "flex";
+            }
+
+            // "declined" (Not Interested) hosts an inline archived sub-button
+            // for instructor/frontadmin so the archived view is reachable from
+            // there (the standalone Archived rail icon is hidden for these
+            // sources).
+            const showArchivedInside =
+              (sourceKey === "instructor" || sourceKey === "frontadmin") &&
+              s === "declined" &&
+              archivedCount > 0;
+
             return (
               <button
                 key={s}
@@ -77,7 +95,7 @@ export default function InboxStatusRail({
                 onClick={() => onChange(isActive ? null : s)}
                 title={statusLabel(sourceKey, s)}
                 style={isActive ? { background: accent, color: "#fff" } : undefined}
-                className={`relative w-full ${hideWhenEmpty} flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+                className={`relative w-full ${hideClass} flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
                   isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
                 }`}
               >
@@ -87,13 +105,42 @@ export default function InboxStatusRail({
                     ? "No Interest"
                     : statusLabel(sourceKey, s).split(" ")[0]}
                 </span>
+                {showArchivedInside && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    title={`Archived (${archivedCount})`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onArchived) onArchived();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (onArchived) onArchived();
+                      }
+                    }}
+                    style={archivedActive ? { background: accent, color: "#fff" } : undefined}
+                    className={`mt-1 w-full inline-flex flex-col items-center gap-0.5 py-1 rounded-lg text-[9px] font-medium leading-none transition-all ${
+                      archivedActive
+                        ? "shadow-md"
+                        : "text-white/70 bg-white/10 hover:bg-white/20"
+                    }`}
+                  >
+                    <Archive className="w-3 h-3" />
+                    <span>{archivedCount}</span>
+                  </span>
+                )}
               </button>
             );
           })}
         </React.Fragment>
       ))}
 
-      {onArchived && (
+      {/* Standalone Archived rail icon — shown for franchise only.
+          Instructor/frontadmin surface archived inside the Not Interested item. */}
+      {onArchived && sourceKey !== "instructor" && sourceKey !== "frontadmin" && (
         <button
           type="button"
           onClick={onArchived}
