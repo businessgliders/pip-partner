@@ -25,12 +25,16 @@ const PROVINCES = [
 ];
 
 export default function FrontAdmin() {
+  const MESSAGE_MIN = 100;
+  const ALLOWED_RESUME_EXTS = [".pdf", ".doc", ".docx", ".pages", ".rtf", ".txt", ".odt"];
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
     preferred_studio: "",
     postal_code: "",
+    city: "",
     province: "",
     message: "",
     resume_url: "",
@@ -39,6 +43,7 @@ export default function FrontAdmin() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [resumeError, setResumeError] = useState("");
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -47,6 +52,14 @@ export default function FrontAdmin() {
   const handleResumeUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const name = file.name.toLowerCase();
+    const ok = ALLOWED_RESUME_EXTS.some((ext) => name.endsWith(ext));
+    if (!ok) {
+      setResumeError("Please upload a document file (PDF, DOC, DOCX, Pages). Images are not accepted.");
+      e.target.value = "";
+      return;
+    }
+    setResumeError("");
     setResumeFile(file);
     setUploading(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -224,38 +237,66 @@ export default function FrontAdmin() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Province</Label>
-                  <Select value={formData.province} onValueChange={(v) => handleInputChange("province", v)}>
-                    <SelectTrigger className="rounded-xl h-12 bg-white/50" style={{ borderColor: "rgba(95,143,168,0.4)" }}>
-                      <SelectValue placeholder="Choose province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Ontario">Ontario</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Province</Label>
+                    <Select value={formData.province} onValueChange={(v) => handleInputChange("province", v)}>
+                      <SelectTrigger className="rounded-xl h-12 bg-white/50" style={{ borderColor: "rgba(95,143,168,0.4)" }}>
+                        <SelectValue placeholder="Choose province" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Ontario">Ontario</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>City</Label>
+                    <Input
+                      placeholder="City"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      className="rounded-xl h-12 bg-white/50"
+                      style={{ borderColor: "rgba(95,143,168,0.4)" }}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Tell us about yourself</Label>
-                  <Textarea
-                    placeholder="Share a bit about who you are and why you'd thrive in this role..."
-                    value={formData.message}
-                    onChange={(e) => handleInputChange("message", e.target.value)}
-                    className="rounded-xl min-h-[120px] bg-white/50 resize-none"
-                    style={{ borderColor: "rgba(95,143,168,0.4)" }}
-                  />
+                  <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Tell us about yourself *</Label>
+                  <div className="relative">
+                    <Textarea
+                      required
+                      minLength={MESSAGE_MIN}
+                      placeholder="Share a bit about who you are and why you'd thrive in this role... (minimum 100 characters)"
+                      value={formData.message}
+                      onChange={(e) => handleInputChange("message", e.target.value)}
+                      className="rounded-xl min-h-[120px] bg-white/50 resize-none pb-7"
+                      style={{ borderColor: "rgba(95,143,168,0.4)" }}
+                    />
+                    <span
+                      className="absolute bottom-2 right-3 text-[11px] font-medium pointer-events-none"
+                      style={{
+                        color:
+                          formData.message.length >= MESSAGE_MIN
+                            ? "rgba(61,122,158,0.6)"
+                            : "#c2410c",
+                      }}
+                    >
+                      {formData.message.length}/{MESSAGE_MIN}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Attach Resume</Label>
+                  <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Attach Resume *</Label>
                   <div className="border-2 border-dashed rounded-xl p-6 text-center bg-white/30 hover:bg-white/50 transition-colors" style={{ borderColor: "rgba(95,143,168,0.5)" }}>
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx,.jpg,.png"
+                      accept=".pdf,.doc,.docx,.pages,.rtf,.txt,.odt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/rtf,text/plain,application/vnd.oasis.opendocument.text"
                       onChange={handleResumeUpload}
                       className="hidden"
                       id="resume-upload"
+                      required
                     />
                     <label htmlFor="resume-upload" className="cursor-pointer">
                       {uploading ? (
@@ -265,16 +306,24 @@ export default function FrontAdmin() {
                       ) : (
                         <>
                           <p className="text-sm" style={{ color: "rgba(61,122,158,0.7)" }}>Click to upload or drag and drop</p>
-                          <p className="text-xs mt-1" style={{ color: "rgba(61,122,158,0.5)" }}>PDF, DOC, DOCX, JPG or PNG • Max 15MB</p>
+                          <p className="text-xs mt-1" style={{ color: "rgba(61,122,158,0.5)" }}>PDF, DOC, DOCX, Pages • No images • Max 15MB</p>
                         </>
                       )}
                     </label>
                   </div>
+                  {resumeError && (
+                    <p className="text-xs text-rose-600 mt-1">{resumeError}</p>
+                  )}
                 </div>
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting || uploading}
+                  disabled={
+                    isSubmitting ||
+                    uploading ||
+                    !formData.resume_url ||
+                    formData.message.length < MESSAGE_MIN
+                  }
                   className="w-full h-14 rounded-xl text-white font-medium text-base transition-all duration-300 hover:opacity-90 hover:shadow-lg"
                   style={{ background: "linear-gradient(135deg, #3d7a9e 0%, #5f8fa8 100%)" }}
                 >
