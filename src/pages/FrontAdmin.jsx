@@ -239,6 +239,16 @@ export default function FrontAdmin() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
+                    <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>City</Label>
+                    <Input
+                      placeholder="City"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      className="rounded-xl h-12 bg-white/50"
+                      style={{ borderColor: "rgba(95,143,168,0.4)" }}
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>Province</Label>
                     <Select value={formData.province} onValueChange={(v) => handleInputChange("province", v)}>
                       <SelectTrigger className="rounded-xl h-12 bg-white/50" style={{ borderColor: "rgba(95,143,168,0.4)" }}>
@@ -248,16 +258,6 @@ export default function FrontAdmin() {
                         <SelectItem value="Ontario">Ontario</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="font-medium text-sm" style={{ color: "#3d7a9e" }}>City</Label>
-                    <Input
-                      placeholder="City"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
-                      className="rounded-xl h-12 bg-white/50"
-                      style={{ borderColor: "rgba(95,143,168,0.4)" }}
-                    />
                   </div>
                 </div>
 
