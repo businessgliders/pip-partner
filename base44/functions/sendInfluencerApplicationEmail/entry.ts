@@ -252,7 +252,11 @@ Deno.serve(async (req) => {
     }
 
     // Forward to the Unified Inbox hub — hub owns the email flow now.
-    await postToHub(applicationData);
+    // Fire-and-forget: never block the response on the hub. If the hub is slow
+    // or down, the user-facing submit must still complete promptly.
+    postToHub(applicationData).catch((err) => {
+      console.error('postToHub background error:', err?.message || err);
+    });
 
     return Response.json({ success: true, skipped: 'owner notifications disabled' });
   } catch (error) {

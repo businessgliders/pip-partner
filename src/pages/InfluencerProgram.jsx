@@ -31,6 +31,7 @@ export default function InfluencerProgram() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -39,12 +40,29 @@ export default function InfluencerProgram() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    const record = await base44.entities.InfluencerApplication.create(formData);
-    await base44.functions.invoke('sendInfluencerApplicationEmail', { applicationId: record.id });
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    setSubmitError("");
+
+    try {
+      const record = await base44.entities.InfluencerApplication.create(formData);
+
+      // Fire-and-forget the notification — the application is already saved.
+      // We don't want a slow/failed email to leave the user stuck on
+      // "Submitting…". Errors are surfaced via console for the team.
+      base44.functions
+        .invoke("sendInfluencerApplicationEmail", { applicationId: record.id })
+        .catch((err) => {
+          console.error("sendInfluencerApplicationEmail failed:", err);
+        });
+
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error("InfluencerApplication submit failed:", err);
+      setSubmitError(
+        "We couldn't submit your application. Please check your connection and try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const benefits = [
@@ -269,6 +287,12 @@ export default function InfluencerProgram() {
                     className="border-[#f7b1bd]/50 focus:border-[#f1889b] focus:ring-[#f1889b]/20 rounded-xl min-h-[120px] bg-white/50 resize-none"
                   />
                 </div>
+
+                {submitError && (
+                  <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+                    {submitError}
+                  </div>
+                )}
 
                 <Button
                   type="submit"
