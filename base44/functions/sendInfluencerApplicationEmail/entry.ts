@@ -147,6 +147,11 @@ async function postToHub(applicationData) {
     why_partner: applicationData.why_partner || '',
     submitted_at: applicationData.created_date || '',
   };
+  // Bounded timeout — we DO await this so Deno keeps the worker alive long
+  // enough for the hub to receive the payload, but we cap the wait so a slow
+  // hub can never freeze the user-facing submit.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
   try {
     const res = await fetch(
       'https://pink-app-hub.base44.app/api/apps/69841af9c747b033a60780f2/functions/spokeIntake',
@@ -157,14 +162,19 @@ async function postToHub(applicationData) {
           'Authorization': `Bearer ${secret}`,
         },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       }
     );
     if (!res.ok) {
       const errText = await res.text();
       console.error('Hub spokeIntake failed:', res.status, errText);
+    } else {
+      console.log('Hub spokeIntake ok for', payload.email);
     }
   } catch (err) {
-    console.error('Hub spokeIntake error:', err.message);
+    console.error('Hub spokeIntake error:', err?.name === 'AbortError' ? 'timeout after 8s' : err.message);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -252,11 +262,10 @@ Deno.serve(async (req) => {
     }
 
     // Forward to the Unified Inbox hub — hub owns the email flow now.
-    // Fire-and-forget: never block the response on the hub. If the hub is slow
-    // or down, the user-facing submit must still complete promptly.
-    postToHub(applicationData).catch((err) => {
-      console.error('postToHub background error:', err?.message || err);
-    });
+    // We await here (NOT fire-and-forget) because Deno can terminate the
+    // worker the moment the response is returned, which would drop the
+    // outbound request. postToHub has its own 8s timeout so it can't hang.
+    await postToHub(applicationData);
 
     return Response.json({ success: true, skipped: 'owner notifications disabled' });
   } catch (error) {
