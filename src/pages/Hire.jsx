@@ -77,6 +77,7 @@ export default function Hire() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -104,10 +105,25 @@ export default function Hire() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const record = await base44.entities.InstructorApplication.create(formData);
-    await base44.functions.invoke('sendInstructorApplicationEmail', { applicationId: record.id });
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    setSubmitError("");
+    try {
+      const record = await base44.entities.InstructorApplication.create(formData);
+      // Fire-and-forget the notification — application is already saved, no
+      // reason to make the user wait for the email send to surface success.
+      base44.functions
+        .invoke("sendInstructorApplicationEmail", { applicationId: record.id })
+        .catch((err) => {
+          console.error("sendInstructorApplicationEmail failed:", err);
+        });
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error("InstructorApplication submit failed:", err);
+      setSubmitError(
+        "We couldn't submit your application. Please check your connection and try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const highlights = [
@@ -361,6 +377,12 @@ export default function Hire() {
                     </label>
                   </div>
                 </div>
+
+                {submitError && (
+                  <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+                    {submitError}
+                  </div>
+                )}
 
                 <Button
                   type="submit"
