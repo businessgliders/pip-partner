@@ -1,5 +1,5 @@
 import React from "react";
-import { ExternalLink, CalendarDays, Archive, Reply } from "lucide-react";
+import { ExternalLink, CalendarDays, Archive, Reply, Bot } from "lucide-react";
 import { format } from "date-fns";
 import {
   displayName,
@@ -61,6 +61,14 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
             {name}
           </span>
           <div className="flex items-center gap-1 shrink-0">
+            {ticket.follow_up?.enabled && (
+              <span
+                title={`Auto Follow-up Active — Step ${ticket.follow_up?.step || 0}/${ticket.follow_up?.max_steps || 5}`}
+                className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 text-amber-700"
+              >
+                <Bot className="w-2.5 h-2.5" />
+              </span>
+            )}
             {ticket._has_reply && (
               <span
                 title="Applicant replied"

@@ -101,10 +101,12 @@ Deno.serve(async (req) => {
       timeZone: 'America/Toronto',
     });
 
-    // Update inquiry: set scheduled_call_time + status + _cal_booking metadata
+    // Update inquiry: set scheduled_call_time + status + _cal_booking metadata.
+    // New franchise tickets default to "new"; once they book a Cal.com call
+    // they move to "discovery" (the legacy "scheduled" status was removed).
     await base44.asServiceRole.entities.FranchiseInquiry.update(inquiry.id, {
       scheduled_call_time: friendlyTime,
-      status: 'scheduled',
+      status: 'discovery',
       _cal_booking: {
         uid,
         bookingId: booking.id,

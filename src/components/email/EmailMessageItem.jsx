@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sparkles, AlertTriangle, Maximize2 } from "lucide-react";
+import { Sparkles, AlertTriangle, Maximize2, Bot } from "lucide-react";
 import UnreadMessageMarker from "./UnreadMessageMarker";
 
 function stripHtml(html) {
@@ -46,6 +46,13 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
     !isFailed &&
     typeof message.template_name === "string" &&
     message.template_name.trim().length > 0;
+  // Auto follow-up emails are tagged by processFollowUps with template_name
+  // "Auto Follow-up #N" — render them in the same amber palette as the
+  // active follow-up pill so they're visually grouped.
+  const isFollowUp =
+    isTemplateReply &&
+    typeof message.template_name === "string" &&
+    message.template_name.toLowerCase().startsWith("auto follow-up");
 
   const resolveName = (email) => {
     if (!email) return "";
@@ -64,27 +71,54 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
   const time = message.sent_at || message.created_date;
 
   // Welcome / template compact bubble — same visual treatment.
+  // Follow-up bubbles use the amber palette to match the "Auto Follow-up
+  // Active" pill in the header, and show a small caption underneath so the
+  // viewer knows the sequence is still running.
   if (isWelcome || isTemplateReply) {
     const label = isWelcome
       ? "Auto-reply welcome sent"
+      : isFollowUp
+      ? message.template_name
       : `Auto-reply sent: ${message.template_name}`;
+    const palette = isFollowUp
+      ? {
+          bg: "bg-amber-50",
+          border: "border-amber-200",
+          text: "text-amber-700",
+          sub: "text-amber-600/80",
+          Icon: Bot,
+        }
+      : {
+          bg: "bg-pink-100",
+          border: "border-pink-200",
+          text: "text-pink-700",
+          sub: "text-pink-600/80",
+          Icon: Sparkles,
+        };
+    const { Icon } = palette;
     return (
       <>
-        <div className="flex justify-end mb-3" id={`msg-${message.id}`}>
+        <div className="flex flex-col items-end mb-3" id={`msg-${message.id}`}>
           <div
-            className={`max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2 bg-pink-100 border border-pink-200 cursor-pointer transition-all ${
+            className={`max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} cursor-pointer transition-all ${
               isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""
             }`}
             onClick={() => setOpen(true)}
           >
-            <div className="flex items-center gap-1.5 text-xs text-pink-700 font-medium">
-              <Sparkles className="w-3 h-3" />
+            <div className={`flex items-center gap-1.5 text-xs ${palette.text} font-medium`}>
+              <Icon className="w-3 h-3" />
               <span className="truncate">{label}</span>
             </div>
-            <div className="text-xs text-pink-600/80 mt-0.5">
+            <div className={`text-xs ${palette.sub} mt-0.5`}>
               {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
             </div>
           </div>
+          {isFollowUp && (
+            <div className="mt-1 mr-1 flex items-center gap-1 text-[10px] text-amber-700/80">
+              <Bot className="w-2.5 h-2.5" />
+              <span>Auto Follow-up active</span>
+            </div>
+          )}
         </div>
         <MessageDialog open={open} onOpenChange={setOpen} message={message} />
       </>
