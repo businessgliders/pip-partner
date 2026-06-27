@@ -74,6 +74,21 @@ export const INBOX_STATUS_GROUPS = {
   ],
 };
 
+// Some backend statuses don't have their own rail bucket — they're folded
+// under a parent rail status. The rail counts these toward the parent, and
+// the inbox filter expands the parent to include all folded children.
+// Tickets still keep their real status; the thread row surfaces it as a pill.
+export const STATUS_FOLD_MAP = {
+  franchise: {
+    discovery: ["scheduled", "discussion", "contacted", "qualified"],
+  },
+};
+
+export function expandStatusFilter(sourceKey, status) {
+  const folded = STATUS_FOLD_MAP[sourceKey]?.[status];
+  return folded ? [status, ...folded] : [status];
+}
+
 // The "Not Interested" status key per source — franchise uses `closed`,
 // instructor/frontadmin/influencer use `declined`. Archived tickets are
 // merged into this bucket in the inbox so they're reachable from one place.

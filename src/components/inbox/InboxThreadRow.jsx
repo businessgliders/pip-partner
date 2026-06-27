@@ -9,6 +9,7 @@ import {
   previewLine,
   statusChip,
   statusLabel,
+  STATUS_FOLD_MAP,
 } from "./inboxConfig";
 import FddCountdownPill from "@/components/board/FddCountdownPill";
 
@@ -99,7 +100,26 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
             >
               {statusLabel(sourceKey, ticket.status)}
             </span>
-          ) : null}
+          ) : (
+            // Franchise — show a status pill ONLY when the ticket sits in a
+            // folded child status (e.g. scheduled, discussion, contacted,
+            // qualified). Top-level rail statuses already match the bucket
+            // the user clicked, so no pill is needed there.
+            (() => {
+              const folded = STATUS_FOLD_MAP.franchise || {};
+              const isFolded = Object.values(folded).some((arr) => arr.includes(ticket.status));
+              if (!isFolded) return null;
+              return (
+                <span
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${statusChip(
+                    ticket.status
+                  )}`}
+                >
+                  {statusLabel(sourceKey, ticket.status)}
+                </span>
+              );
+            })()
+          )}
 
           {isFranchise && calStart && (
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 inline-flex items-center gap-1">

@@ -17,6 +17,8 @@ import {
   displayName,
   UPCOMING_MEETINGS_KEY,
   notInterestedStatusFor,
+  expandStatusFilter,
+  STATUS_FOLD_MAP,
 } from "./inboxConfig";
 import { getDefaultSort, sortTickets } from "./inboxSort";
 
@@ -154,6 +156,16 @@ export default function InboxView({
   // so they're reachable from a single rail item. Includes the "upcoming"
   // pseudo-status (franchise only): tickets that have a Cal.com booking
   // whose start time is in the future.
+  // Reverse map: folded child status -> parent rail status (per source).
+  const foldedChildToParent = useMemo(() => {
+    const map = {};
+    const src = STATUS_FOLD_MAP[sourceKey] || {};
+    Object.entries(src).forEach(([parent, children]) => {
+      children.forEach((c) => (map[c] = parent));
+    });
+    return map;
+  }, [sourceKey]);
+
   const statusCounts = useMemo(() => {
     const c = {};
     statuses.forEach((s) => (c[s] = 0));
@@ -163,14 +175,17 @@ export default function InboxView({
         if (c[notInterestedKey] !== undefined) c[notInterestedKey]++;
         return;
       }
-      if (c[t.status] !== undefined) c[t.status]++;
+      // Fold child statuses (e.g. scheduled/discussion/...) into their parent
+      // rail bucket so the count reflects everything in that group.
+      const bucketKey = foldedChildToParent[t.status] || t.status;
+      if (c[bucketKey] !== undefined) c[bucketKey]++;
       const startIso = t._cal_booking?.start;
       if (startIso && new Date(startIso).getTime() >= now) {
         c[UPCOMING_MEETINGS_KEY] = (c[UPCOMING_MEETINGS_KEY] || 0) + 1;
       }
     });
     return c;
-  }, [tickets, statuses, notInterestedKey]);
+  }, [tickets, statuses, notInterestedKey, foldedChildToParent]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -185,8 +200,10 @@ export default function InboxView({
         if (statusFilter === UPCOMING_MEETINGS_KEY) {
           const startIso = t._cal_booking?.start;
           if (!startIso || new Date(startIso).getTime() < now) return false;
-        } else if (statusFilter && t.status !== statusFilter) {
-          return false;
+        } else if (statusFilter) {
+          // Expand parent rail status to include any folded child statuses.
+          const allowed = expandStatusFilter(sourceKey, statusFilter);
+          if (!allowed.includes(t.status)) return false;
         }
       }
       if (!q) return true;
