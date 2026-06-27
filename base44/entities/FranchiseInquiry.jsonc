@@ -292,6 +292,83 @@
     "manual_sort_index": {
       "type": "number",
       "description": "Per-ticket sort position for manual reordering within a swimlane (currently used in the 'scheduled' column). When any ticket in a column has a manual_sort_index, the column uses it as the sort key instead of the auto-sort."
+    },
+    "follow_up": {
+      "type": "object",
+      "description": "Intelligent automated follow-up sequence state. When enabled, a scheduled automation drafts and sends context-aware follow-up emails until the applicant replies or the cap is reached.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the follow-up sequence is currently active"
+        },
+        "step": {
+          "type": "integer",
+          "default": 0,
+          "description": "Number of follow-up emails already sent (0-5)"
+        },
+        "max_steps": {
+          "type": "integer",
+          "default": 5,
+          "description": "Cap on follow-up emails before auto-marking as not interested"
+        },
+        "next_send_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the next follow-up is scheduled to send"
+        },
+        "last_sent_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the most recent follow-up was sent"
+        },
+        "enabled_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the sequence was last turned on"
+        },
+        "enabled_by": {
+          "type": "string",
+          "description": "Email of the admin who started this sequence"
+        },
+        "paused_reason": {
+          "type": "string",
+          "enum": [
+            "replied",
+            "manual_reply",
+            "completed",
+            "stopped",
+            ""
+          ],
+          "description": "Why the sequence stopped (if it did)"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer"
+              },
+              "sent_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "email_message_id": {
+                "type": "string"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "interval_days": {
+                "type": "number"
+              }
+            }
+          },
+          "default": [],
+          "description": "Log of follow-up emails sent in this sequence"
+        }
+      }
     }
   },
   "required": [

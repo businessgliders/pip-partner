@@ -62,7 +62,7 @@ export const INBOX_STATUS_GROUPS = {
     { statuses: [UPCOMING_MEETINGS_KEY] },
     { label: "Step 1", statuses: ["new", "discovery", "no_show", "nda", "fdd", "signed"] },
     { label: "Step 2", statuses: ["site_selection", "lease", "build_out", "training"] },
-    { label: "Other", statuses: ["closed", "ghosted"] },
+    { label: "Other", statuses: ["ghosted", "closed"] },
   ],
   instructor: [
     { statuses: ["pending", "reviewed", "invited"] },
