@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MessagesSquare, Info } from "lucide-react";
+import { ArrowLeft, MessagesSquare, Info, PanelRightClose, PanelRightOpen } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";
@@ -50,6 +50,9 @@ export default function InboxView({
   // and the contact details. Resets to "conversation" whenever the selected
   // ticket changes so opening a new conversation always lands on the email view.
   const [mobileTab, setMobileTab] = useState("conversation");
+  // Desktop (xl+) only — lets the user collapse the right details panel to
+  // give the conversation more horizontal room. Persists for the session.
+  const [detailsCollapsed, setDetailsCollapsed] = useState(false);
 
   // Reset state when source changes — default to the first status of the new
   // source so the user lands on a focused list (and the first conversation in
@@ -326,6 +329,21 @@ export default function InboxView({
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
                           </div>
+                          {/* Details panel collapse toggle — xl+ only, right-aligned.
+                              Hides the right contact panel column to give the
+                              conversation more horizontal room. */}
+                          <button
+                            type="button"
+                            onClick={() => setDetailsCollapsed((v) => !v)}
+                            title={detailsCollapsed ? "Show details" : "Hide details"}
+                            className="hidden xl:inline-flex ml-auto items-center justify-center h-7 w-7 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                          >
+                            {detailsCollapsed ? (
+                              <PanelRightOpen className="w-3.5 h-3.5" />
+                            ) : (
+                              <PanelRightClose className="w-3.5 h-3.5" />
+                            )}
+                          </button>
                           {/* Conv/Details toggle — only on lg-to-xl (contact panel hidden). */}
                           <div className="xl:hidden flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200">
                             <button
@@ -517,8 +535,9 @@ export default function InboxView({
           )}
         </div>
 
-        {/* Contact panel — side column on xl+ only */}
-        {selectedTicket && (
+        {/* Contact panel — side column on xl+ only.
+            Hidden when the user collapses it via the email header toggle. */}
+        {selectedTicket && !detailsCollapsed && (
           <div className="hidden xl:flex w-[300px] shrink-0 flex-col min-h-0">
             <InboxContactPanel
               ticket={selectedTicket}

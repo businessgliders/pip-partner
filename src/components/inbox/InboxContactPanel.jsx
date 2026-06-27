@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
-import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import InternalNotesSection from "@/components/admin/InternalNotesSection";
 import { ConfirmDialog } from "@/components/board/BoardDialogs";
@@ -133,34 +132,29 @@ export default function InboxContactPanel({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-1.5 justify-center mb-4">
-          <InboxStatusDropdown ticket={ticket} sourceKey={sourceKey} />
-          {ticket.assigned_to && (
+        {ticket.assigned_to && (
+          <div className="flex flex-wrap gap-1.5 justify-center mb-4">
             <span className="text-[11px] font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700 flex items-center gap-1">
               <UserIcon className="w-3 h-3" />
               {ticket.assigned_to.split("@")[0]}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Franchise-only: split into two focused sections.
-            • FDD — review-period countdown only.
-            • Cal & Calendar — Cal.com booking management, join meeting,
-              submitter Cal bookings popover. The legacy "Resend booking
-              emails" button is hidden here to keep the panel tidy. */}
+        {/* Franchise-only: "Available Options" — FDD countdown sits above a
+            Cal.com block whose buttons render in a 2-column grid. The grid
+            override targets the inner flex container that FranchiseMeetingPills
+            produces, turning each pill into a full-width grid cell. */}
         {sourceKey === "franchise" && (
-          <div className="mb-4 space-y-2">
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
-                FDD
-              </div>
-              <FranchiseMeetingPills ticket={ticket} section="fdd" />
+          <div className="mb-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
+              Available Options
             </div>
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
-                Cal & Calendar
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+              <FranchiseMeetingPills ticket={ticket} section="fdd" />
+              <div className="[&>div]:!grid [&>div]:!grid-cols-2 [&>div]:!gap-1.5 [&>div>*]:w-full [&>div>*]:justify-center">
+                <FranchiseMeetingPills ticket={ticket} section="cal" />
               </div>
-              <FranchiseMeetingPills ticket={ticket} section="cal" />
             </div>
           </div>
         )}
