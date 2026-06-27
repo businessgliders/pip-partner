@@ -12,8 +12,8 @@ function daysSince(dateString) {
   return Math.floor((Date.now() - d.getTime()) / 86400000);
 }
 
-export default function ResolvedCleanupPopup({ open, onOpenChange, resolvedTickets, onMoveToClosed }) {
-  const [showSplash, setShowSplash] = useState(() => !localStorage.getItem(SPLASH_KEY));
+export default function ResolvedCleanupPopup({ open, onOpenChange, resolvedTickets, onMoveToClosed, skipSplash = false }) {
+  const [showSplash, setShowSplash] = useState(() => !skipSplash && !localStorage.getItem(SPLASH_KEY));
   const [selectedIds, setSelectedIds] = useState([]);
 
   const eligible = useMemo(

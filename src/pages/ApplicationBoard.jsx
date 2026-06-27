@@ -383,9 +383,14 @@ export default function ApplicationBoard() {
     [tickets, resolvedKey]
   );
 
+  // The auto-popup is reserved for the info@ account. Everyone else gets a
+  // "Tidy Up" button on the resolved column header (see getActions below) and
+  // can open the popup on demand.
+  const isInfoUser = (user?.email || "").toLowerCase() === "info@pilatesinpinkstudio.com";
   useEffect(() => {
+    if (!isInfoUser) return;
     if (!cleanupDismissed && resolvedTickets.length > 6) setShowCleanupPopup(true);
-  }, [resolvedTickets.length, cleanupDismissed]);
+  }, [resolvedTickets.length, cleanupDismissed, isInfoUser]);
 
   // Persist a manual reorder for a column: writes manual_sort_index on every
   // ticket in `orderedIds` (parallel updates), then clears the optimistic
@@ -862,6 +867,12 @@ export default function ApplicationBoard() {
                       onSortChange: (mode) =>
                         setColumnSort((prev) => ({ ...prev, [statusKey]: mode })),
                     };
+                    // Tidy Up button on the resolved column (e.g. "qualified" /
+                    // "approved" / "reviewed") for non-info users — replaces
+                    // the auto-popup so users can trigger it on demand.
+                    if (!isInfoUser && statusKey === resolvedKey) {
+                      sortActions.onTidyUp = () => setShowCleanupPopup(true);
+                    }
                     // Bulk actions only appear on the resolved / closing-style columns.
                     const isClosingCol = ["closed", "ghosted", "declined"].includes(statusKey);
                     if (!isClosingCol) return sortActions;
@@ -937,6 +948,7 @@ export default function ApplicationBoard() {
         onOpenChange={(v) => { setShowCleanupPopup(v); if (!v) setCleanupDismissed(true); }}
         resolvedTickets={resolvedTickets}
         onMoveToClosed={handleTidyUpMove}
+        skipSplash={!isInfoUser}
       />
 
       <StatusChangeDialog

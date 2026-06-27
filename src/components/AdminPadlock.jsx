@@ -7,6 +7,10 @@ import { Lock } from "lucide-react";
  *
  * @param {string} [to="/ApplicationBoard"] - Internal route OR external URL.
  *   External URLs (starting with http:// or https://) open in a new tab.
+ *
+ * If the user clicks the padlock while signed out, the auth provider's
+ * post-login redirect (set in Login) sends them to /ApplicationBoard, so the
+ * end-to-end "padlock → sign-in → app board" flow lands in the right place.
  */
 export default function AdminPadlock({ to = "/ApplicationBoard" }) {
   const isExternal = /^https?:\/\//i.test(to);

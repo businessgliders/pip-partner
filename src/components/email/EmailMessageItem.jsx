@@ -102,30 +102,45 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           onClick={() => setOpen(true)}
         >
           {message.is_ai_summary && (
-            <div className="text-[9px] text-violet-600 opacity-60 font-semibold tracking-wider uppercase mb-1">
-              Request Summary
+            <div className="text-[9px] text-slate-400 font-semibold tracking-wider uppercase mb-1 flex items-center gap-1">
+              <Sparkles className="w-2.5 h-2.5" />
+              AI Summary
             </div>
           )}
-          {(isInbound || isFailed) && (
+          {(isInbound || isFailed) && !message.is_ai_summary && (
             <div className="lg:text-xs text-[10px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
               {isFailed && <AlertTriangle className="w-3 h-3 text-red-600" />}
               {isFailed && <span className="text-red-700">⚠️ FAILED TO SEND</span>}
               {!isFailed && <span className="hidden lg:inline">{senderName}</span>}
             </div>
           )}
-          {message.to_email && (
-            <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
-              <div className="truncate">
-                <span className="text-gray-400">To:</span>{" "}
-                <span className={`font-medium ${isInbound ? "text-pink-700" : "text-gray-700"}`}>
-                  {toDisplay}
-                </span>
-              </div>
-            </div>
+          {/* Inbound bubbles show "From: email" only (no To row); outbound
+              continues to display the recipient address. The intake AI
+              summary bubble suppresses both. */}
+          {!message.is_ai_summary && (
+            isInbound ? (
+              message.from_email && (
+                <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
+                  <div className="truncate">
+                    <span className="text-gray-400">From:</span>{" "}
+                    <span className="font-medium text-pink-700">{message.from_email}</span>
+                  </div>
+                </div>
+              )
+            ) : (
+              message.to_email && (
+                <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
+                  <div className="truncate">
+                    <span className="text-gray-400">To:</span>{" "}
+                    <span className="font-medium text-gray-700">{toDisplay}</span>
+                  </div>
+                </div>
+              )
+            )
           )}
           {message.is_ai_summary ? (
            <div
-             className="lg:text-sm text-xs text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1"
+             className="lg:text-sm text-xs text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1 mb-5"
              dangerouslySetInnerHTML={{ __html: message.body_html }}
            />
           ) : (
@@ -133,20 +148,12 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
              {cleanText || "(empty)"}
            </div>
           )}
-          <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+          <div className={`text-[10px] text-gray-500 mt-1 flex items-center gap-1 ${message.is_ai_summary ? "justify-end" : ""}`}>
             <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>
             {isLong && !message.is_ai_summary && (
               <Maximize2 className="w-3 h-3 text-gray-400" title="Tap to view full message" />
             )}
           </div>
-          {message.is_ai_summary && (
-            <div
-              title="AI Summary"
-              className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-sm"
-            >
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-          )}
         </div>
       </div>
       <MessageDialog open={open} onOpenChange={setOpen} message={message} />

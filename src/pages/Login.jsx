@@ -8,7 +8,9 @@ import Seo from "@/components/Seo";
 
 export default function Login() {
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    // After sign-in, land directly on the Application Board so admins / staff
+    // get straight to their workspace instead of the marketing homepage.
+    base44.auth.loginWithProvider("google", "/ApplicationBoard");
   };
 
   return (

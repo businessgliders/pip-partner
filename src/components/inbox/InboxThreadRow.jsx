@@ -1,5 +1,5 @@
 import React from "react";
-import { ExternalLink, CalendarDays, Archive } from "lucide-react";
+import { ExternalLink, CalendarDays, Archive, Reply } from "lucide-react";
 import { format } from "date-fns";
 import {
   displayName,
@@ -60,7 +60,17 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
           >
             {name}
           </span>
-          <span className="text-[11px] text-slate-500 shrink-0">{time}</span>
+          <div className="flex items-center gap-1 shrink-0">
+            {ticket._has_reply && (
+              <span
+                title="Applicant replied"
+                className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-100 text-emerald-700"
+              >
+                <Reply className="w-2.5 h-2.5" />
+              </span>
+            )}
+            <span className="text-[11px] text-slate-500">{time}</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">

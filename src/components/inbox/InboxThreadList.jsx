@@ -1,10 +1,22 @@
 import React, { useMemo, useState } from "react";
-import { Search, Inbox as InboxIcon } from "lucide-react";
+import { Search, Inbox as InboxIcon, Reply, Check } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import InboxThreadRow from "./InboxThreadRow";
 import InboxSortMenu from "./InboxSortMenu";
 import { getDefaultSort, sortTickets } from "./inboxSort";
+
+const REPLY_FILTERS = [
+  { key: "all", label: "All conversations" },
+  { key: "replied", label: "Replied" },
+  { key: "not_replied", label: "Not replied" },
+];
 
 export default function InboxThreadList({
   title,
@@ -27,9 +39,19 @@ export default function InboxThreadList({
   const [sortMode, setSortMode] = useState(getDefaultSort(sourceKey, statusKey));
   const effectiveSort = showAppointment ? sortMode : "submission";
 
+  // Reply filter — independent of sort/source. Resets via parent unmount when
+  // the source / status changes (same pattern as sort).
+  const [replyFilter, setReplyFilter] = useState("all");
+
+  const filteredTickets = useMemo(() => {
+    if (replyFilter === "all") return tickets;
+    if (replyFilter === "replied") return tickets.filter((t) => t._has_reply);
+    return tickets.filter((t) => !t._has_reply);
+  }, [tickets, replyFilter]);
+
   const sortedTickets = useMemo(
-    () => sortTickets(tickets, effectiveSort),
-    [tickets, effectiveSort]
+    () => sortTickets(filteredTickets, effectiveSort),
+    [filteredTickets, effectiveSort]
   );
 
   // Franchise + submission sort: group conversations by submission Month-Year.
@@ -71,6 +93,38 @@ export default function InboxThreadList({
                 {count}
               </span>
             )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  title="Filter by reply status"
+                  className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                    replyFilter === "all"
+                      ? "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                      : "text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                  }`}
+                >
+                  <Reply className="w-3.5 h-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Reply status
+                </div>
+                {REPLY_FILTERS.map((opt) => (
+                  <DropdownMenuItem
+                    key={opt.key}
+                    onClick={() => setReplyFilter(opt.key)}
+                    className="cursor-pointer text-xs flex items-center gap-2"
+                  >
+                    <span className="flex-1">{opt.label}</span>
+                    {replyFilter === opt.key && (
+                      <Check className="w-3.5 h-3.5 text-slate-700" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <InboxSortMenu
               value={effectiveSort}
               onChange={setSortMode}

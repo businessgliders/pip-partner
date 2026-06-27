@@ -1,10 +1,11 @@
-import React from "react";
-import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink } from "lucide-react";
+import React, { useState } from "react";
+import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import InternalNotesSection from "@/components/admin/InternalNotesSection";
+import { ConfirmDialog } from "@/components/board/BoardDialogs";
 import {
   displayName,
   initials,
@@ -34,6 +35,19 @@ export default function InboxContactPanel({
 }) {
   const queryClient = useQueryClient();
   const entity = entityForSource(sourceKey);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await base44.entities[entity].delete(ticket.id);
+      queryClient.invalidateQueries({ queryKey: ["app-board", entity] });
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   if (!ticket) return null;
   const name = displayName(ticket);
@@ -177,7 +191,28 @@ export default function InboxContactPanel({
             return <Field key={f.key} label={f.label} value={v} />;
           })}
         </div>
+
+        {/* Danger zone — delete ticket permanently */}
+        <div className="mt-6 pt-4 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            disabled={deleting}
+            className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            {deleting ? "Deleting…" : "Delete ticket"}
+          </button>
+        </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        title="Delete this ticket?"
+        message={`This will permanently delete ${name}'s ticket and all of its associated data. This action cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }

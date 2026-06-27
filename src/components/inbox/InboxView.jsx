@@ -112,6 +112,25 @@ export default function InboxView({
     enabled: !!entity,
   });
 
+  // Set of ticket IDs that have at least one inbound reply — drives the
+  // "replied" pill on each row and the replied/not-replied filter.
+  const { data: repliedTicketIds = new Set() } = useQuery({
+    queryKey: ["inbox-replied-tickets", entity],
+    queryFn: async () => {
+      const msgs = await base44.entities.EmailMessage.filter(
+        { ticket_type: entity, direction: "inbound" },
+        "-created_date",
+        2000
+      );
+      const s = new Set();
+      for (const m of msgs) if (m.ticket_id) s.add(m.ticket_id);
+      return s;
+    },
+    refetchInterval: 15000,
+    staleTime: 10000,
+    enabled: !!entity,
+  });
+
   const tickets = useMemo(
     () =>
       (rawTickets || []).map((t) => {
@@ -120,9 +139,10 @@ export default function InboxView({
           ...t,
           _cal_booking: emailKey ? calBookings[emailKey] || null : null,
           _last_email_at: lastEmailByTicket[t.id] || null,
+          _has_reply: repliedTicketIds.has(t.id),
         };
       }),
-    [rawTickets, calBookings, lastEmailByTicket]
+    [rawTickets, calBookings, lastEmailByTicket, repliedTicketIds]
   );
 
   // Per-status counts for the left rail. Archived tickets are folded into
