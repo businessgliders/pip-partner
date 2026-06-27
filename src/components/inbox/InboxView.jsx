@@ -326,11 +326,11 @@ export default function InboxView({
                           </div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                            {sourceKey === "franchise" && (
-                              <FranchiseMeetingPills ticket={selectedTicket} compact />
-                            )}
                             {selectedTicket.email && (
                               <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                            )}
+                            {sourceKey === "franchise" && (
+                              <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
                           </div>
                           {/* Details panel collapse toggle — xl+ only, right-aligned.
@@ -421,11 +421,11 @@ export default function InboxView({
                           </div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                            {sourceKey === "franchise" && (
-                              <FranchiseMeetingPills ticket={selectedTicket} compact />
-                            )}
                             {selectedTicket.email && (
                               <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                            )}
+                            {sourceKey === "franchise" && (
+                              <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
                           </div>
                         </div>
@@ -461,11 +461,11 @@ export default function InboxView({
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                        {sourceKey === "franchise" && (
-                          <FranchiseMeetingPills ticket={selectedTicket} compact />
-                        )}
                         {selectedTicket.email && (
                           <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                        )}
+                        {sourceKey === "franchise" && (
+                          <FranchiseMeetingPills ticket={selectedTicket} compact />
                         )}
                       </div>
                       <div className="flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200">
@@ -520,11 +520,11 @@ export default function InboxView({
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                        {sourceKey === "franchise" && (
-                          <FranchiseMeetingPills ticket={selectedTicket} compact />
-                        )}
                         {selectedTicket.email && (
                           <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                        )}
+                        {sourceKey === "franchise" && (
+                          <FranchiseMeetingPills ticket={selectedTicket} compact />
                         )}
                       </div>
                     </div>

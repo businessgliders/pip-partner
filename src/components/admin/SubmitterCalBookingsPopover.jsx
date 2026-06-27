@@ -64,7 +64,7 @@ export default function SubmitterCalBookingsPopover({ email, compact = false }) 
           {!compact && <span className="hidden lg:inline">Cal.com bookings</span>}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-2">
+      <PopoverContent side="right" align="start" className="w-80 p-2">
         <div className="px-2 pt-1 pb-2 border-b border-slate-100">
           <p className="text-[10px] tracking-wider uppercase text-slate-400 font-semibold">
             Cal.com bookings
