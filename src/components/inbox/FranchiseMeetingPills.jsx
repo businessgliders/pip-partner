@@ -55,16 +55,16 @@ export default function FranchiseMeetingPills({
         })
       : null;
 
-  // Header (compact) renders: FDD badge, Cal date pill (when `label`), Join
-  // meeting (when `meetingUrl`). When dedupeAgainstHeader is set we treat
-  // these as already-visible and skip them here — leaving only the items
-  // that wouldn't otherwise be reachable (e.g. the submitter Cal bookings
-  // history popover, or the Cal pill when there's no booking date yet).
-  const headerShowsFdd = dedupeAgainstHeader;
+  // Header (compact) renders: Cal date pill (when `label`), Join meeting
+  // (when `meetingUrl`), and the FDD badge ONLY when the timer is running.
+  // When dedupeAgainstHeader is set we treat the Cal pieces as already
+  // visible above and skip them. FDD is always rendered here (in the details
+  // panel) so staff can start it when it's not yet running; the header's
+  // `hideWhenInactive` flag keeps it hidden up there until it starts.
   const headerShowsCalPill = dedupeAgainstHeader && !!label;
   const headerShowsJoin = dedupeAgainstHeader && !!meetingUrl;
 
-  const showFdd = (section === "all" || section === "fdd") && !headerShowsFdd;
+  const showFdd = section === "all" || section === "fdd";
   const showCal = section === "all" || section === "cal";
   // Resend booking emails is only shown in the full "all" rendering (legacy
   // mobile header). The detail-panel split intentionally suppresses it.
@@ -75,7 +75,13 @@ export default function FranchiseMeetingPills({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {showFdd && <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />}
+      {showFdd && (
+        <FddCountdownBadge
+          ticketId={ticket.id}
+          ticket={ticket}
+          hideWhenInactive={compact}
+        />
+      )}
 
       {/* Cal.com booking pill — only when there's a known booking */}
       {showCalPill && label && (

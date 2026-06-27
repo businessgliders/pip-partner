@@ -29,7 +29,7 @@ function isFddSubject(subject) {
  *
  * Clicking the badge opens a popover to start/restart/clear the timer manually.
  */
-export default function FddCountdownBadge({ ticketId, ticket }) {
+export default function FddCountdownBadge({ ticketId, ticket, hideWhenInactive = false }) {
   const queryClient = useQueryClient();
   const manualStartIso = ticket?.fdd_countdown_started_at || null;
 
@@ -96,8 +96,11 @@ export default function FddCountdownBadge({ ticketId, ticket }) {
   const manualStartTs = manualStartIso ? new Date(manualStartIso).getTime() : null;
   const effectiveStartTs = manualStartTs || confirmedAt;
 
-  // Nothing to show and no override → render a small "Start timer" trigger
+  // Nothing to show and no override → render a small "Start timer" trigger.
+  // When `hideWhenInactive` is set (used by the compact email header) we
+  // suppress the trigger entirely; the details panel will surface it instead.
   if (!effectiveStartTs && !fddSentAt) {
+    if (hideWhenInactive) return null;
     return (
       <Popover>
         <PopoverTrigger asChild>
@@ -126,8 +129,10 @@ export default function FddCountdownBadge({ ticketId, ticket }) {
     );
   }
 
-  // FDD sent but no applicant reply yet (and no manual override)
+  // FDD sent but no applicant reply yet (and no manual override).
+  // Header (hideWhenInactive) hides this — the timer isn't actually running.
   if (!effectiveStartTs) {
+    if (hideWhenInactive) return null;
     return (
       <Popover>
         <PopoverTrigger asChild>
