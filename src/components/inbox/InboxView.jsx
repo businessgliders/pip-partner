@@ -9,6 +9,7 @@ import InboxContactPanel from "./InboxContactPanel";
 import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import SubmitterCalBookingsPopover from "@/components/admin/SubmitterCalBookingsPopover";
+import FollowUpControl from "@/components/admin/FollowUpControl";
 import {
   SOURCE_META,
   statusOrderFor,
@@ -349,6 +350,11 @@ export default function InboxView({
                             {sourceKey === "franchise" && (
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
+                            <FollowUpControl
+                              ticket={selectedTicket}
+                              ticketType={entity}
+                              iconOnly
+                            />
                           </div>
                           {/* Details panel collapse toggle — xl+ only, right-aligned.
                               Hides the right contact panel column to give the
@@ -445,6 +451,8 @@ export default function InboxView({
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
                           </div>
+                          {/* Full Auto Follow-up card under header on mobile/tablet */}
+                          <FollowUpControl ticket={selectedTicket} ticketType={entity} />
                         </div>
                       </>
                     }
@@ -505,47 +513,48 @@ export default function InboxView({
                       </div>
                     </div>
                     <div className="lg:hidden flex flex-col gap-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          <span className="text-sm font-semibold text-gray-800 truncate">
-                            {displayName(selectedTicket)}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="text-sm font-semibold text-gray-800 truncate">
+                          {displayName(selectedTicket)}
+                        </span>
+                        {selectedTicket.app_number && (
+                          <span className="text-[10px] text-gray-500 shrink-0">
+                            #{selectedTicket.app_number}
                           </span>
-                          {selectedTicket.app_number && (
-                            <span className="text-[10px] text-gray-500 shrink-0">
-                              #{selectedTicket.app_number}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setMobileTab("conversation")}
-                            title="Conversation"
-                            className="h-7 w-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900"
-                          >
-                            <MessagesSquare className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setMobileTab("details")}
-                            title="Details"
-                            className="h-7 w-7 rounded-full flex items-center justify-center bg-slate-900 text-white shadow-sm"
-                          >
-                            <Info className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                        {selectedTicket.email && (
-                          <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
-                        )}
-                        {sourceKey === "franchise" && (
-                          <FranchiseMeetingPills ticket={selectedTicket} compact />
-                        )}
+                      <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setMobileTab("conversation")}
+                          title="Conversation"
+                          className="h-7 w-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900"
+                        >
+                          <MessagesSquare className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMobileTab("details")}
+                          title="Details"
+                          className="h-7 w-7 rounded-full flex items-center justify-center bg-slate-900 text-white shadow-sm"
+                        >
+                          <Info className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
-                  </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
+                      {selectedTicket.email && (
+                        <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                      )}
+                      {sourceKey === "franchise" && (
+                        <FranchiseMeetingPills ticket={selectedTicket} compact />
+                      )}
+                    </div>
+                    <FollowUpControl ticket={selectedTicket} ticketType={entity} />
+                    </div>
+                    </div>
                   <InboxContactPanel
                     ticket={selectedTicket}
                     sourceKey={sourceKey}

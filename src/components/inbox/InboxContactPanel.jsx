@@ -4,7 +4,6 @@ import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import InternalNotesSection from "@/components/admin/InternalNotesSection";
-import FollowUpControl from "@/components/admin/FollowUpControl";
 import { ConfirmDialog } from "@/components/board/BoardDialogs";
 import {
   displayName,
@@ -159,13 +158,6 @@ export default function InboxContactPanel({
             </div>
           </div>
         )}
-
-        <div className="mb-4">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
-            Auto Follow-up
-          </div>
-          <FollowUpControl ticket={ticket} ticketType={entity} />
-        </div>
 
         <InternalNotesSection
           notes={notes}

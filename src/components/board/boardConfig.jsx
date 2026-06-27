@@ -17,11 +17,6 @@ export const STATUS_META = {
     training: { label: "Training", description: "Owner and staff onboarding before launch" },
     closed: { label: "Not Interested", description: "Lead opted out or was disqualified" },
     ghosted: { label: "Ghosted", description: "No reply after multiple follow-ups" },
-    // Legacy aliases — kept so any historical records still display sensibly.
-    scheduled: { label: "Discovery", description: "Discovery call booked or held" },
-    discussion: { label: "Discovery", description: "Active back-and-forth after the call" },
-    qualified: { label: "FDD", description: "FDD shared — 14-day review period" },
-    contacted: { label: "Discovery", description: "Reached out, awaiting response" },
   },
   instructor: {
     declined: { label: "Not Interested", description: "Lead opted out or was disqualified" },

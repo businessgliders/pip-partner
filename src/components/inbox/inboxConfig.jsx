@@ -28,11 +28,6 @@ const STATUS_CHIPS = {
   training: "bg-teal-100 text-teal-700",
   closed: "bg-slate-100 text-slate-600",
   ghosted: "bg-rose-100 text-rose-700",
-  // Legacy aliases
-  scheduled: "bg-amber-100 text-amber-700",
-  discussion: "bg-amber-100 text-amber-700",
-  qualified: "bg-violet-100 text-violet-700",
-  contacted: "bg-amber-100 text-amber-700",
   // Instructor / Front Desk pipeline
   pending: "bg-emerald-100 text-emerald-700",
   reviewed: "bg-amber-100 text-amber-700",
@@ -74,15 +69,10 @@ export const INBOX_STATUS_GROUPS = {
   ],
 };
 
-// Some backend statuses don't have their own rail bucket — they're folded
-// under a parent rail status. The rail counts these toward the parent, and
-// the inbox filter expands the parent to include all folded children.
-// Tickets still keep their real status; the thread row surfaces it as a pill.
-export const STATUS_FOLD_MAP = {
-  franchise: {
-    discovery: ["scheduled", "discussion", "contacted", "qualified"],
-  },
-};
+// STATUS_FOLD_MAP is kept (currently empty) so callers can keep importing it
+// without breaking — legacy franchise statuses (scheduled/discussion/...) were
+// removed from the schema and migrated into "discovery".
+export const STATUS_FOLD_MAP = {};
 
 export function expandStatusFilter(sourceKey, status) {
   const folded = STATUS_FOLD_MAP[sourceKey]?.[status];

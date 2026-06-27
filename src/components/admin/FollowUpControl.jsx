@@ -56,7 +56,7 @@ const PAUSE_LABELS = {
   stopped: { label: "Stopped manually", icon: Pause, color: "text-slate-700 bg-slate-50 border-slate-200" },
 };
 
-export default function FollowUpControl({ ticket, ticketType }) {
+export default function FollowUpControl({ ticket, ticketType, iconOnly = false }) {
   const queryClient = useQueryClient();
   const fu = ticket?.follow_up || {};
   const enabled = !!fu.enabled;
@@ -126,6 +126,18 @@ export default function FollowUpControl({ ticket, ticketType }) {
     return (
       <Popover open={activeOpen} onOpenChange={setActiveOpen}>
         <PopoverTrigger asChild>
+          {iconOnly ? (
+            <button
+              type="button"
+              title={`Auto Follow-up Active — Step ${step}/${maxSteps}`}
+              className="relative inline-flex items-center justify-center h-7 w-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 transition-colors"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-amber-600 text-white text-[9px] font-bold flex items-center justify-center">
+                {step}/{maxSteps}
+              </span>
+            </button>
+          ) : (
           <button
             type="button"
             className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-3 text-left hover:bg-amber-100/60 transition-colors"
@@ -153,6 +165,7 @@ export default function FollowUpControl({ ticket, ticketType }) {
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-amber-700/70 shrink-0 mt-1" />
           </button>
+          )}
         </PopoverTrigger>
         <PopoverContent align="end" className="w-80 p-0">
           <div className="p-3 border-b border-slate-100">
@@ -273,6 +286,19 @@ export default function FollowUpControl({ ticket, ticketType }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
+        {iconOnly ? (
+          <button
+            type="button"
+            title={pauseInfo ? pauseInfo.label : "Start Auto Follow-up"}
+            className={`inline-flex items-center justify-center h-7 w-7 rounded-full transition-colors ${
+              pauseInfo
+                ? "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5" />
+          </button>
+        ) : (
         <button
           type="button"
           className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors ${
@@ -296,6 +322,7 @@ export default function FollowUpControl({ ticket, ticketType }) {
           </div>
           <Play className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         </button>
+        )}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-3">
         <div className="space-y-3">
