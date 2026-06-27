@@ -24,7 +24,15 @@ import ResendBookingEmailsButton from "@/components/admin/ResendBookingEmailsBut
  * Pass `ticket` (a FranchiseInquiry row, optionally with `_cal_booking`).
  * If the ticket isn't franchise-shaped this component renders nothing.
  */
-export default function FranchiseMeetingPills({ ticket, compact = false, section = "all" }) {
+export default function FranchiseMeetingPills({
+  ticket,
+  compact = false,
+  section = "all",
+  // When true, suppresses pills that the compact email header would already
+  // be rendering (Cal booking date pill, Join meeting, FDD badge) so the
+  // details panel only surfaces options that aren't duplicated above.
+  dedupeAgainstHeader = false,
+}) {
   if (!ticket) return null;
 
   const startIso = ticket?._cal_booking?.start || ticket?.scheduled_call_time;
@@ -47,19 +55,30 @@ export default function FranchiseMeetingPills({ ticket, compact = false, section
         })
       : null;
 
-  const showFdd = section === "all" || section === "fdd";
+  // Header (compact) renders: FDD badge, Cal date pill (when `label`), Join
+  // meeting (when `meetingUrl`). When dedupeAgainstHeader is set we treat
+  // these as already-visible and skip them here — leaving only the items
+  // that wouldn't otherwise be reachable (e.g. the submitter Cal bookings
+  // history popover, or the Cal pill when there's no booking date yet).
+  const headerShowsFdd = dedupeAgainstHeader;
+  const headerShowsCalPill = dedupeAgainstHeader && !!label;
+  const headerShowsJoin = dedupeAgainstHeader && !!meetingUrl;
+
+  const showFdd = (section === "all" || section === "fdd") && !headerShowsFdd;
   const showCal = section === "all" || section === "cal";
   // Resend booking emails is only shown in the full "all" rendering (legacy
   // mobile header). The detail-panel split intentionally suppresses it.
   const showResend = section === "all" && !compact;
   const showCalBookings = showCal && !compact && ticket.email;
+  const showCalPill = showCal && !headerShowsCalPill;
+  const showJoin = showCal && !headerShowsJoin;
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {showFdd && <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />}
 
       {/* Cal.com booking pill — only when there's a known booking */}
-      {showCal && label && (
+      {showCalPill && label && (
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -120,7 +139,7 @@ export default function FranchiseMeetingPills({ ticket, compact = false, section
       )}
 
       {/* Join meeting */}
-      {showCal && meetingUrl && (
+      {showJoin && meetingUrl && (
         <a
           href={meetingUrl}
           target="_blank"

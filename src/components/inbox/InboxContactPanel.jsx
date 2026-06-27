@@ -151,9 +151,9 @@ export default function InboxContactPanel({
               Available Options
             </div>
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
-              <FranchiseMeetingPills ticket={ticket} section="fdd" />
+              <FranchiseMeetingPills ticket={ticket} section="fdd" dedupeAgainstHeader />
               <div className="[&>div]:!grid [&>div]:!grid-cols-2 [&>div]:!gap-1.5 [&>div>*]:w-full [&>div>*]:justify-center">
-                <FranchiseMeetingPills ticket={ticket} section="cal" />
+                <FranchiseMeetingPills ticket={ticket} section="cal" dedupeAgainstHeader />
               </div>
             </div>
           </div>
