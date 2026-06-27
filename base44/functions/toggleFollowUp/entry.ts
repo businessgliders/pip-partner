@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
     if (!ticket_id || !ticket_type || !ENTITY_NAMES.has(ticket_type)) {
       return Response.json({ error: 'ticket_id and valid ticket_type required' }, { status: 400 });
     }
-    if (!['start', 'stop'].includes(action)) {
-      return Response.json({ error: "action must be 'start' or 'stop'" }, { status: 400 });
+    if (!['start', 'stop', 'send_now', 'reschedule'].includes(action)) {
+      return Response.json({ error: "action must be 'start', 'stop', 'send_now', or 'reschedule'" }, { status: 400 });
     }
 
     const ticket = await base44.asServiceRole.entities[ticket_type].get(ticket_id);
@@ -48,6 +48,32 @@ Deno.serve(async (req) => {
 
     if (action === 'stop') {
       const patched = { ...existing, enabled: false, paused_reason: 'stopped' };
+      await base44.asServiceRole.entities[ticket_type].update(ticket_id, { follow_up: patched });
+      return Response.json({ success: true, follow_up: patched });
+    }
+
+    if (action === 'send_now') {
+      // Push next_send_at to now, then invoke the processor for this ticket.
+      if (!existing.enabled) {
+        return Response.json({ error: 'Sequence is not active' }, { status: 400 });
+      }
+      const nowIso = new Date().toISOString();
+      await base44.asServiceRole.entities[ticket_type].update(ticket_id, {
+        follow_up: { ...existing, next_send_at: nowIso },
+      });
+      const run = await base44.functions.invoke('processFollowUps', { ticket_id, ticket_type });
+      const fresh = await base44.asServiceRole.entities[ticket_type].get(ticket_id);
+      return Response.json({ success: true, follow_up: fresh.follow_up, run: run?.data || null });
+    }
+
+    if (action === 'reschedule') {
+      // Bump next_send_at by `first_delay_days` from now (defaults to 2).
+      if (!existing.enabled) {
+        return Response.json({ error: 'Sequence is not active' }, { status: 400 });
+      }
+      const delay = Math.max(0, Math.min(14, Number.isFinite(first_delay_days) ? first_delay_days : 2));
+      const nowIso = new Date().toISOString();
+      const patched = { ...existing, next_send_at: addDays(nowIso, delay) };
       await base44.asServiceRole.entities[ticket_type].update(ticket_id, { follow_up: patched });
       return Response.json({ success: true, follow_up: patched });
     }
