@@ -55,13 +55,17 @@ export default function FranchiseMeetingPills({
         })
       : null;
 
-  // Header (compact) renders: Cal date pill (when `label`), Join meeting
-  // (when `meetingUrl`), and the FDD badge ONLY when the timer is running.
-  // When dedupeAgainstHeader is set we treat the Cal pieces as already
-  // visible above and skip them. FDD is always rendered here (in the details
-  // panel) so staff can start it when it's not yet running; the header's
-  // `hideWhenInactive` flag keeps it hidden up there until it starts.
-  const headerShowsCalPill = dedupeAgainstHeader && !!label;
+  // Hide the cal booking date pill once the meeting is in the past — staff
+  // don't need to act on it from the header anymore. The submitter Cal
+  // bookings popover still surfaces past meetings on demand.
+  const isPastMeeting = !!(d && !isNaN(d.getTime()) && d.getTime() < Date.now());
+
+  // Header (compact) renders: Cal date pill (when `label` and not past),
+  // Join meeting (when `meetingUrl`), the FDD badge ONLY when the timer is
+  // running, and the submitter Cal bookings popover (icon-only). When
+  // dedupeAgainstHeader is set we treat all of these as already visible
+  // and skip them in the details panel.
+  const headerShowsCalPill = dedupeAgainstHeader && !!label && !isPastMeeting;
   const headerShowsJoin = dedupeAgainstHeader && !!meetingUrl;
 
   const showFdd = section === "all" || section === "fdd";
@@ -69,8 +73,10 @@ export default function FranchiseMeetingPills({
   // Resend booking emails is only shown in the full "all" rendering (legacy
   // mobile header). The detail-panel split intentionally suppresses it.
   const showResend = section === "all" && !compact;
-  const showCalBookings = showCal && !compact && ticket.email;
-  const showCalPill = showCal && !headerShowsCalPill;
+  // The submitter Cal bookings popover now lives in the email header for ALL
+  // ticket sources (rendered by InboxView), so it's no longer surfaced here.
+  const showCalBookings = false;
+  const showCalPill = showCal && !headerShowsCalPill && !(compact && isPastMeeting);
   const showJoin = showCal && !headerShowsJoin;
 
   return (

@@ -18,7 +18,7 @@ function formatWhen(iso) {
   });
 }
 
-export default function SubmitterCalBookingsPopover({ email }) {
+export default function SubmitterCalBookingsPopover({ email, compact = false }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState(null);
@@ -54,10 +54,14 @@ export default function SubmitterCalBookingsPopover({ email }) {
         <button
           type="button"
           title="Check Cal.com bookings for this submitter"
-          className="inline-flex items-center gap-1.5 lg:px-2.5 px-2 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
+          className={
+            compact
+              ? "inline-flex items-center justify-center h-6 w-6 rounded-full border border-slate-200 hover:bg-slate-50"
+              : "inline-flex items-center gap-1.5 lg:px-2.5 px-2 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-xs text-slate-700"
+          }
         >
           <img src={CAL_LOGO} alt="Cal.com" className="w-4 h-4 rounded-sm" />
-          <span className="hidden lg:inline">Cal.com bookings</span>
+          {!compact && <span className="hidden lg:inline">Cal.com bookings</span>}
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-2">

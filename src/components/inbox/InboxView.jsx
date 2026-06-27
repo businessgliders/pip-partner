@@ -8,6 +8,7 @@ import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
 import InboxStatusDropdown from "./InboxStatusDropdown";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
+import SubmitterCalBookingsPopover from "@/components/admin/SubmitterCalBookingsPopover";
 import {
   SOURCE_META,
   statusOrderFor,
@@ -328,6 +329,9 @@ export default function InboxView({
                             {sourceKey === "franchise" && (
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
+                            {selectedTicket.email && (
+                              <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                            )}
                           </div>
                           {/* Details panel collapse toggle — xl+ only, right-aligned.
                               Hides the right contact panel column to give the
@@ -420,6 +424,9 @@ export default function InboxView({
                             {sourceKey === "franchise" && (
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
+                            {selectedTicket.email && (
+                              <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
+                            )}
                           </div>
                         </div>
                       </>
@@ -456,6 +463,9 @@ export default function InboxView({
                         <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
                         {sourceKey === "franchise" && (
                           <FranchiseMeetingPills ticket={selectedTicket} compact />
+                        )}
+                        {selectedTicket.email && (
+                          <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
                         )}
                       </div>
                       <div className="flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200">
@@ -512,6 +522,9 @@ export default function InboxView({
                         <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
                         {sourceKey === "franchise" && (
                           <FranchiseMeetingPills ticket={selectedTicket} compact />
+                        )}
+                        {selectedTicket.email && (
+                          <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
                         )}
                       </div>
                     </div>
