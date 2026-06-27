@@ -109,7 +109,15 @@ export default function InboxContactPanel({
           >
             {initials(name)}
           </div>
-          <h3 className="text-base font-semibold text-slate-900 mt-3">{name}</h3>
+          <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
+            <h3 className="text-base font-semibold text-slate-900">{name}</h3>
+            {ticket.app_number && (
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 inline-flex items-center gap-0.5">
+                <Hash className="w-3 h-3" />
+                {ticket.app_number}
+              </span>
+            )}
+          </div>
           {ticket.email && (
             <a
               href={`mailto:${ticket.email}`}
@@ -127,12 +135,6 @@ export default function InboxContactPanel({
 
         <div className="flex flex-wrap gap-1.5 justify-center mb-4">
           <InboxStatusDropdown ticket={ticket} sourceKey={sourceKey} />
-          {ticket.app_number && (
-            <span className="text-[11px] font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-600 flex items-center gap-1">
-              <Hash className="w-3 h-3" />
-              {ticket.app_number}
-            </span>
-          )}
           {ticket.assigned_to && (
             <span className="text-[11px] font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700 flex items-center gap-1">
               <UserIcon className="w-3 h-3" />
@@ -141,14 +143,25 @@ export default function InboxContactPanel({
           )}
         </div>
 
-        {/* Franchise-only: FDD timer, Cal.com booking, meeting link, resend, Cal.com bookings.
-            Migrated here from SubmissionDetailModal so it lives in the inbox view too. */}
+        {/* Franchise-only: split into two focused sections.
+            • FDD — review-period countdown only.
+            • Cal & Calendar — Cal.com booking management, join meeting,
+              submitter Cal bookings popover. The legacy "Resend booking
+              emails" button is hidden here to keep the panel tidy. */}
         {sourceKey === "franchise" && (
-          <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
-              Meeting & Timeline
+          <div className="mb-4 space-y-2">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
+                FDD
+              </div>
+              <FranchiseMeetingPills ticket={ticket} section="fdd" />
             </div>
-            <FranchiseMeetingPills ticket={ticket} />
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
+                Cal & Calendar
+              </div>
+              <FranchiseMeetingPills ticket={ticket} section="cal" />
+            </div>
           </div>
         )}
 

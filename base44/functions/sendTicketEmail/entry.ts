@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override, attachments, subject_override } = await req.json();
+    const { ticket_id, ticket_type, body_html, is_welcome, to_email_override, to_emails_override, attachments, subject_override, template_name } = await req.json();
 
     if (!ticket_id || !ticket_type || !body_html) {
       return Response.json({ error: 'Missing ticket_id, ticket_type or body_html' }, { status: 400 });
@@ -463,6 +463,7 @@ Deno.serve(async (req) => {
       sent_at: new Date().toISOString(),
       is_welcome: !!is_welcome,
       is_internal: isInternal,
+      template_name: typeof template_name === 'string' && template_name.trim() ? template_name.trim().slice(0, 200) : '',
       send_status: 'sent',
       read_by: [user.email],
       read_at: [{ email: user.email, timestamp: new Date().toISOString() }],

@@ -76,6 +76,10 @@
       "default": false,
       "description": "True when this is an internal team-to-team email (not sent to the applicant)"
     },
+    "template_name": {
+      "type": "string",
+      "description": "Name of the EmailTemplate used to compose this email (only set for outbound emails sent from a template; surfaces a compact 'auto-reply sent' bubble)."
+    },
     "send_status": {
       "type": "string",
       "enum": [

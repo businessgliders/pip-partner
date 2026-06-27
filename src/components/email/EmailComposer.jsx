@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import TemplatePicker from "./TemplatePicker";
 import AiAssistBar from "./AiAssistBar";
 import BookCallPopover from "./BookCallPopover";
 import DrivePickerDialog from "../admin/DrivePickerDialog";
+import SignatureEditorDialog from "./SignatureEditorDialog";
 
 const STAFF_DOMAINS = ["pilatesinpinkstudio.com", "pilatesinpink.ca"];
 const isStaffEmail = (e) =>
@@ -50,7 +50,6 @@ export default function EmailComposer({
   draftStatus,
   draftLastSavedAt,
 }) {
-  const navigate = useNavigate();
   const editorRef = useRef(null);
   const [sending, setSending] = useState(false);
   const [polishing, setPolishing] = useState(false);
@@ -71,11 +70,23 @@ export default function EmailComposer({
   const fileInputRef = useRef(null);
   // Subject override — only set when a template is used so the staff can tweak it
   const [subjectOverride, setSubjectOverride] = useState(null);
+  // Name of the template currently loaded into the editor (so we can mark the
+  // outgoing email as a template/auto-reply for the compact bubble). Cleared
+  // whenever staff edits the body after picking a template.
+  const [templateName, setTemplateName] = useState(null);
   // Tracks whether the editor currently has any content (for compact-when-empty UI)
   const [hasContent, setHasContent] = useState(false);
-  // Subject row collapsed/expanded state (collapsed by default)
+  // Header (From + To) and Subject collapsed/expanded state (collapsed by default)
+  const [headerExpanded, setHeaderExpanded] = useState(false);
   const [subjectExpanded, setSubjectExpanded] = useState(false);
   const [savedConfirm, setSavedConfirm] = useState(false);
+  // Inline signature editor modal
+  const [signatureOpen, setSignatureOpen] = useState(false);
+  const [signatureHtml, setSignatureHtml] = useState(currentUser?.signature_html || "");
+
+  useEffect(() => {
+    setSignatureHtml(currentUser?.signature_html || "");
+  }, [currentUser?.signature_html]);
 
   const ticketAttachments = Array.isArray(ticket?.attachments) ? ticket.attachments : [];
 
@@ -222,6 +233,11 @@ export default function EmailComposer({
       if (subjectOverride && subjectOverride.trim()) {
         payload.subject_override = subjectOverride.trim();
       }
+      // Pass through the template name so the message renders as a compact
+      // "Auto-reply sent: <template>" bubble in the thread.
+      if (templateName && templateName.trim() && !isInternalSend) {
+        payload.template_name = templateName.trim();
+      }
       await base44.functions.invoke("sendTicketEmail", payload);
 
       // 2. Only book the Cal.com slot AFTER a successful send (skip for internal emails).
@@ -255,6 +271,7 @@ export default function EmailComposer({
       setSelectedAttachmentIdxs([]);
       setDriveAttachments([]);
       setSubjectOverride(null);
+      setTemplateName(null);
       onSent?.();
     } catch (e) {
       console.error(e);
@@ -286,10 +303,12 @@ export default function EmailComposer({
   const handleClear = () => {
     setHtml("");
     setSubjectOverride(null);
+    setTemplateName(null);
   };
 
-  const handleTemplate = ({ subject, body_html }) => {
+  const handleTemplate = ({ subject, body_html, template_name }) => {
     setHtml(body_html);
+    if (template_name) setTemplateName(template_name);
     if (subject) {
       setSubjectOverride(subject);
       setSubjectExpanded(true);
@@ -315,12 +334,49 @@ export default function EmailComposer({
     setHtml(current ? `${block}<br/>${current}` : block);
   };
 
+  // Compact "To" summary used when the header row is collapsed.
+  const recipientsSummary = (() => {
+    const parts = [];
+    if (includeApplicant && ticketEmail) parts.push(ticketEmail);
+    if (selectedTeam.length > 0) parts.push(`+${selectedTeam.length} team`);
+    return parts.length > 0 ? parts.join(" · ") : "(no recipients)";
+  })();
+
   return (
     <div className={`border-t bg-white space-y-2 ${isMobileFullscreen ? "p-3" : "px-4 py-3"}`}>
       <div className="flex items-start justify-between text-xs text-gray-600 gap-2">
         <div className="space-y-0.5 min-w-0 flex-1">
-          <div>
-            <span className="font-medium">From:</span> {FROM_ALIASES[ticketType] || "—"}
+          {!headerExpanded ? (
+            <button
+              type="button"
+              onClick={() => setHeaderExpanded(true)}
+              className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 w-full text-left"
+              title="Show From / To"
+            >
+              <ChevronRight className="w-3 h-3 shrink-0" />
+              <span className="font-medium shrink-0">To:</span>
+              <span className="truncate text-gray-500 italic">{recipientsSummary}</span>
+              {isInternalSend && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-semibold shrink-0">
+                  INTERNAL
+                </span>
+              )}
+            </button>
+          ) : (
+          <>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <span className="font-medium">From:</span> {FROM_ALIASES[ticketType] || "—"}
+            </div>
+            <button
+              type="button"
+              onClick={() => setHeaderExpanded(false)}
+              className="text-gray-400 hover:text-gray-700 flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-semibold"
+              title="Collapse"
+            >
+              <ChevronDown className="w-3 h-3" />
+              Hide
+            </button>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium">To:</span>
@@ -429,6 +485,8 @@ export default function EmailComposer({
               </span>
             )}
           </div>
+          </>
+          )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {onRequestFullscreen && (
@@ -587,20 +645,125 @@ export default function EmailComposer({
         multiple
       />
 
+      {/* Hidden file input used by the inline Attach button in the toolbar */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={async (e) => {
+          const files = Array.from(e.target.files || []);
+          if (files.length === 0) return;
+          setUploading(true);
+          try {
+            const uploaded = [];
+            for (const file of files) {
+              const res = await base44.integrations.Core.UploadFile({ file });
+              if (res?.file_url) {
+                uploaded.push({ label: file.name, url: res.file_url, type: "link" });
+              }
+            }
+            if (uploaded.length > 0) {
+              setDriveAttachments((cur) => [...cur, ...uploaded]);
+            }
+          } catch (err) {
+            console.error("Upload failed", err);
+            alert("Failed to upload file: " + (err?.message || "Unknown error"));
+          } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }
+        }}
+      />
+
       <div className="border rounded-lg overflow-hidden">
         <div className="flex items-center gap-1 border-b bg-gray-50 px-2 py-1">
-          <button type="button" onClick={() => exec("bold")} className="p-1.5 hover:bg-gray-200 rounded">
+          <button type="button" onClick={() => exec("bold")} className="p-1.5 hover:bg-gray-200 rounded" title="Bold">
             <Bold className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onClick={() => exec("italic")} className="p-1.5 hover:bg-gray-200 rounded">
+          <button type="button" onClick={() => exec("italic")} className="p-1.5 hover:bg-gray-200 rounded" title="Italic">
             <Italic className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onClick={() => exec("insertUnorderedList")} className="p-1.5 hover:bg-gray-200 rounded">
+          <button type="button" onClick={() => exec("insertUnorderedList")} className="p-1.5 hover:bg-gray-200 rounded" title="Bulleted list">
             <List className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onClick={handleInsertLink} className="p-1.5 hover:bg-gray-200 rounded">
+          <button type="button" onClick={handleInsertLink} className="p-1.5 hover:bg-gray-200 rounded" title="Insert link">
             <LinkIcon className="w-3.5 h-3.5" />
           </button>
+          {/* Attach files — matches the size/treatment of the formatting
+              icons; click opens a small menu (device / Drive / ticket files). */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                title="Attach files"
+                disabled={uploading}
+                className="p-1.5 hover:bg-gray-200 rounded relative disabled:opacity-50"
+              >
+                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+                {(selectedAttachmentIdxs.length + driveAttachments.length) > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-pink-600 text-white text-[9px] font-semibold flex items-center justify-center leading-none">
+                    {selectedAttachmentIdxs.length + driveAttachments.length}
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-72 p-2 max-h-80 overflow-y-auto">
+              <div className="flex flex-col gap-1 mb-2 pb-2 border-b border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left"
+                >
+                  <Paperclip className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span className="text-sm text-slate-700">Upload from this device</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDriveOpen(true)}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left"
+                >
+                  <img
+                    src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
+                    alt=""
+                    className="w-3.5 h-3.5 shrink-0"
+                  />
+                  <span className="text-sm text-slate-700">From Google Drive</span>
+                </button>
+              </div>
+              {ticketAttachments.length > 0 && (
+                <>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1 px-1">
+                    From ticket
+                  </p>
+                  {ticketAttachments.map((a, idx) => {
+                    const checked = selectedAttachmentIdxs.includes(idx);
+                    return (
+                      <label
+                        key={idx}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            setSelectedAttachmentIdxs((cur) =>
+                              v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
+                            );
+                          }}
+                        />
+                        {a.type === "link" ? (
+                          <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        )}
+                        <span className="truncate text-sm flex-1">{a.label || a.url}</span>
+                      </label>
+                    );
+                  })}
+                </>
+              )}
+            </PopoverContent>
+          </Popover>
           <div className="ml-auto flex items-center gap-1 justify-end">
             {/* AI menu — bundles Describe / Suggest / Polish into one button to
                 keep the toolbar on a single row and give the editor more space. */}
@@ -693,138 +856,38 @@ export default function EmailComposer({
           }`}
           suppressContentEditableWarning
         />
-        {currentUser?.signature_html && (
-          <div className="border-t bg-gray-50/60 px-2.5 py-1">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1 min-w-0 flex-1">
-                <span className="text-[9px] uppercase tracking-wider text-gray-400 font-semibold shrink-0">
-                  Signature
-                </span>
-                <button
-                  type="button"
-                  onClick={() => navigate("/Settings/Signature")}
-                  className="text-gray-400 hover:text-gray-700 p-0.5 shrink-0"
-                  title="Manage signature"
-                >
-                  <Settings2 className="w-3 h-3" />
-                </button>
-                <div
-                  className="hidden lg:block text-[10px] text-gray-500 truncate ml-1 [&_*]:!inline [&_p]:!m-0 [&_br]:hidden"
-                  dangerouslySetInnerHTML={{ __html: currentUser.signature_html }}
-                />
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length === 0) return;
-                    setUploading(true);
-                    try {
-                      const uploaded = [];
-                      for (const file of files) {
-                        const res = await base44.integrations.Core.UploadFile({ file });
-                        if (res?.file_url) {
-                          uploaded.push({ label: file.name, url: res.file_url, type: "link" });
-                        }
-                      }
-                      if (uploaded.length > 0) {
-                        setDriveAttachments((cur) => [...cur, ...uploaded]);
-                      }
-                    } catch (err) {
-                      console.error("Upload failed", err);
-                      alert("Failed to upload file: " + (err?.message || "Unknown error"));
-                    } finally {
-                      setUploading(false);
-                      if (fileInputRef.current) fileInputRef.current.value = "";
-                    }
-                  }}
-                />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-slate-700 border-slate-200 hover:bg-slate-50 p-1.5 relative"
-                      title="Attach files"
-                      disabled={uploading}
-                    >
-                      {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
-                      {(selectedAttachmentIdxs.length + driveAttachments.length) > 0 && (
-                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-pink-600 text-white text-[10px] font-semibold flex items-center justify-center leading-none">
-                          {selectedAttachmentIdxs.length + driveAttachments.length}
-                        </span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-72 p-2 max-h-80 overflow-y-auto">
-                    <div className="flex flex-col gap-1 mb-2 pb-2 border-b border-gray-100">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left"
-                      >
-                        <Paperclip className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                        <span className="text-sm text-slate-700">Upload from this device</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDriveOpen(true)}
-                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left"
-                      >
-                        <img
-                          src="https://www.google.com/s2/favicons?sz=16&domain=drive.google.com"
-                          alt=""
-                          className="w-3.5 h-3.5 shrink-0"
-                        />
-                        <span className="text-sm text-slate-700">From Google Drive</span>
-                      </button>
-                    </div>
-                    {ticketAttachments.length > 0 && (
-                      <>
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1 px-1">
-                          From ticket
-                        </p>
-                        {ticketAttachments.map((a, idx) => {
-                          const checked = selectedAttachmentIdxs.includes(idx);
-                          return (
-                            <label
-                              key={idx}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
-                            >
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={(v) => {
-                                  setSelectedAttachmentIdxs((cur) =>
-                                    v ? Array.from(new Set([...cur, idx])) : cur.filter((i) => i !== idx)
-                                  );
-                                }}
-                              />
-                              {a.type === "link" ? (
-                                <Link2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              ) : (
-                                <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              )}
-                              <span className="truncate text-sm flex-1">{a.label || a.url}</span>
-                            </label>
-                          );
-                        })}
-                      </>
-                    )}
-                  </PopoverContent>
-                </Popover>
-              </div>
+        {signatureHtml && (
+          // Two-line layout on every breakpoint:
+          //   line 1 — "Signature" label + gear (opens quick-edit modal)
+          //   line 2 — rendered signature preview
+          <div className="border-t bg-gray-50/60 px-2.5 py-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] uppercase tracking-wider text-gray-400 font-semibold">
+                Signature
+              </span>
+              <button
+                type="button"
+                onClick={() => setSignatureOpen(true)}
+                className="text-gray-400 hover:text-gray-700 p-0.5"
+                title="Edit signature"
+              >
+                <Settings2 className="w-3 h-3" />
+              </button>
             </div>
             <div
-              className="lg:hidden prose prose-xs max-w-none text-gray-600 text-[11px] mt-1 [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
-              dangerouslySetInnerHTML={{ __html: currentUser.signature_html }}
+              className="prose prose-xs max-w-none text-gray-600 text-[11px] mt-0.5 [&_p]:!m-0 [&_p:not(:last-child)]:!mb-0.5"
+              dangerouslySetInnerHTML={{ __html: signatureHtml }}
             />
           </div>
         )}
       </div>
+
+      <SignatureEditorDialog
+        open={signatureOpen}
+        onOpenChange={setSignatureOpen}
+        initialHtml={signatureHtml}
+        onSaved={(html) => setSignatureHtml(html)}
+      />
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">

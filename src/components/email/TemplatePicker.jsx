@@ -60,6 +60,7 @@ export default function TemplatePicker({ vars, onSelect, isMobileFullscreen }) {
                   onSelect({
                     subject: fillTemplate(t.subject, vars),
                     body_html: fillTemplate(t.body_html, vars),
+                    template_name: t.name,
                   })
                 }
               >

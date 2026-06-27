@@ -12,16 +12,19 @@ import ResendBookingEmailsButton from "@/components/admin/ResendBookingEmailsBut
 /**
  * Renders the franchise meeting / FDD action pills cluster.
  *
- *   ┌ FDD timer ┐ ┌ 📅 Date ▾ ┐ ┌ Join meeting ┐ ┌ Resend ┐ ┌ Cal.com bookings ┐
- *
- * Used in:
- *   - Inbox details panel (full width labels, `compact` = false)
- *   - Inbox conversation header on mobile/tablet (icon-only, `compact` = true)
+ * `section` controls which group of pills to render:
+ *   - "all" (default): everything in one row — used in the mobile conversation
+ *     header where horizontal space is tight.
+ *   - "fdd": just the FDD countdown badge.
+ *   - "cal": Cal.com booking, join meeting, and submitter Cal bookings popover.
+ *     The "Resend booking emails" button is intentionally hidden in this mode
+ *     so the panel stays focused on the day-to-day actions; staff can still
+ *     resend from the SubmissionDetailModal.
  *
  * Pass `ticket` (a FranchiseInquiry row, optionally with `_cal_booking`).
  * If the ticket isn't franchise-shaped this component renders nothing.
  */
-export default function FranchiseMeetingPills({ ticket, compact = false }) {
+export default function FranchiseMeetingPills({ ticket, compact = false, section = "all" }) {
   if (!ticket) return null;
 
   const startIso = ticket?._cal_booking?.start || ticket?.scheduled_call_time;
@@ -44,13 +47,19 @@ export default function FranchiseMeetingPills({ ticket, compact = false }) {
         })
       : null;
 
+  const showFdd = section === "all" || section === "fdd";
+  const showCal = section === "all" || section === "cal";
+  // Resend booking emails is only shown in the full "all" rendering (legacy
+  // mobile header). The detail-panel split intentionally suppresses it.
+  const showResend = section === "all" && !compact;
+  const showCalBookings = showCal && !compact && ticket.email;
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {/* FDD timer */}
-      <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />
+      {showFdd && <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />}
 
       {/* Cal.com booking pill — only when there's a known booking */}
-      {label && (
+      {showCal && label && (
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -111,7 +120,7 @@ export default function FranchiseMeetingPills({ ticket, compact = false }) {
       )}
 
       {/* Join meeting */}
-      {meetingUrl && (
+      {showCal && meetingUrl && (
         <a
           href={meetingUrl}
           target="_blank"
@@ -124,8 +133,8 @@ export default function FranchiseMeetingPills({ ticket, compact = false }) {
         </a>
       )}
 
-      {/* Resend booking emails — non-compact only (keeps mobile header clean) */}
-      {!compact && (
+      {/* Resend booking emails — legacy "all" mode only */}
+      {showResend && (
         <ResendBookingEmailsButton
           inquiryId={ticket.id}
           scheduledTime={ticket.scheduled_call_time}
@@ -133,8 +142,8 @@ export default function FranchiseMeetingPills({ ticket, compact = false }) {
         />
       )}
 
-      {/* Cal.com bookings popover — non-compact only */}
-      {!compact && ticket.email && (
+      {/* Cal.com bookings popover (submitter's history) */}
+      {showCalBookings && (
         <SubmitterCalBookingsPopover email={ticket.email} />
       )}
     </div>

@@ -36,6 +36,16 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
   const isFailed = message.send_status === "failed";
   const isWelcome = message.is_welcome;
   const isInternal = message.is_internal;
+  // Outbound emails sent from a saved template render the same compact
+  // "Auto-reply sent" bubble as the welcome email, with the template name
+  // surfaced so reviewers know which template fired.
+  const isTemplateReply =
+    !isInbound &&
+    !isWelcome &&
+    !isInternal &&
+    !isFailed &&
+    typeof message.template_name === "string" &&
+    message.template_name.trim().length > 0;
 
   const resolveName = (email) => {
     if (!email) return "";
@@ -53,8 +63,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
     : message.sent_by || "Staff";
   const time = message.sent_at || message.created_date;
 
-  // Welcome compact bubble
-  if (isWelcome) {
+  // Welcome / template compact bubble — same visual treatment.
+  if (isWelcome || isTemplateReply) {
+    const label = isWelcome
+      ? "Auto-reply welcome sent"
+      : `Auto-reply sent: ${message.template_name}`;
     return (
       <>
         <div className="flex justify-end mb-3" id={`msg-${message.id}`}>
@@ -66,9 +79,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           >
             <div className="flex items-center gap-1.5 text-xs text-pink-700 font-medium">
               <Sparkles className="w-3 h-3" />
-              <span>Auto-reply welcome sent</span>
+              <span className="truncate">{label}</span>
             </div>
-            <div className="text-xs text-pink-600/80 mt-0.5">Tap to view</div>
+            <div className="text-xs text-pink-600/80 mt-0.5">
+              {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
+            </div>
           </div>
         </div>
         <MessageDialog open={open} onOpenChange={setOpen} message={message} />
