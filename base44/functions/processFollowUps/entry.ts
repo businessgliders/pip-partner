@@ -147,11 +147,14 @@ async function processOne(base44, entityName, ticket) {
     return { action: 'paused', detail: 'inbound reply detected' };
   }
 
-  // Pause: any human outbound (sent_by present and not the system) since
-  // last_sent_at — a staff member jumped in manually, defer to them.
+  // Pause: any human outbound (sent_by is a real staff email, not '' or
+  // 'system') since last_sent_at — a staff member jumped in manually,
+  // defer to them. The Cal.com confirmation + other automated outbounds
+  // carry sent_by='system' and must NOT trigger a pause.
   const hasHumanOutbound = realEmails.some((m) => {
     if (m.direction !== 'outbound') return false;
-    if (!m.sent_by) return false; // system sends carry empty sent_by
+    const by = (m.sent_by || '').toLowerCase().trim();
+    if (!by || by === 'system') return false;
     const ts = new Date(m.sent_at || m.created_date).getTime();
     return ts > lastSentAt;
   });
