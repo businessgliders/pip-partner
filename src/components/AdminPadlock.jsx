@@ -18,7 +18,10 @@ export default function AdminPadlock({ to = "/ApplicationBoard" }) {
     "inline-flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md bg-white/20 hover:bg-white/30 border border-white/40 text-white shadow-lg transition-colors";
 
   return (
-    <div className="absolute top-4 right-4 z-20">
+    <div
+      className="absolute right-4 z-20"
+      style={{ top: "max(env(safe-area-inset-top, 0px), 1rem)" }}
+    >
       {isExternal ? (
         <a
           href={to}

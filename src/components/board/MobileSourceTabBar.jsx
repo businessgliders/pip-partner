@@ -40,16 +40,15 @@ export default function MobileSourceTabBar({
         // Respect the iOS home-indicator safe area. `max(...)` keeps a
         // minimum 4px bottom inset on devices/browsers that report 0 (Android,
         // older iOS, desktop dev) so labels never touch the screen edge.
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2px)",
         // Also pad the horizontal edges in landscape — iOS reports left/right
         // safe-area insets when the device is rotated and the notch / Dynamic
         // Island intrudes into the side margins.
         paddingLeft: "env(safe-area-inset-left, 0px)",
         paddingRight: "env(safe-area-inset-right, 0px)",
-        // iOS HIG: tab bar content area is 49pt tall on iPhone; safe-area
-        // inset (home indicator) extends the bar visually but not its hit
-        // area, so labels/icons sit above the indicator.
-        minHeight: "calc(49px + env(safe-area-inset-bottom, 0px))",
+        // Compact tab-bar content area — the safe-area inset visually extends
+        // the bar over the home indicator without adding to the hit area.
+        minHeight: "calc(40px + env(safe-area-inset-bottom, 0px))",
       }}
     >
       {boards.map((t) => {
@@ -68,7 +67,7 @@ export default function MobileSourceTabBar({
             disabled={!isAllowed}
             title={isAllowed ? t.label : `${t.label} — admin access only`}
             style={isActive ? { color: t.color } : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+            className={`flex flex-col items-center justify-center gap-0.5 py-1 transition-colors ${
               isActive
                 ? "font-semibold"
                 : isAllowed
@@ -90,7 +89,7 @@ export default function MobileSourceTabBar({
         );
       })}
       {extraSlot && (
-        <div className="flex items-center justify-center py-2">
+        <div className="flex items-center justify-center py-1">
           {extraSlot}
         </div>
       )}
