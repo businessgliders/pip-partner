@@ -115,3 +115,28 @@
 .pip-jiggle {
   animation: pip-jiggle 0.6s ease-in-out both;
 }
+
+/* Mobile slide-in animations — used by the email reply popup (from the reply
+   button at the bottom) and the details drawer (from the right). Both snap
+   into their existing container bounds so they feel anchored to the trigger. */
+@keyframes pip-slide-up {
+  from { transform: translate3d(0, 100%, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes pip-slide-in-right {
+  from { transform: translate3d(100%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes pip-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.pip-slide-up {
+  animation: pip-slide-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.pip-slide-in-right {
+  animation: pip-slide-in-right 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.pip-fade-in {
+  animation: pip-fade-in 220ms ease-out both;
+}

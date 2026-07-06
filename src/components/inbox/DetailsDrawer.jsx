@@ -30,7 +30,7 @@ export default function DetailsDrawer({ open, onClose, title, children }) {
           On mobile (< sm) it starts below the page header so the app chrome
           stays visible; on sm+ it covers the full viewport. */}
       <div
-        className="fixed inset-x-0 bottom-0 z-40 bg-black/40 backdrop-blur-sm sm:top-0"
+        className="fixed inset-x-0 bottom-0 z-40 bg-black/40 backdrop-blur-sm sm:top-0 pip-fade-in"
         style={{ top: "calc(env(safe-area-inset-top, 0px) + 76px)" }}
         onClick={onClose}
       />
@@ -39,7 +39,7 @@ export default function DetailsDrawer({ open, onClose, title, children }) {
           panel's bounds exactly (below the page header, to the bottom). On
           sm+ it's full-height and capped to a side-panel width. */}
       <div
-        className="fixed right-0 bottom-0 z-50 w-full sm:top-0 sm:h-[100dvh] sm:max-w-md md:max-w-lg bg-white shadow-2xl flex flex-col rounded-t-xl sm:rounded-none overflow-hidden border border-gray-200 sm:border-0"
+        className="fixed right-0 bottom-0 z-50 w-full sm:top-0 sm:h-[100dvh] sm:max-w-md md:max-w-lg bg-white shadow-2xl flex flex-col rounded-t-xl sm:rounded-none overflow-hidden border border-gray-200 sm:border-0 pip-slide-in-right"
         style={{
           top: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
