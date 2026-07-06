@@ -93,20 +93,25 @@ export default function InboxStatusRail({
       <div className="flex flex-row items-stretch gap-2 px-1.5 pt-1 pb-1.5 w-full overflow-x-auto hide-scrollbar bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
         {groups.map((group, gi) => (
           <React.Fragment key={gi}>
-            {gi > 0 && <div className="shrink-0 w-px my-1.5 bg-white/15" />}
-            <div className="flex flex-col shrink-0">
-              <div className="flex flex-row items-stretch gap-1">
-                {group.statuses.map((s) => renderStatusButton(s))}
-              </div>
-              {/* Group label sits BELOW its buttons, centered under the
-                  cluster. Reserved on every group so heights stay uniform. */}
-              <div className="h-3 flex items-center justify-center mt-0.5">
-                {group.label && (
-                  <span className="text-[8px] font-semibold uppercase tracking-wider leading-none text-white/55">
+            {/* Between-group separator — a rotated label acts as the divider
+                itself. Empty labels still get a thin hairline so groups stay
+                visually separated. */}
+            {gi > 0 && (
+              <div className="shrink-0 flex items-center justify-center px-0.5">
+                {group.label ? (
+                  <span
+                    className="text-[8px] font-semibold uppercase tracking-wider leading-none text-white/55 whitespace-nowrap"
+                    style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                  >
                     {group.label}
                   </span>
+                ) : (
+                  <div className="w-px h-full bg-white/15" />
                 )}
               </div>
+            )}
+            <div className="flex flex-row items-stretch gap-1 shrink-0">
+              {group.statuses.map((s) => renderStatusButton(s))}
             </div>
           </React.Fragment>
         ))}
