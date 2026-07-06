@@ -350,10 +350,14 @@ export default function InboxView({
                             {sourceKey === "franchise" && (
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
+                          </div>
+                          {/* Desktop (lg+) — expanded follow-up card gets its
+                              own row below the pill row so it has room to
+                              breathe. Full width up to a max. */}
+                          <div className="w-full max-w-md mt-1">
                             <FollowUpControl
                               ticket={selectedTicket}
                               ticketType={entity}
-                              iconOnly
                             />
                           </div>
                           {/* Details panel collapse toggle — xl+ only, right-aligned.
@@ -450,9 +454,25 @@ export default function InboxView({
                             {sourceKey === "franchise" && (
                               <FranchiseMeetingPills ticket={selectedTicket} compact />
                             )}
+                            {/* Mobile/tablet — icon-only when the sequence is
+                                NOT active (so it takes minimal space). When
+                                the sequence IS active, the icon-only version
+                                still opens the full manage popover; the full
+                                card renders below on its own row. */}
+                            {!selectedTicket.follow_up?.enabled && (
+                              <FollowUpControl
+                                ticket={selectedTicket}
+                                ticketType={entity}
+                                iconOnly
+                              />
+                            )}
                           </div>
-                          {/* Full Auto Follow-up card under header on mobile/tablet */}
-                          <FollowUpControl ticket={selectedTicket} ticketType={entity} />
+                          {/* Full Auto Follow-up card renders only when
+                              actively running — provides at-a-glance status
+                              (next send, step count) without hiding it. */}
+                          {selectedTicket.follow_up?.enabled && (
+                            <FollowUpControl ticket={selectedTicket} ticketType={entity} />
+                          )}
                         </div>
                       </>
                     }
@@ -551,8 +571,17 @@ export default function InboxView({
                       {sourceKey === "franchise" && (
                         <FranchiseMeetingPills ticket={selectedTicket} compact />
                       )}
+                      {!selectedTicket.follow_up?.enabled && (
+                        <FollowUpControl
+                          ticket={selectedTicket}
+                          ticketType={entity}
+                          iconOnly
+                        />
+                      )}
                     </div>
-                    <FollowUpControl ticket={selectedTicket} ticketType={entity} />
+                    {selectedTicket.follow_up?.enabled && (
+                      <FollowUpControl ticket={selectedTicket} ticketType={entity} />
+                    )}
                     </div>
                     </div>
                   <InboxContactPanel

@@ -133,12 +133,21 @@ async function processOne(base44, entityName, ticket) {
   );
   const realEmails = allEmails.filter((m) => !m.is_welcome && !m.is_internal);
 
-  // Pause: any inbound since last_sent_at means the lead responded.
-  const lastSentAt = fu.last_sent_at ? new Date(fu.last_sent_at).getTime() : 0;
+  // Anchor for "since last activity" checks. Before the first follow-up has
+  // been sent, use enabled_at (when the sequence was turned on) — anything
+  // that happened BEFORE the sequence started is not a reason to pause it
+  // (manual template sends before enabling the sequence are expected).
+  const activityAnchor = fu.last_sent_at
+    ? new Date(fu.last_sent_at).getTime()
+    : fu.enabled_at
+    ? new Date(fu.enabled_at).getTime()
+    : 0;
+
+  // Pause: any inbound since the anchor means the lead responded.
   const hasInboundReply = realEmails.some((m) => {
     if (m.direction !== 'inbound') return false;
     const ts = new Date(m.sent_at || m.created_date).getTime();
-    return ts > lastSentAt;
+    return ts > activityAnchor;
   });
   if (hasInboundReply) {
     await base44.asServiceRole.entities[entityName].update(ticket.id, {
@@ -147,16 +156,24 @@ async function processOne(base44, entityName, ticket) {
     return { action: 'paused', detail: 'inbound reply detected' };
   }
 
-  // Pause: any human outbound (sent_by is a real staff email, not '' or
-  // 'system') since last_sent_at — a staff member jumped in manually,
-  // defer to them. The Cal.com confirmation + other automated outbounds
-  // carry sent_by='system' and must NOT trigger a pause.
+  // Pause: any manual human outbound since the anchor — a staff member
+  // jumped in with the composer, defer to them. Staff-manual replies are
+  // strictly those sent via the composer (they carry a real staff email in
+  // sent_by AND have no template_name / auto-tag). Automated outbounds
+  // include:
+  //   - sent_by = 'system' (Cal.com / welcome / owner notifications)
+  //   - sent_by = '' with template_name starting "Auto Follow-up" (bot)
+  //   - template-based sends fired from the "Templates" picker — these
+  //     carry sent_by=<staff email> BUT also carry template_name, which
+  //     distinguishes them from a real human-composed reply.
   const hasHumanOutbound = realEmails.some((m) => {
     if (m.direction !== 'outbound') return false;
     const by = (m.sent_by || '').toLowerCase().trim();
     if (!by || by === 'system') return false;
+    // Template-based sends are not manual composer replies.
+    if (m.template_name && String(m.template_name).trim().length > 0) return false;
     const ts = new Date(m.sent_at || m.created_date).getTime();
-    return ts > lastSentAt;
+    return ts > activityAnchor;
   });
   if (hasHumanOutbound) {
     await base44.asServiceRole.entities[entityName].update(ticket.id, {

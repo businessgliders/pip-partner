@@ -33,6 +33,8 @@ export default function InboxThreadRow({ ticket, sourceKey, active, unread, onCl
       className={`w-full text-left flex gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer ${
         active
           ? "bg-[#d9c5b8] ring-1 ring-[#b67651]/40"
+          : ticket.follow_up?.enabled
+          ? "bg-amber-50/80 hover:bg-amber-50 ring-1 ring-amber-200"
           : "bg-white/70 hover:bg-white"
       }`}
     >
