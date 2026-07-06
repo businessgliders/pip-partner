@@ -218,8 +218,8 @@ function MessageDialog({ open, onOpenChange, message }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-base">{message.subject}</DialogTitle>
+        <DialogHeader className="text-left sm:text-left">
+          <DialogTitle className="text-base text-left">{message.subject}</DialogTitle>
         </DialogHeader>
         <div className="text-xs text-gray-500 space-y-1 border-b pb-3">
           <div>

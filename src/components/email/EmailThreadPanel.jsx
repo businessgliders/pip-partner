@@ -148,6 +148,24 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
   // Desktop composer editor height (in px) when user has resized via the drag handle.
   // null = use the default responsive sizing baked into EmailComposer.
   const [editorHeight, setEditorHeight] = useState(null);
+  // Mobile popup composer height (in px). Defaults to a generous initial size on open.
+  const [mobileEditorHeight, setMobileEditorHeight] = useState(null);
+  // Track mobile viewport height so we can clamp the drag handle's max.
+  const [mobileVh, setMobileVh] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 800
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setMobileVh(window.innerHeight);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  // Initialize the mobile editor to ~50% of viewport height when the popup opens.
+  useEffect(() => {
+    if (composerOpen && mobileEditorHeight === null) {
+      setMobileEditorHeight(Math.round(mobileVh * 0.5));
+    }
+  }, [composerOpen, mobileEditorHeight, mobileVh]);
   // Track panel height so the inline drag handle can clamp the editor and keep
   // the Send Reply row visible inside the container.
   const [panelHeight, setPanelHeight] = useState(0);
@@ -571,8 +589,11 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col">
-            <div className="flex-1 p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30 overflow-y-auto">
+          {/* Two-section body: scrollable message list (top, shrinks) +
+              fixed-height composer (bottom, resizable via drag handle). Both
+              flex children with min-h-0 so they can shrink correctly. */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0 p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30 overflow-y-auto">
               {allMessages.map((m) => {
                 const readBy = Array.isArray(m.read_by) ? m.read_by : [];
                 const isUnread =
@@ -599,7 +620,17 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
                 </div>
               )}
             </div>
-            <div className="shrink-0">
+            {/* Drag handle — drag UP to expand the composer into the email
+                preview area, DOWN to shrink it. Bounded so at least ~120px
+                of messages stay visible and composer keeps a min working
+                height. */}
+            <ComposerDragHandle
+              currentHeight={mobileEditorHeight ?? Math.round(mobileVh * 0.5)}
+              onResize={(h) => setMobileEditorHeight(h)}
+              minHeight={140}
+              maxHeight={Math.max(200, mobileVh - 240)}
+            />
+            <div className="shrink-0 overflow-y-auto hide-scrollbar">
               <EmailComposer
                 ticket={ticket}
                 ticketType={ticketType}
@@ -609,6 +640,11 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
                   setComposerOpen(false);
                 }}
                 isMobileFullscreen
+                editorHeightPx={
+                  mobileEditorHeight
+                    ? Math.max(80, mobileEditorHeight - 220)
+                    : undefined
+                }
                 draftHtml={draftHtml}
                 onDraftChange={setDraftHtml}
                 draftStatus={draft.status}

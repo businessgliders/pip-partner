@@ -851,7 +851,7 @@ export default function EmailComposer({
               : isFullscreen
                 ? "min-h-32 max-h-[28vh]"
                 : isMobileFullscreen
-                  ? (hasContent ? "min-h-24 max-h-48" : "min-h-14 max-h-48")
+                  ? "min-h-[45vh] max-h-[70vh]"
                   : (hasContent ? "min-h-32 max-h-48" : "min-h-16 max-h-48")
           }`}
           suppressContentEditableWarning
