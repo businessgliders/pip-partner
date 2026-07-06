@@ -1,4 +1,5 @@
 import React, { useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Mail, ChevronDown, ChevronUp, X } from "lucide-react";
@@ -547,15 +548,16 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         saving={confirmSaving}
       />
 
-      {/* Mobile-only popup (< sm) — entire thread + composer. Positioned to
-          match the email panel's bounds exactly: below the page header, all
-          the way to the bottom (the source tab bar is hidden while a thread
-          is open, so no bottom offset needed). */}
-      {composerOpen && (
+      {/* Mobile-only popup (< sm) — entire thread + composer. Portaled to
+          document.body so `position: fixed` is viewport-scoped (parent has a
+          lingering transform from pip-view-in). Slides up to cover the
+          ticket card + email panel entirely, starting right below the top
+          page header. */}
+      {composerOpen && typeof document !== "undefined" && createPortal(
         <div
           className="fixed left-0 right-0 z-40 sm:hidden bg-white flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 pip-slide-up"
           style={{
-            top: "calc(env(safe-area-inset-top, 0px) + 76px)",
+            top: "calc(env(safe-area-inset-top, 0px) + 56px)",
             bottom: "env(safe-area-inset-bottom, 0px)",
           }}
         >
@@ -614,7 +616,8 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
