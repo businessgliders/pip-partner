@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink, Trash2 } from "lucide-react";
+import { Mail, Phone, X, Hash, User as UserIcon, ExternalLink, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
@@ -37,6 +37,13 @@ export default function InboxContactPanel({
   const entity = entityForSource(sourceKey);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // On mobile/tablet the details panel opens as a slide-in drawer and the
+  // full field list can push everything else out of view. Collapse it there
+  // by default; xl+ (persistent side column) keeps it expanded.
+  const [detailsExpanded, setDetailsExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1280px)").matches;
+  });
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -179,6 +186,21 @@ export default function InboxContactPanel({
           accentColor={accent}
         />
 
+        <div className="mt-4 pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={() => setDetailsExpanded((v) => !v)}
+            className="w-full flex items-center justify-between py-1 text-[10px] uppercase tracking-wider text-slate-500 font-semibold hover:text-slate-700 transition-colors"
+          >
+            <span>Details</span>
+            {detailsExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+        {detailsExpanded && (
         <div>
           {detailFields.map((f) => {
             if (f.key === "phone") return null;
@@ -209,6 +231,7 @@ export default function InboxContactPanel({
             return <Field key={f.key} label={f.label} value={v} />;
           })}
         </div>
+        )}
 
         {/* Danger zone — delete ticket permanently */}
         <div className="mt-6 pt-4 border-t border-slate-100">
