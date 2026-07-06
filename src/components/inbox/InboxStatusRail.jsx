@@ -86,35 +86,52 @@ export default function InboxStatusRail({
     );
   };
 
-  // Horizontal (mobile): each group is its own column with the label ABOVE
-  // its buttons. Groups sit side-by-side separated by a hairline divider.
+  // Horizontal (mobile): "Upcoming" stays pinned on the left while the rest
+  // of the groups scroll horizontally next to it. Each scrolling group is its
+  // own column with the label rotated between groups as a divider.
   if (isHorizontal) {
+    // Split "upcoming" out so we can pin it. It only appears in the first
+    // group (franchise); other sources won't have it.
+    const stickyStatuses = [];
+    const scrollingGroups = groups.map((g) => {
+      const rest = [];
+      (g.statuses || []).forEach((s) => {
+        if (s === UPCOMING_MEETINGS_KEY) stickyStatuses.push(s);
+        else rest.push(s);
+      });
+      return { ...g, statuses: rest };
+    }).filter((g) => g.statuses.length > 0);
+
     return (
-      <div className="flex flex-row items-stretch gap-2 px-1.5 pt-1 pb-1.5 w-full overflow-x-auto hide-scrollbar bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
-        {groups.map((group, gi) => (
-          <React.Fragment key={gi}>
-            {/* Between-group separator — a rotated label acts as the divider
-                itself. Empty labels still get a thin hairline so groups stay
-                visually separated. */}
-            {gi > 0 && (
-              <div className="shrink-0 flex items-center justify-center px-0.5">
-                {group.label ? (
-                  <span
-                    className="text-[8px] font-semibold uppercase tracking-wider leading-none text-white/55 whitespace-nowrap"
-                    style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-                  >
-                    {group.label}
-                  </span>
-                ) : (
-                  <div className="w-px h-full bg-white/15" />
-                )}
+      <div className="flex flex-row items-stretch gap-1 pl-1.5 pt-1 pb-1.5 pr-1.5 w-full bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
+        {stickyStatuses.length > 0 && (
+          <div className="shrink-0 flex flex-row items-stretch gap-1 pr-1.5 border-r border-white/25">
+            {stickyStatuses.map((s) => renderStatusButton(s))}
+          </div>
+        )}
+        <div className="flex-1 min-w-0 flex flex-row items-stretch gap-2 overflow-x-auto hide-scrollbar">
+          {scrollingGroups.map((group, gi) => (
+            <React.Fragment key={gi}>
+              {gi > 0 && (
+                <div className="shrink-0 flex items-center justify-center px-0.5">
+                  {group.label ? (
+                    <span
+                      className="text-[8px] font-semibold uppercase tracking-wider leading-none text-white/55 whitespace-nowrap"
+                      style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                    >
+                      {group.label}
+                    </span>
+                  ) : (
+                    <div className="w-px h-full bg-white/15" />
+                  )}
+                </div>
+              )}
+              <div className="flex flex-row items-stretch gap-1 shrink-0">
+                {group.statuses.map((s) => renderStatusButton(s))}
               </div>
-            )}
-            <div className="flex flex-row items-stretch gap-1 shrink-0">
-              {group.statuses.map((s) => renderStatusButton(s))}
-            </div>
-          </React.Fragment>
-        ))}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     );
   }
