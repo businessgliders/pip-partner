@@ -26,19 +26,22 @@ export default function DetailsDrawer({ open, onClose, title, children }) {
 
   return (
     <>
-      {/* Backdrop — dims the underlying content so focus is on the details. */}
+      {/* Backdrop — dims the underlying content so focus is on the details.
+          On mobile (< sm) it starts below the page header so the app chrome
+          stays visible; on sm+ it covers the full viewport. */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-x-0 bottom-0 z-40 bg-black/40 backdrop-blur-sm sm:top-0"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 76px)" }}
         onClick={onClose}
       />
 
-      {/* Panel — slides in from the right, full height, capped width on
-          larger screens so it feels like a proper side panel rather than a
-          full page takeover. */}
+      {/* Panel — slides in from the right. On mobile it matches the email
+          panel's bounds exactly (below the page header, to the bottom). On
+          sm+ it's full-height and capped to a side-panel width. */}
       <div
-        className="fixed top-0 right-0 z-50 h-[100dvh] w-full sm:max-w-md md:max-w-lg bg-white shadow-2xl flex flex-col"
+        className="fixed right-0 bottom-0 z-50 w-full sm:top-0 sm:h-[100dvh] sm:max-w-md md:max-w-lg bg-white shadow-2xl flex flex-col"
         style={{
-          paddingTop: "env(safe-area-inset-top, 0px)",
+          top: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
