@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
       try {
         await base44.asServiceRole.entities.FranchiseInquiry.update(inquiryId, {
           scheduled_call_time: friendlyTime || start,
-          status: 'scheduled',
+          status: 'discovery',
         });
       } catch (updateErr) {
         // Log but don't fail the request — the Cal.com booking already exists,

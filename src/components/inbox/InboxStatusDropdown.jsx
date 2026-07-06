@@ -67,8 +67,8 @@ export default function InboxStatusDropdown({ ticket, sourceKey, variant = "ligh
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="p-2">
         <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${groups.length}, minmax(8.5rem, 1fr))` }}
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${groups.length}, minmax(6rem, auto))` }}
         >
           {groups.map((g, gi) => (
             <div key={gi} className="flex flex-col gap-1">
