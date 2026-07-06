@@ -95,16 +95,17 @@ export default function InboxStatusRail({
           <React.Fragment key={gi}>
             {gi > 0 && <div className="shrink-0 w-px my-1.5 bg-white/15" />}
             <div className="flex flex-col shrink-0">
-              {/* Reserve label row on every group so buttons align vertically. */}
-              <div className="h-3 flex items-center justify-start pl-1 mb-0.5">
+              <div className="flex flex-row items-stretch gap-1">
+                {group.statuses.map((s) => renderStatusButton(s))}
+              </div>
+              {/* Group label sits BELOW its buttons, centered under the
+                  cluster. Reserved on every group so heights stay uniform. */}
+              <div className="h-3 flex items-center justify-center mt-0.5">
                 {group.label && (
-                  <span className="text-[8px] font-bold uppercase tracking-wider leading-none text-white/60">
+                  <span className="text-[8px] font-semibold uppercase tracking-wider leading-none text-white/55">
                     {group.label}
                   </span>
                 )}
-              </div>
-              <div className="flex flex-row items-stretch gap-1">
-                {group.statuses.map((s) => renderStatusButton(s))}
               </div>
             </div>
           </React.Fragment>

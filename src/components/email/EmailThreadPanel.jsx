@@ -538,7 +538,7 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
           is open, so no bottom offset needed). */}
       {composerOpen && (
         <div
-          className="fixed left-0 right-0 z-40 sm:hidden bg-white flex flex-col shadow-2xl"
+          className="fixed left-0 right-0 z-40 sm:hidden bg-white flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200"
           style={{
             top: "calc(env(safe-area-inset-top, 0px) + 76px)",
             bottom: "env(safe-area-inset-bottom, 0px)",
