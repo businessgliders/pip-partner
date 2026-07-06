@@ -9,25 +9,35 @@ import { ChevronLeft, ChevronRight, Calendar, Video } from "lucide-react";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Default status → hex map. Covers every status across all boards (franchise,
-// instructor, influencer, frontadmin). Falls back to slate for unknowns.
+// Status → hex map, matched to the Kanban column headers in KanbanGridPalettes
+// (each entry uses the `-700` shade of that column's Tailwind color so the
+// legend dot and column pill read as the same status).
 const STATUS_HEX = {
-  new: "#9ca3af",
-  pending: "#9ca3af",
-  scheduled: "#f97316",
-  discussion: "#a855f7",
-  contacted: "#a855f7",
-  reviewed: "#3b82f6",
-  qualified: "#ec4899",
-  site_selection: "#0ea5e9",
-  lease: "#0ea5e9",
-  build_out: "#14b8a6",
-  training: "#10b981",
-  approved: "#10b981",
-  invited: "#10b981",
-  closed: "#64748b",
-  ghosted: "#737373",
-  declined: "#f43f5e",
+  // Franchise
+  new: "#44403c",             // stone-700
+  discovery: "#b45309",       // amber-700
+  no_show: "#be123c",         // rose-800
+  nda: "#155e75",             // cyan-800
+  fdd: "#065f46",             // emerald-800
+  signed: "#86198f",           // fuchsia-800
+  site_selection: "#3730a3",  // indigo-800
+  lease: "#115e59",           // teal-800
+  build_out: "#9a3412",       // orange-800
+  training: "#3f6212",         // lime-800
+  closed: "#1e293b",          // slate-800
+  ghosted: "#5b21b6",         // violet-800
+  // Legacy franchise aliases → same as their replacement
+  scheduled: "#b45309",       // amber-700
+  discussion: "#b45309",      // amber-700
+  contacted: "#b45309",       // amber-700
+  qualified: "#065f46",       // emerald-800
+  // Hiring (instructor + front admin)
+  pending: "#ec4899",         // pink-500
+  reviewed: "#f59e0b",        // amber-500
+  invited: "#10b981",         // emerald-500
+  declined: "#f43f5e",        // rose-500
+  // Influencer
+  approved: "#10b981",        // emerald-500
 };
 const colorFor = (status) => STATUS_HEX[String(status || "").toLowerCase()] || "#94a3b8";
 
