@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import FranchiseMeetingPills from "./FranchiseMeetingPills";
 import InternalNotesSection from "@/components/admin/InternalNotesSection";
+import FollowUpControl from "@/components/admin/FollowUpControl";
 import { ConfirmDialog } from "@/components/board/BoardDialogs";
 import {
   displayName,
@@ -145,7 +146,7 @@ export default function InboxContactPanel({
             Cal.com block whose buttons render in a 2-column grid. The grid
             override targets the inner flex container that FranchiseMeetingPills
             produces, turning each pill into a full-width grid cell. */}
-        {sourceKey === "franchise" && (
+        {sourceKey === "franchise" ? (
           <div className="mb-4">
             <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
               Available Options
@@ -155,6 +156,16 @@ export default function InboxContactPanel({
               <div className="[&>div]:!grid [&>div]:!grid-cols-2 [&>div]:!gap-1.5 [&>div>*]:w-full [&>div>*]:justify-center">
                 <FranchiseMeetingPills ticket={ticket} section="cal" dedupeAgainstHeader />
               </div>
+              <FollowUpControl ticket={ticket} ticketType={entity} />
+            </div>
+          </div>
+        ) : (
+          <div className="mb-4">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
+              Available Options
+            </div>
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <FollowUpControl ticket={ticket} ticketType={entity} />
             </div>
           </div>
         )}
