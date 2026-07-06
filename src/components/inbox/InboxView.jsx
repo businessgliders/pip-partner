@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MessagesSquare, Info, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { ArrowLeft, MessagesSquare, PanelRightClose, PanelRightOpen } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";
 import InboxContactPanel from "./InboxContactPanel";
-import InboxStatusDropdown from "./InboxStatusDropdown";
-import FranchiseMeetingPills from "./FranchiseMeetingPills";
-import SubmitterCalBookingsPopover from "@/components/admin/SubmitterCalBookingsPopover";
-import FollowUpControl from "@/components/admin/FollowUpControl";
+import ThreadHeaderBar from "./ThreadHeaderBar";
+import DetailsDrawer from "./DetailsDrawer";
 import {
   SOURCE_META,
   statusOrderFor,
@@ -50,12 +48,12 @@ export default function InboxView({
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const notInterestedKey = notInterestedStatusFor(sourceKey);
-  // Mobile/tablet (< xl) tab to switch the right pane between the conversation
-  // and the contact details. Resets to "conversation" whenever the selected
-  // ticket changes so opening a new conversation always lands on the email view.
-  const [mobileTab, setMobileTab] = useState("conversation");
-  // Desktop (xl+) only — lets the user collapse the right details panel to
-  // give the conversation more horizontal room. Persists for the session.
+  // < xl (mobile + tablet + narrow desktop) — details opens as a slide-in
+  // drawer overlay. xl+ uses a persistent side column. Consistent visual
+  // pattern (right-anchored, X to close) across every viewport where it appears.
+  const [detailsDrawerOpen, setDetailsDrawerOpen] = useState(false);
+  // xl+ only — lets the user collapse the persistent details side column for
+  // more conversation width. Session-scoped, no persistence needed.
   const [detailsCollapsed, setDetailsCollapsed] = useState(false);
 
   // Reset state when source changes — default to the first status of the new
@@ -67,8 +65,9 @@ export default function InboxView({
     setSelectedId(null);
   }, [sourceKey]);
 
+  // Close the drawer whenever the user switches to a different conversation.
   useEffect(() => {
-    setMobileTab("conversation");
+    setDetailsDrawerOpen(false);
   }, [selectedId]);
 
   // Shares the same query key as ApplicationBoard's main fetch, so react-query
@@ -300,10 +299,7 @@ export default function InboxView({
         >
           {selectedTicket ? (
             <div className="h-full flex flex-col">
-              {/* Mobile/tablet (< lg) — only the back-to-list button lives
-                  outside the panel. Name / status / FDD pills / conv-details
-                  toggle have moved INTO the EmailThreadPanel header (and into
-                  the details-tab header on < xl), matching desktop. */}
+              {/* Mobile/tablet (< lg) — back-to-list link above the thread. */}
               <div className="lg:hidden mb-2 flex items-center">
                 <button
                   type="button"
@@ -314,285 +310,40 @@ export default function InboxView({
                 </button>
               </div>
 
-              {/* Main row: panel + (mobile-only) vertical conv/details strip on the right */}
-              <div className="flex-1 min-h-0 flex gap-2">
-                {/* Conversation — always visible on xl+, hidden on < xl when
-                    the user switches to the details tab. */}
-                <div
-                  className={`flex-1 min-w-0 min-h-0 flex-col ${
-                    mobileTab === "details" ? "hidden xl:flex" : "flex"
-                  }`}
-                >
-                  <EmailThreadPanel
-                    ticket={selectedTicket}
-                    ticketType={entity}
-                    currentUser={user}
-                    markAsRead={markAsRead}
-                    headerContent={
-                      <>
-                        {/* lg+ — single-row layout (name + status/FDD + toggle) */}
-                        <div className="hidden lg:flex items-center gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-sm font-semibold text-gray-800 truncate max-w-[220px]">
-                              {displayName(selectedTicket)}
-                            </span>
-                            {selectedTicket.app_number && (
-                              <span className="text-[10px] text-gray-500 shrink-0">
-                                #{selectedTicket.app_number}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                            {selectedTicket.email && (
-                              <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
-                            )}
-                            {sourceKey === "franchise" && (
-                              <FranchiseMeetingPills ticket={selectedTicket} compact />
-                            )}
-                          </div>
-                          {/* Desktop (lg+) — expanded follow-up card gets its
-                              own row below the pill row so it has room to
-                              breathe. Full width up to a max. */}
-                          <div className="w-full max-w-md mt-1">
-                            <FollowUpControl
-                              ticket={selectedTicket}
-                              ticketType={entity}
-                            />
-                          </div>
-                          {/* Details panel collapse toggle — xl+ only, right-aligned.
-                              Hides the right contact panel column to give the
-                              conversation more horizontal room. */}
-                          <button
-                            type="button"
-                            onClick={() => setDetailsCollapsed((v) => !v)}
-                            title={detailsCollapsed ? "Show details" : "Hide details"}
-                            className="hidden xl:inline-flex ml-auto items-center justify-center h-7 w-7 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          >
-                            {detailsCollapsed ? (
-                              <PanelRightOpen className="w-3.5 h-3.5" />
-                            ) : (
-                              <PanelRightClose className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                          {/* Conv/Details toggle — only on lg-to-xl (contact panel hidden). */}
-                          <div className="xl:hidden flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200">
-                            <button
-                              type="button"
-                              onClick={() => setMobileTab("conversation")}
-                              title="Conversation"
-                              className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
-                                mobileTab === "conversation"
-                                  ? "bg-slate-900 text-white shadow-sm"
-                                  : "text-slate-600 hover:text-slate-900"
-                              }`}
-                            >
-                              <MessagesSquare className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setMobileTab("details")}
-                              title="Details"
-                              className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
-                                mobileTab === "details"
-                                  ? "bg-slate-900 text-white shadow-sm"
-                                  : "text-slate-600 hover:text-slate-900"
-                              }`}
-                            >
-                              <Info className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* < lg (mobile + tablet) — two rows.
-                            Row 1: client name + ticket # (left) and conv/details toggle (right).
-                            Row 2: status dropdown + FDD/Cal.com pills. */}
-                        <div className="lg:hidden flex flex-col gap-1.5">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                              <span className="text-sm font-semibold text-gray-800 truncate">
-                                {displayName(selectedTicket)}
-                              </span>
-                              {selectedTicket.app_number && (
-                                <span className="text-[10px] text-gray-500 shrink-0">
-                                  #{selectedTicket.app_number}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => setMobileTab("conversation")}
-                                title="Conversation"
-                                className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
-                                  mobileTab === "conversation"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-600 hover:text-slate-900"
-                                }`}
-                              >
-                                <MessagesSquare className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setMobileTab("details")}
-                                title="Details"
-                                className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
-                                  mobileTab === "details"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-600 hover:text-slate-900"
-                                }`}
-                              >
-                                <Info className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                            {selectedTicket.email && (
-                              <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
-                            )}
-                            {sourceKey === "franchise" && (
-                              <FranchiseMeetingPills ticket={selectedTicket} compact />
-                            )}
-                            {/* Mobile/tablet — icon-only when the sequence is
-                                NOT active (so it takes minimal space). When
-                                the sequence IS active, the icon-only version
-                                still opens the full manage popover; the full
-                                card renders below on its own row. */}
-                            {!selectedTicket.follow_up?.enabled && (
-                              <FollowUpControl
-                                ticket={selectedTicket}
-                                ticketType={entity}
-                                iconOnly
-                              />
-                            )}
-                          </div>
-                          {/* Full Auto Follow-up card renders only when
-                              actively running — provides at-a-glance status
-                              (next send, step count) without hiding it. */}
-                          {selectedTicket.follow_up?.enabled && (
-                            <FollowUpControl ticket={selectedTicket} ticketType={entity} />
-                          )}
-                        </div>
-                      </>
-                    }
-                  />
-                </div>
-
-                {/* Details inline — only used on < xl when the user switches
-                    to the details tab; xl+ uses the side-column instance below.
-                    On lg+, we add an inline toggle row so the user can switch
-                    back to the conversation (the toggle in the email header
-                    isn't visible while the conversation panel is hidden). */}
-                <div
-                  className={`flex-1 min-w-0 min-h-0 xl:hidden ${
-                    mobileTab === "details" ? "flex flex-col" : "hidden"
-                  }`}
-                >
-                  {/* Mirror the in-panel email header so the user always sees
-                      name, status, FDD pills, and can flip back to the
-                      conversation while on the details tab. */}
-                  <div className="mb-2 px-3 py-2 rounded-xl bg-white/90 border border-gray-200 shadow-sm">
-                    <div className="hidden lg:flex items-center gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-sm font-semibold text-gray-800 truncate max-w-[220px]">
-                          {displayName(selectedTicket)}
-                        </span>
-                        {selectedTicket.app_number && (
-                          <span className="text-[10px] text-gray-500 shrink-0">
-                            #{selectedTicket.app_number}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                        {selectedTicket.email && (
-                          <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
-                        )}
-                        {sourceKey === "franchise" && (
-                          <FranchiseMeetingPills ticket={selectedTicket} compact />
-                        )}
-                      </div>
-                      <div className="flex ml-auto items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200">
-                        <button
-                          type="button"
-                          onClick={() => setMobileTab("conversation")}
-                          title="Conversation"
-                          className="h-7 w-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900"
-                        >
-                          <MessagesSquare className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMobileTab("details")}
-                          title="Details"
-                          className="h-7 w-7 rounded-full flex items-center justify-center bg-slate-900 text-white shadow-sm"
-                        >
-                          <Info className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="lg:hidden flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <span className="text-sm font-semibold text-gray-800 truncate">
-                          {displayName(selectedTicket)}
-                        </span>
-                        {selectedTicket.app_number && (
-                          <span className="text-[10px] text-gray-500 shrink-0">
-                            #{selectedTicket.app_number}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-slate-100 border border-gray-200 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setMobileTab("conversation")}
-                          title="Conversation"
-                          className="h-7 w-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900"
-                        >
-                          <MessagesSquare className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMobileTab("details")}
-                          title="Details"
-                          className="h-7 w-7 rounded-full flex items-center justify-center bg-slate-900 text-white shadow-sm"
-                        >
-                          <Info className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
+              {/* Conversation — always visible. Details lives in a persistent
+                  side column on xl+ and in a slide-in drawer on < xl. This
+                  gives the SAME pattern (right-anchored details) everywhere. */}
+              <div className="flex-1 min-h-0 flex flex-col">
+                <EmailThreadPanel
+                  ticket={selectedTicket}
+                  ticketType={entity}
+                  currentUser={user}
+                  markAsRead={markAsRead}
+                  headerContent={
                     <div className="flex items-center gap-2 flex-wrap">
-                      <InboxStatusDropdown ticket={selectedTicket} sourceKey={sourceKey} />
-                      {selectedTicket.email && (
-                        <SubmitterCalBookingsPopover email={selectedTicket.email} compact />
-                      )}
-                      {sourceKey === "franchise" && (
-                        <FranchiseMeetingPills ticket={selectedTicket} compact />
-                      )}
-                      {!selectedTicket.follow_up?.enabled && (
-                        <FollowUpControl
-                          ticket={selectedTicket}
-                          ticketType={entity}
-                          iconOnly
-                        />
-                      )}
+                      <ThreadHeaderBar
+                        ticket={selectedTicket}
+                        ticketType={entity}
+                        sourceKey={sourceKey}
+                        onOpenDetails={() => setDetailsDrawerOpen(true)}
+                        showDetailsBtn={true}
+                      />
+                      {/* xl+ only — collapse/expand the persistent side panel */}
+                      <button
+                        type="button"
+                        onClick={() => setDetailsCollapsed((v) => !v)}
+                        title={detailsCollapsed ? "Show details panel" : "Hide details panel"}
+                        className="hidden xl:inline-flex shrink-0 items-center justify-center h-7 w-7 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                      >
+                        {detailsCollapsed ? (
+                          <PanelRightOpen className="w-3.5 h-3.5" />
+                        ) : (
+                          <PanelRightClose className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                     </div>
-                    {selectedTicket.follow_up?.enabled && (
-                      <FollowUpControl ticket={selectedTicket} ticketType={entity} />
-                    )}
-                    </div>
-                    </div>
-                  <InboxContactPanel
-                    ticket={selectedTicket}
-                    sourceKey={sourceKey}
-                    detailFields={detailFieldsBySource[sourceKey] || []}
-                    accent={accent}
-                    currentUser={user}
-                  />
-                </div>
-
+                  }
+                />
               </div>
             </div>
           ) : (
@@ -603,7 +354,7 @@ export default function InboxView({
           )}
         </div>
 
-        {/* Contact panel — side column on xl+ only.
+        {/* Contact panel — persistent side column on xl+ only.
             Hidden when the user collapses it via the email header toggle. */}
         {selectedTicket && !detailsCollapsed && (
           <div className="hidden xl:flex w-[300px] shrink-0 flex-col min-h-0">
@@ -617,6 +368,26 @@ export default function InboxView({
           </div>
         )}
       </div>
+
+      {/* Details drawer — < xl only, slides in as an overlay with an X close.
+          Same right-anchored pattern as the xl+ side column for consistency. */}
+      {selectedTicket && (
+        <div className="xl:hidden">
+          <DetailsDrawer
+            open={detailsDrawerOpen}
+            onClose={() => setDetailsDrawerOpen(false)}
+            title={displayName(selectedTicket)}
+          >
+            <InboxContactPanel
+              ticket={selectedTicket}
+              sourceKey={sourceKey}
+              detailFields={detailFieldsBySource[sourceKey] || []}
+              accent={accent}
+              currentUser={user}
+            />
+          </DetailsDrawer>
+        </div>
+      )}
     </div>
   );
 }

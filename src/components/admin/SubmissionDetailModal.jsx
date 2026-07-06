@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle, Video, ChevronDown, ChevronUp, Info, ArrowLeft } from "lucide-react";
+import { Mail, Phone, ExternalLink, MapPin, CalendarClock, XCircle, Video, ChevronDown, ChevronUp, Info } from "lucide-react";
+import DetailsDrawer from "../inbox/DetailsDrawer";
 import {
   Popover,
   PopoverContent,
@@ -63,10 +64,9 @@ export default function SubmissionDetailModal({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [detailsOpen, setDetailsOpen] = useState(false);
-  // Mobile (< md) uses a tab-style switch so the conversation gets the full
-  // viewport height by default. Desktop (md+) keeps the two columns
-  // side-by-side and ignores this state.
-  const [mobileTab, setMobileTab] = useState("conversation");
+  // < md — details lives in a right-anchored slide-in drawer (matches the
+  // InboxView pattern for consistency). md+ shows the details column inline.
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const threadRef = useRef(null);
   // One-shot "jiggle" animation key. Bumped every time the modal opens via a
   // notification click (signalled by a non-empty highlightMessageId). The key
@@ -77,10 +77,10 @@ export default function SubmissionDetailModal({
       setJiggleKey((k) => k + 1);
     }
   }, [open, highlightMessageId]);
-  // Reset the mobile tab whenever a new submission is opened so users always
-  // land on the conversation view first.
+  // Close the mobile drawer whenever a new submission is opened so the user
+  // lands on the conversation first.
   useEffect(() => {
-    if (open) setMobileTab("conversation");
+    if (open) setMobileDrawerOpen(false);
   }, [open, row?.id]);
   if (!row) return null;
 
@@ -173,6 +173,115 @@ export default function SubmissionDetailModal({
     row.drive_folder_url = folderUrl;
   };
 
+  // Details content — rendered in TWO places (inline column on md+, drawer on
+  // < md). Defined once here to guarantee identical behavior and avoid drift.
+  const detailsContent = (
+    <>
+      <LocationMapBanner
+        postalCode={row.preferred_postal_code || row.postal_code}
+        city={row.preferred_location || row.location || row.city}
+        province={row.province}
+        label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
+      />
+      {/* Always-visible basic contact info */}
+      <div className="relative z-10 p-5 space-y-1.5 border-b border-slate-200/70">
+        {row.email && (
+          <a
+            href={`mailto:${row.email}`}
+            className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+          >
+            <Mail className="w-3.5 h-3.5 text-slate-400" />
+            {row.email}
+          </a>
+        )}
+        {row.phone && (
+          <a
+            href={`tel:${row.phone}`}
+            className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
+          >
+            <Phone className="w-3.5 h-3.5 text-slate-400" />
+            {[row.phone_country, row.phone].filter(Boolean).join(" ")}
+          </a>
+        )}
+        {(row.preferred_location || row.location || row.city || row.province || row.postal_code || row.preferred_postal_code) && (
+          <div className="flex items-center gap-2 text-sm text-slate-700">
+            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+            {[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
+          </div>
+        )}
+        {row.resume_url && (
+          <a
+            href={row.resume_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
+          >
+            <ExternalLink className="w-3.5 h-3.5" /> View Resume
+          </a>
+        )}
+      </div>
+
+      {/* Toggle for additional request details */}
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((v) => !v)}
+        className="relative z-30 w-full flex items-center justify-between px-5 py-3"
+      >
+        <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
+          {detailsOpen ? "Hide" : "Show"} Additional Details
+        </span>
+        {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+      </button>
+
+      {/* Collapsible additional form fields */}
+      {detailsOpen && (
+        <div className="relative z-10 p-5 space-y-4 border-b border-slate-200/70">
+          <div className="grid grid-cols-1 gap-3">
+            {detailFields
+              .filter((f) => !REDUNDANT_KEYS.has(f.key))
+              .map((f) => (
+                <Field
+                  key={f.key}
+                  label={f.label}
+                  value={typeof f.get === "function" ? f.get(row) : row[f.key]}
+                />
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* Always-visible admin sections */}
+      <div className="relative z-10 p-5 pb-2 space-y-4">
+        <AssignTicketSection
+          assignedTo={row.assigned_to}
+          onAssign={handleAssign}
+          accentColor={accentColor}
+          defaultExpanded={user?.role !== "admin"}
+        />
+
+        <AttachmentsSection
+          attachments={row.attachments || []}
+          onChange={handleAttachmentsChange}
+          accentColor={accentColor}
+          currentUserEmail={user?.email}
+          ticket={row}
+          ticketType={ticketType}
+          onFolderCreated={handleFolderCreated}
+        />
+
+        <InternalNotesSection
+          notes={row.internal_notes || []}
+          onAddNote={handleAddNote}
+          onUpdateNote={handleUpdateNote}
+          onDeleteNote={handleDeleteNote}
+          currentUserEmail={user?.email}
+          accentColor={accentColor}
+          large
+        />
+      </div>
+    </>
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -182,12 +291,11 @@ export default function SubmissionDetailModal({
         }`}
       >
         <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-[3fr_2fr] max-h-[92vh]">
-          {/* Left: Contact + Email Communications
-              Mobile: hidden when the user has switched to the details tab. */}
+          {/* Left: Contact + Email Communications — always visible.
+              Details lives in an inline column on md+ and in a slide-in
+              drawer on < md, matching the InboxView pattern. */}
            <div
-             className={`flex-col overflow-hidden border-r order-1 md:order-none min-h-0 max-h-[92vh] ${
-               mobileTab === "details" ? "hidden md:flex" : "flex"
-             }`}
+             className="flex flex-col overflow-hidden border-r order-1 md:order-none min-h-0 max-h-[92vh]"
              style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf3ec 100%)" }}
            >
             {/* Header (fixed) */}
@@ -198,12 +306,11 @@ export default function SubmissionDetailModal({
                     <p className="text-[10px] tracking-[0.2em] uppercase font-semibold" style={{ color: accentColor }}>
                       Submission {(row.display_ticket_number || row.app_number) ? `#${displayAppNumber(row, tabKey)}` : ""}
                     </p>
-                    {/* Mobile-only: jump to the details panel (contact info,
-                        request details, notes, attachments). Frees up the
-                        whole viewport for the conversation on mobile. */}
+                    {/* Mobile-only: opens the details drawer overlay.
+                        Frees up the whole viewport for the conversation. */}
                     <button
                       type="button"
-                      onClick={() => setMobileTab("details")}
+                      onClick={() => setMobileDrawerOpen(true)}
                       className="md:hidden inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700"
                       title="Show details"
                     >
@@ -368,129 +475,24 @@ export default function SubmissionDetailModal({
             </div>
           </div>
 
-          {/* Right: Request Details + Assign To + Internal Notes
-              Mobile: hidden by default (conversation gets full height); shows
-              when the user taps the "Details" button in the conversation
-              header. A back arrow returns to the conversation. */}
-          <div
-            className={`relative overflow-y-auto bg-white order-2 md:order-none hide-scrollbar ${
-              mobileTab === "details" ? "block" : "hidden md:block"
-            } max-h-[92vh]`}
-          >
-            {/* Mobile back button — sticky so it stays reachable while scrolling. */}
-            <div className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setMobileTab("conversation")}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 hover:text-slate-900"
-              >
-                <ArrowLeft className="w-4 h-4" /> Conversation
-              </button>
-              <span className="text-[11px] text-slate-500 truncate max-w-[60%]">{displayName}</span>
-            </div>
-            <LocationMapBanner
-              postalCode={row.preferred_postal_code || row.postal_code}
-              city={row.preferred_location || row.location || row.city}
-              province={row.province}
-              label={[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
-            />
-            {/* Always-visible basic contact info */}
-            <div className="relative z-10 p-5 space-y-1.5 border-b border-slate-200/70">
-              {row.email && (
-                <a
-                  href={`mailto:${row.email}`}
-                  className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
-                >
-                  <Mail className="w-3.5 h-3.5 text-slate-400" />
-                  {row.email}
-                </a>
-              )}
-              {row.phone && (
-                <a
-                  href={`tel:${row.phone}`}
-                  className="flex items-center gap-2 text-sm text-slate-700 hover:underline"
-                >
-                  <Phone className="w-3.5 h-3.5 text-slate-400" />
-                  {[row.phone_country, row.phone].filter(Boolean).join(" ")}
-                </a>
-              )}
-              {(row.preferred_location || row.location || row.city || row.province || row.postal_code || row.preferred_postal_code) && (
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  {[row.preferred_location || row.location || row.city, row.province, row.preferred_postal_code || row.postal_code].filter(Boolean).join(" · ")}
-                </div>
-              )}
-              {row.resume_url && (
-                <a
-                  href={row.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> View Resume
-                </a>
-              )}
-            </div>
-
-            {/* Toggle for additional request details */}
-            <button
-              type="button"
-              onClick={() => setDetailsOpen((v) => !v)}
-              className="relative z-30 w-full flex items-center justify-between px-5 py-3"
-            >
-              <span className="text-xs tracking-wider uppercase text-slate-500 font-semibold">
-                {detailsOpen ? "Hide" : "Show"} Additional Details
-              </span>
-              {detailsOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-            </button>
-
-            {/* Collapsible additional form fields */}
-            {detailsOpen && (
-              <div className="relative z-10 p-5 space-y-4 border-b border-slate-200/70">
-                <div className="grid grid-cols-1 gap-3">
-                  {detailFields
-                    .filter((f) => !REDUNDANT_KEYS.has(f.key))
-                    .map((f) => (
-                      <Field
-                        key={f.key}
-                        label={f.label}
-                        value={typeof f.get === "function" ? f.get(row) : row[f.key]}
-                      />
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Always-visible admin sections */}
-            <div className="relative z-10 p-5 pb-2 space-y-4">
-              <AssignTicketSection
-                assignedTo={row.assigned_to}
-                onAssign={handleAssign}
-                accentColor={accentColor}
-                defaultExpanded={user?.role !== "admin"}
-              />
-
-              <AttachmentsSection
-                attachments={row.attachments || []}
-                onChange={handleAttachmentsChange}
-                accentColor={accentColor}
-                currentUserEmail={user?.email}
-                ticket={row}
-                ticketType={ticketType}
-                onFolderCreated={handleFolderCreated}
-              />
-
-              <InternalNotesSection
-                notes={row.internal_notes || []}
-                onAddNote={handleAddNote}
-                onUpdateNote={handleUpdateNote}
-                onDeleteNote={handleDeleteNote}
-                currentUserEmail={user?.email}
-                accentColor={accentColor}
-                large
-              />
-            </div>
+          {/* Right: Request Details + Assign To + Internal Notes.
+              md+ shows this as an inline column; on < md it's hidden and the
+              same content renders inside the mobile DetailsDrawer overlay. */}
+          <div className="relative overflow-y-auto bg-white order-2 md:order-none hide-scrollbar hidden md:block max-h-[92vh]">
+            {detailsContent}
           </div>
+        </div>
+
+        {/* Mobile-only details drawer — right-anchored slide-in with X close.
+            Same right-anchored pattern used in the Inbox view, for consistency. */}
+        <div className="md:hidden">
+          <DetailsDrawer
+            open={mobileDrawerOpen}
+            onClose={() => setMobileDrawerOpen(false)}
+            title={displayName}
+          >
+            {detailsContent}
+          </DetailsDrawer>
         </div>
       </DialogContent>
     </Dialog>
