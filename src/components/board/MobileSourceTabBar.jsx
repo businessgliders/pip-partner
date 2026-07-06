@@ -89,7 +89,7 @@ export default function MobileSourceTabBar({
         );
       })}
       {extraSlot && (
-        <div className="flex items-center justify-center py-1">
+        <div className="flex items-stretch justify-stretch py-1">
           {extraSlot}
         </div>
       )}
