@@ -151,6 +151,15 @@ export default function ApplicationBoard() {
   // STATUS_CHANGE_REQUIRES_DIALOG is true).
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
+  // Mobile-only signal: the inbox has taken over the viewport with a thread
+  // open. When true, we hide the iOS bottom tab bar so the email panel and
+  // any drawer overlays get every available pixel. Reset whenever the user
+  // backs out to the thread list, switches view mode, or changes tabs.
+  const [mobileInboxThreadOpen, setMobileInboxThreadOpen] = useState(false);
+  useEffect(() => {
+    setMobileInboxThreadOpen(false);
+  }, [activeTab, viewMode]);
+
   // "What's New" popup — surfaces release highlights on first load, then
   // persists per-user (suffixed by RELEASE_KEY) so it shows once per release.
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -647,6 +656,9 @@ export default function ApplicationBoard() {
               detailFieldsBySource={DETAIL_FIELDS}
               unreadCountByTicket={unreadCountByTicket}
               markAsRead={markAsRead}
+              onMobileThreadStateChange={({ threadOpen }) =>
+                setMobileInboxThreadOpen(threadOpen)
+              }
             />
           </div>
         ) : effectiveViewMode === "table" ? (
@@ -900,8 +912,14 @@ export default function ApplicationBoard() {
           Wrapped in a div because the inner <nav> uses inline `display:grid`
           which would otherwise override Tailwind's `lg:hidden` class.
           The notification bell lives here too — it has been removed from the
-          top header on mobile/tablet to free up vertical space. */}
-      <div className="lg:hidden -mx-4 mt-2 relative z-10">
+          top header on mobile/tablet to free up vertical space.
+          Hidden while the inbox has a conversation open on mobile/tablet, so
+          the email panel and drawer can claim every available pixel. */}
+      <div
+        className={`lg:hidden -mx-4 mt-2 relative z-10 ${
+          mobileInboxThreadOpen ? "hidden" : ""
+        }`}
+      >
         <MobileSourceTabBar
           activeTab={activeTab}
           onTabChange={setActiveTab}

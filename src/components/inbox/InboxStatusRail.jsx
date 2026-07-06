@@ -14,25 +14,44 @@ export default function InboxStatusRail({
   onChange,
   counts = {},
   accent = "#b67651",
+  orientation = "vertical", // "vertical" | "horizontal"
 }) {
   const groups = statusGroupsFor(sourceKey);
   // For instructor / frontadmin, ALWAYS render every status in the rail on
   // desktop regardless of count. For franchise, keep the existing
   // "hide-when-empty" behavior so the rail doesn't get cluttered.
   const showEmptyStatusesOnDesktop = sourceKey === "instructor" || sourceKey === "frontadmin";
+  const isHorizontal = orientation === "horizontal";
 
   return (
-    <div className="flex flex-col gap-1 px-0.5 md:px-1.5 py-3 w-12 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur">
+    <div
+      className={
+        isHorizontal
+          ? "flex flex-row items-stretch gap-1 px-1.5 py-1.5 w-full overflow-x-auto hide-scrollbar bg-white/20 border border-white/30 rounded-2xl backdrop-blur"
+          : "flex flex-col gap-1 px-0.5 md:px-1.5 py-3 w-12 md:w-16 shrink-0 bg-white/20 border border-white/30 rounded-2xl backdrop-blur"
+      }
+    >
       {groups.map((group, gi) => (
         <React.Fragment key={gi}>
           {group.label && (
-            <div
-              className={`${gi === 0 ? "" : "mt-2 pt-2 border-t border-white/15"} mb-1 flex items-center justify-center`}
-            >
-              <span className="text-[9px] font-bold uppercase tracking-wider leading-none text-white/70">
-                {group.label}
-              </span>
-            </div>
+            isHorizontal ? (
+              // Horizontal: group label sits vertically as a slim divider tag.
+              gi === 0 ? null : (
+                <div className="shrink-0 flex items-center px-1">
+                  <span className="text-[8px] font-bold uppercase tracking-wider leading-none text-white/50 rotate-0">
+                    {group.label}
+                  </span>
+                </div>
+              )
+            ) : (
+              <div
+                className={`${gi === 0 ? "" : "mt-2 pt-2 border-t border-white/15"} mb-1 flex items-center justify-center`}
+              >
+                <span className="text-[9px] font-bold uppercase tracking-wider leading-none text-white/70">
+                  {group.label}
+                </span>
+              </div>
+            )
           )}
           {group.statuses.map((s) => {
             const isActive = active === s;
@@ -48,7 +67,7 @@ export default function InboxStatusRail({
                   onClick={() => onChange(isActive ? null : s)}
                   title={`Upcoming meetings${c ? ` (${c})` : ""}`}
                   style={isActive ? { background: accent, color: "#fff" } : undefined}
-                  className={`relative w-full flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+                  className={`relative ${isHorizontal ? "shrink-0 min-w-[56px] px-2" : "w-full"} flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
                     isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
                   }`}
                 >
@@ -83,7 +102,7 @@ export default function InboxStatusRail({
                 onClick={() => onChange(isActive ? null : s)}
                 title={statusLabel(sourceKey, s)}
                 style={isActive ? { background: accent, color: "#fff" } : undefined}
-                className={`relative w-full ${hideClass} flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
+                className={`relative ${isHorizontal ? "shrink-0 min-w-[56px] px-2" : "w-full"} ${hideClass} flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium leading-none transition-all ${
                   isActive ? "shadow-md" : "text-white/65 hover:bg-white/10"
                 }`}
               >

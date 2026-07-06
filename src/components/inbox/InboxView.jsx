@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MessagesSquare, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { ArrowLeft, MessagesSquare } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import InboxStatusRail from "./InboxStatusRail";
 import InboxThreadList from "./InboxThreadList";
@@ -26,9 +26,13 @@ import { getDefaultSort, sortTickets } from "./inboxSort";
  * submission entities + EmailMessage history.
  *
  *   Top: source tabs (Franchise / Instructor / Front Desk)
- *   Left rail: status filter
+ *   Left rail (desktop) / top strip (mobile): status filter
  *   Middle: thread list (submissions in the active source)
  *   Right: EmailThreadPanel (conversation) + InboxContactPanel (details)
+ *
+ * `onMobileThreadStateChange` — fires with { threadOpen } whenever a
+ * mobile/tablet user opens or closes a conversation, so the parent page can
+ * hide chrome (iOS bottom tab bar) and give the whole viewport to the thread.
  */
 export default function InboxView({
   activeTab,
@@ -37,6 +41,7 @@ export default function InboxView({
   detailFieldsBySource = {},
   unreadCountByTicket = {},
   markAsRead,
+  onMobileThreadStateChange,
 }) {
   const sourceKey = activeTab;
   const meta = SOURCE_META[sourceKey] || SOURCE_META.franchise;
@@ -69,6 +74,14 @@ export default function InboxView({
   useEffect(() => {
     setDetailsDrawerOpen(false);
   }, [selectedId]);
+
+  // Notify the parent (ApplicationBoard) whenever the mobile/tablet thread
+  // panel takes over the viewport, so the iOS bottom tab bar can be hidden
+  // during reading and reappear once the user backs out to the list.
+  useEffect(() => {
+    if (!onMobileThreadStateChange) return;
+    onMobileThreadStateChange({ threadOpen: !!selectedId });
+  }, [selectedId, onMobileThreadStateChange]);
 
   // Shares the same query key as ApplicationBoard's main fetch, so react-query
   // de-duplicates and we don't double-fetch when toggling between views.
@@ -151,11 +164,6 @@ export default function InboxView({
     [rawTickets, calBookings, lastEmailByTicket, repliedTicketIds]
   );
 
-  // Per-status counts for the left rail. Archived tickets are folded into
-  // the "Not Interested" bucket (closed for franchise; declined otherwise)
-  // so they're reachable from a single rail item. Includes the "upcoming"
-  // pseudo-status (franchise only): tickets that have a Cal.com booking
-  // whose start time is in the future.
   // Reverse map: folded child status -> parent rail status (per source).
   const foldedChildToParent = useMemo(() => {
     const map = {};
@@ -175,8 +183,6 @@ export default function InboxView({
         if (c[notInterestedKey] !== undefined) c[notInterestedKey]++;
         return;
       }
-      // Fold child statuses (e.g. scheduled/discussion/...) into their parent
-      // rail bucket so the count reflects everything in that group.
       const bucketKey = foldedChildToParent[t.status] || t.status;
       if (c[bucketKey] !== undefined) c[bucketKey]++;
       const startIso = t._cal_booking?.start;
@@ -191,8 +197,6 @@ export default function InboxView({
     const q = search.trim().toLowerCase();
     const now = Date.now();
     return tickets.filter((t) => {
-      // "Not Interested" filter shows both declined/closed tickets AND any
-      // archived tickets, merged together.
       if (statusFilter === notInterestedKey) {
         if (!t.archived && t.status !== notInterestedKey) return false;
       } else {
@@ -201,7 +205,6 @@ export default function InboxView({
           const startIso = t._cal_booking?.start;
           if (!startIso || new Date(startIso).getTime() < now) return false;
         } else if (statusFilter) {
-          // Expand parent rail status to include any folded child statuses.
           const allowed = expandStatusFilter(sourceKey, statusFilter);
           if (!allowed.includes(t.status)) return false;
         }
@@ -218,12 +221,8 @@ export default function InboxView({
     });
   }, [tickets, search, statusFilter, notInterestedKey]);
 
-  // Auto-select the first available thread whenever nothing is selected —
-  // DESKTOP ONLY (>= lg / 1024px). On mobile and tablet, we want users to
-  // land on the thread list and pick a conversation themselves; otherwise
-  // the email panel takes over the whole screen on load with no way back.
-  // We mirror the thread list's sort here so "first" matches the first row
-  // the user actually sees on screen.
+  // Auto-select the first available thread — desktop only. On mobile/tablet
+  // the user lands on the list and picks a conversation themselves.
   useEffect(() => {
     if (selectedId || filtered.length === 0) return;
     const isDesktop =
@@ -244,35 +243,52 @@ export default function InboxView({
       ? statusLabel(sourceKey, statusFilter)
       : meta.label;
 
+  // Status rail — a single shared instance rendered in two different slots:
+  //  · Mobile (< md): horizontal strip above the thread list.
+  //  · md+ (tablet + desktop): vertical rail on the left, always visible.
+  const railOnChange = (s) => {
+    setStatusFilter(s);
+    // Clear so the auto-select effect picks the first ticket of the newly-
+    // filtered list.
+    setSelectedId(null);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-0 flex gap-2 md:gap-3 px-2 pb-3">
-        {/* Status rail — always visible across all viewports, including while
-            reading a thread on mobile/tablet (so users can quickly switch
-            statuses without backing out of the conversation). */}
-        <div className="flex">
+        {/* Vertical status rail — md+ only. On mobile it's rendered as a
+            horizontal strip above the thread list (see below). */}
+        <div className="hidden md:flex">
           <InboxStatusRail
             sourceKey={sourceKey}
             statuses={statuses}
             active={statusFilter}
-            onChange={(s) => {
-              setStatusFilter(s);
-              // Clear so the auto-select effect picks the first ticket of the
-              // newly-filtered list across the thread + conversation + contact
-              // panels.
-              setSelectedId(null);
-            }}
+            onChange={railOnChange}
             counts={statusCounts}
             accent={accent}
+            orientation="vertical"
           />
         </div>
 
-        {/* Thread list */}
+        {/* Thread list column — hidden on mobile/tablet once a conversation
+            is selected, so the email panel gets the entire viewport. */}
         <div
           className={`flex-1 min-w-0 lg:flex-none lg:w-[340px] ${
             selectedTicket ? "hidden lg:flex" : "flex"
           } flex-col min-h-0`}
         >
+          {/* Mobile-only horizontal status rail at the top of the list. */}
+          <div className="md:hidden mb-2">
+            <InboxStatusRail
+              sourceKey={sourceKey}
+              statuses={statuses}
+              active={statusFilter}
+              onChange={railOnChange}
+              counts={statusCounts}
+              accent={accent}
+              orientation="horizontal"
+            />
+          </div>
           <InboxThreadList
             key={`${sourceKey}-${statusFilter || "all"}`}
             title={title}
@@ -289,9 +305,9 @@ export default function InboxView({
           />
         </div>
 
-        {/* Right pane: conversation + (on < xl) inline details, controlled by
-            mobileTab. On xl+ both conversation and details are visible
-            side-by-side in their own columns. */}
+        {/* Right pane: conversation. Details is a persistent side column on
+            xl+ and a slide-in drawer on < xl (consistent right-anchored
+            pattern across every breakpoint). */}
         <div
           className={`flex-1 min-w-0 ${
             selectedTicket ? "flex" : "hidden lg:flex"
@@ -310,9 +326,6 @@ export default function InboxView({
                 </button>
               </div>
 
-              {/* Conversation — always visible. Details lives in a persistent
-                  side column on xl+ and in a slide-in drawer on < xl. This
-                  gives the SAME pattern (right-anchored details) everywhere. */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <EmailThreadPanel
                   ticket={selectedTicket}
@@ -320,28 +333,15 @@ export default function InboxView({
                   currentUser={user}
                   markAsRead={markAsRead}
                   headerContent={
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <ThreadHeaderBar
-                        ticket={selectedTicket}
-                        ticketType={entity}
-                        sourceKey={sourceKey}
-                        onOpenDetails={() => setDetailsDrawerOpen(true)}
-                        showDetailsBtn={true}
-                      />
-                      {/* xl+ only — collapse/expand the persistent side panel */}
-                      <button
-                        type="button"
-                        onClick={() => setDetailsCollapsed((v) => !v)}
-                        title={detailsCollapsed ? "Show details panel" : "Hide details panel"}
-                        className="hidden xl:inline-flex shrink-0 items-center justify-center h-7 w-7 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                      >
-                        {detailsCollapsed ? (
-                          <PanelRightOpen className="w-3.5 h-3.5" />
-                        ) : (
-                          <PanelRightClose className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
+                    <ThreadHeaderBar
+                      ticket={selectedTicket}
+                      ticketType={entity}
+                      sourceKey={sourceKey}
+                      onOpenDetails={() => setDetailsDrawerOpen(true)}
+                      showDetailsBtn={true}
+                      detailsCollapsed={detailsCollapsed}
+                      onToggleDetailsPanel={() => setDetailsCollapsed((v) => !v)}
+                    />
                   }
                 />
               </div>
@@ -354,8 +354,7 @@ export default function InboxView({
           )}
         </div>
 
-        {/* Contact panel — persistent side column on xl+ only.
-            Hidden when the user collapses it via the email header toggle. */}
+        {/* Contact panel — persistent side column on xl+ only. */}
         {selectedTicket && !detailsCollapsed && (
           <div className="hidden xl:flex w-[300px] shrink-0 flex-col min-h-0">
             <InboxContactPanel
@@ -369,8 +368,8 @@ export default function InboxView({
         )}
       </div>
 
-      {/* Details drawer — < xl only, slides in as an overlay with an X close.
-          Same right-anchored pattern as the xl+ side column for consistency. */}
+      {/* Details drawer — < xl only, slides in as an overlay. Same right-
+          anchored pattern as the xl+ side column for consistency. */}
       {selectedTicket && (
         <div className="xl:hidden">
           <DetailsDrawer
