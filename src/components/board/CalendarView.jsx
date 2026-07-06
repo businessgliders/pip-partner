@@ -343,7 +343,9 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
                   className="text-xs font-medium capitalize"
                   style={{ color: "#7a5555" }}
                 >
-                  {String(status).replace(/_/g, " ")}
+                  {status === "fdd" || status === "nda"
+                    ? status.toUpperCase()
+                    : String(status).replace(/_/g, " ")}
                 </span>
               </div>
             ))}
