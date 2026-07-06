@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths, startOfDay
@@ -41,20 +43,62 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
   const today = startOfDay(new Date());
 
-  // Group tickets by YYYY-MM-DD of either their submission or their Cal meeting,
-  // depending on mode. In "meetings" mode, only tickets with a _cal_booking appear.
-  const ticketsByDay = useMemo(() => {
+  // In "meetings" mode we need the full booking history (upcoming + past), not
+  // just the upcoming map that the board's shared query provides. Fetch it
+  // separately here so the calendar can plot every meeting on its real date.
+  const { data: bookingsList = [] } = useQuery({
+    queryKey: ["cal-bookings-all"],
+    queryFn: async () => {
+      const resp = await base44.functions.invoke("getCalBookings", { range: "all" });
+      return resp?.data?.bookingsList || [];
+    },
+    enabled: mode === "meetings",
+    refetchInterval: 60000,
+    staleTime: 30000,
+  });
+
+  // Index tickets by lowercased email so we can pair a booking to its ticket.
+  const ticketByEmail = useMemo(() => {
     const map = {};
     (tickets || []).forEach((t) => {
-      const dateSource =
-        mode === "meetings" ? t._cal_booking?.start : t.created_date;
-      if (!dateSource) return;
-      const key = format(new Date(dateSource), "yyyy-MM-dd");
-      if (!map[key]) map[key] = [];
-      map[key].push(t);
+      const key = (t.email || "").toLowerCase().trim();
+      if (key && !map[key]) map[key] = t;
     });
     return map;
-  }, [tickets, mode]);
+  }, [tickets]);
+
+  // Group entries by YYYY-MM-DD.
+  //  - Submissions mode: one entry per ticket at its created_date.
+  //  - Meetings mode: one entry per Cal booking at its start (may include past),
+  //    paired with the matching ticket by attendee email when available.
+  const ticketsByDay = useMemo(() => {
+    const map = {};
+    if (mode === "meetings") {
+      (bookingsList || []).forEach((b) => {
+        if (!b?.start) return;
+        const email = (b.emails || []).find((e) => ticketByEmail[e]);
+        const ticket = email ? ticketByEmail[email] : null;
+        const key = format(new Date(b.start), "yyyy-MM-dd");
+        if (!map[key]) map[key] = [];
+        map[key].push({
+          id: `${b.bookingId || b.uid || key}_${email || "unknown"}`,
+          _booking: b,
+          _display_name: ticket?._display_name || email || b.title || "Meeting",
+          email: email || (b.emails || [])[0] || "",
+          status: ticket?.status,
+          _ticket: ticket,
+        });
+      });
+    } else {
+      (tickets || []).forEach((t) => {
+        if (!t.created_date) return;
+        const key = format(new Date(t.created_date), "yyyy-MM-dd");
+        if (!map[key]) map[key] = [];
+        map[key].push(t);
+      });
+    }
+    return map;
+  }, [tickets, mode, bookingsList, ticketByEmail]);
 
   // Build a deduped status legend from what's actually visible this month.
   const visibleStatuses = useMemo(() => {
@@ -170,7 +214,7 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
             return (
               <div
                 key={idx}
-                className="min-h-[110px] p-2 transition-colors"
+                className="min-h-[64px] sm:min-h-[110px] p-1 sm:p-2 transition-colors"
                 style={{
                   borderRight: "1px solid rgba(247,177,189,0.2)",
                   borderBottom: "1px solid rgba(247,177,189,0.2)",
@@ -183,7 +227,7 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
                 }}
               >
                 <div
-                  className="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold mb-1"
+                  className="w-6 h-6 flex items-center justify-center rounded-full text-[11px] sm:text-xs font-bold mb-1"
                   style={
                     isToday
                       ? { background: accentColor, color: "white" }
@@ -193,17 +237,47 @@ export default function CalendarView({ tickets = [], onTicketClick, accentColor 
                   {format(day, "d")}
                 </div>
 
-                <div className="space-y-0.5">
-                  {dayTickets.slice(0, 3).map((t) => {
+                {/* Mobile: dots-only grid (max 8 with +N overflow). */}
+                <div className="sm:hidden flex flex-wrap gap-1 pl-0.5">
+                  {dayTickets.slice(0, 8).map((t) => {
                     const color = colorFor(t.status);
                     const meetingTime =
-                      mode === "meetings" && t._cal_booking?.start
-                        ? format(new Date(t._cal_booking.start), "h:mma").toLowerCase()
+                      mode === "meetings" && t._booking?.start
+                        ? format(new Date(t._booking.start), "h:mma").toLowerCase()
                         : null;
                     return (
                       <button
                         key={t.id}
-                        onClick={() => onTicketClick?.(t)}
+                        onClick={() => t._ticket ? onTicketClick?.(t._ticket) : onTicketClick?.(t)}
+                        title={`${t._display_name || t.email || "Application"}${meetingTime ? ` · ${meetingTime}` : ""}`}
+                        className="w-2 h-2 rounded-full transition-opacity hover:opacity-70"
+                        style={{ background: color }}
+                        aria-label={t._display_name || t.email || "Application"}
+                      />
+                    );
+                  })}
+                  {dayTickets.length > 8 && (
+                    <span
+                      className="text-[9px] font-semibold leading-none"
+                      style={{ color: "#c48a96" }}
+                    >
+                      +{dayTickets.length - 8}
+                    </span>
+                  )}
+                </div>
+
+                {/* Tablet + desktop: labelled rows with time. */}
+                <div className="hidden sm:block space-y-0.5">
+                  {dayTickets.slice(0, 3).map((t) => {
+                    const color = colorFor(t.status);
+                    const meetingTime =
+                      mode === "meetings" && t._booking?.start
+                        ? format(new Date(t._booking.start), "h:mma").toLowerCase()
+                        : null;
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => t._ticket ? onTicketClick?.(t._ticket) : onTicketClick?.(t)}
                         title={`${t._display_name || t.email || "Application"} · ${t.status || ""}${meetingTime ? ` · ${meetingTime}` : ""}`}
                         className="w-full flex items-center gap-1 px-1.5 py-0.5 rounded text-left transition-opacity hover:opacity-80"
                         style={{ background: `${color}22`, border: `1px solid ${color}44` }}
