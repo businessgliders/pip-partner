@@ -67,7 +67,7 @@ export default function MobileSourceTabBar({
             disabled={!isAllowed}
             title={isAllowed ? t.label : `${t.label} — admin access only`}
             style={isActive ? { color: t.color } : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 py-1 transition-colors ${
+            className={`flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 transition-colors ${
               isActive
                 ? "font-semibold"
                 : isAllowed
