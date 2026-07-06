@@ -639,7 +639,7 @@ export default function ApplicationBoard() {
         </div>
 
         {showArchived ? (
-          <div className="flex-1 lg:min-h-0 flex flex-col mt-2">
+          <div key={`view-archived-${activeTab}`} className="flex-1 lg:min-h-0 flex flex-col mt-2 pip-view-in">
             <ArchivedTicketsList
               tickets={archivedTickets}
               accentColor={board.color}
@@ -648,7 +648,7 @@ export default function ApplicationBoard() {
             />
           </div>
         ) : effectiveViewMode === "inbox" ? (
-          <div className="flex-1 lg:min-h-0 flex flex-col mt-2 min-h-0">
+          <div key={`view-inbox-${activeTab}`} className="flex-1 lg:min-h-0 flex flex-col mt-2 min-h-0 pip-view-in">
             <InboxView
               activeTab={activeTab}
               onTabChange={setActiveTab}
@@ -662,7 +662,7 @@ export default function ApplicationBoard() {
             />
           </div>
         ) : effectiveViewMode === "table" ? (
-          <div className="flex-1 lg:min-h-0 mt-2 overflow-auto pb-4">
+          <div key={`view-table-${activeTab}`} className="flex-1 lg:min-h-0 mt-2 overflow-auto pb-4 pip-view-in">
             {isLoading ? (
               <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
                 <div className="w-6 h-6 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin mx-auto" />
@@ -680,20 +680,24 @@ export default function ApplicationBoard() {
             )}
           </div>
         ) : effectiveViewMode === "map" ? (
-          <MapView
-            tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
-            accentColor={board.color}
-            statusOrder={board.statuses}
-            onTicketClick={(t) => setSelectedTicket(t)}
-          />
+          <div key={`view-map-${activeTab}`} className="flex-1 lg:min-h-0 flex flex-col pip-view-in">
+            <MapView
+              tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
+              accentColor={board.color}
+              statusOrder={board.statuses}
+              onTicketClick={(t) => setSelectedTicket(t)}
+            />
+          </div>
         ) : effectiveViewMode === "calendar" ? (
-          <CalendarView
-            tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
-            accentColor={board.color}
-            onTicketClick={(t) => setSelectedTicket(t)}
-          />
+          <div key={`view-calendar-${activeTab}`} className="flex-1 lg:min-h-0 flex flex-col pip-view-in">
+            <CalendarView
+              tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
+              accentColor={board.color}
+              onTicketClick={(t) => setSelectedTicket(t)}
+            />
+          </div>
         ) : (
-          <>
+          <React.Fragment key={`view-status-${activeTab}`}>
             {/* Mobile-only Step One / Step Two underline tabs (franchise only).
                 Rendered OUTSIDE .board-height-wrap so they don't steal vertical
                 space from the swimlane viewport (which is height-locked). */}
@@ -737,7 +741,7 @@ export default function ApplicationBoard() {
                 </div>
               );
             })()}
-          <div className="board-height-wrap flex-1 min-h-0 mt-1 lg:mt-2">
+          <div className="board-height-wrap flex-1 min-h-0 mt-1 lg:mt-2 pip-view-in">
             {(() => {
               const masterColumns = columns.map((col) => {
                 const meta = getStatusMeta(board.key, col);
@@ -899,7 +903,7 @@ export default function ApplicationBoard() {
             })()}
             <MasterKanbanGlassTheme />
           </div>
-          </>
+          </React.Fragment>
         )}
 
         <div className="hidden md:flex mt-2 mb-0 items-center justify-center gap-3 flex-shrink-0">

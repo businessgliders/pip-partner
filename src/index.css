@@ -140,3 +140,62 @@
 .pip-fade-in {
   animation: pip-fade-in 220ms ease-out both;
 }
+
+/* iOS-style app animations — used across the ApplicationBoard so overlays,
+   bars, and view transitions feel like a native app rather than a web page. */
+
+/* Sheet — mobile-only bottom sheet entry for full-height modals. */
+@keyframes pip-sheet-up {
+  from { transform: translate3d(0, 100%, 0); opacity: 0.6; }
+  to   { transform: translate3d(0, 0, 0);    opacity: 1; }
+}
+.pip-sheet-up {
+  animation: pip-sheet-up 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+/* Mobile-only iOS bottom-sheet entry — applied to full-height modals so they
+   feel like a native presented sheet on small screens. On sm+ viewports the
+   parent's own Radix zoom-in animation still runs. */
+@media (max-width: 639px) {
+  .pip-mobile-sheet {
+    animation: pip-sheet-up 340ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
+/* Fade + slight lift — used for view swaps (inbox → board, etc.) so the new
+   view feels like it's being presented rather than instantly swapped. */
+@keyframes pip-view-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.pip-view-in {
+  animation: pip-view-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Tab-bar rise — the iOS bottom tab bar quietly rises into place on mount. */
+@keyframes pip-tabbar-rise {
+  from { transform: translate3d(0, 100%, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+.pip-tabbar-rise {
+  animation: pip-tabbar-rise 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* iOS tab-tap — pressed tab briefly scales down then springs back. */
+@keyframes pip-tap-scale {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.pip-tap-scale {
+  animation: pip-tap-scale 240ms ease-out;
+}
+
+/* Popover-style pop-in used for small confirm/alert dialogs. */
+@keyframes pip-pop-in {
+  0%   { transform: scale(0.94); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.pip-pop-in {
+  animation: pip-pop-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

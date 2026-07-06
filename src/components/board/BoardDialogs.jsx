@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Search } from "lucide-react";
 
-const glass = "bg-white/95 backdrop-blur-2xl border border-white/40";
+const glass = "bg-white/95 backdrop-blur-2xl border border-white/40 pip-pop-in";
 
 export function StatusChangeDialog({ open, payload, onConfirm, onCancel }) {
   const [name, setName] = useState("");

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Briefcase, Star, Dumbbell, Headset, Lock } from "lucide-react";
 
 const ICONS = {
@@ -25,13 +25,15 @@ export default function MobileSourceTabBar({
   className = "",
   extraSlot = null,
 }) {
+  // Bumps every time a tab is tapped so the iOS spring-tap animation replays.
+  const [tapKey, setTapKey] = useState(0);
   if (!boards || boards.length <= 1) return null;
   const allowed = allowedKeys ? new Set(allowedKeys) : null;
   const totalColumns = boards.length + (extraSlot ? 1 : 0);
 
   return (
     <nav
-      className={`shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-1px_0_rgba(0,0,0,0.04),0_-8px_24px_rgba(0,0,0,0.08)] ${className}`}
+      className={`shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-1px_0_rgba(0,0,0,0.04),0_-8px_24px_rgba(0,0,0,0.08)] pip-tabbar-rise ${className}`}
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${totalColumns}, minmax(0, 1fr))`,
@@ -58,7 +60,11 @@ export default function MobileSourceTabBar({
           <button
             key={t.key}
             type="button"
-            onClick={() => isAllowed && onTabChange(t.key)}
+            onClick={() => {
+              if (!isAllowed) return;
+              setTapKey((k) => k + 1);
+              onTabChange(t.key);
+            }}
             disabled={!isAllowed}
             title={isAllowed ? t.label : `${t.label} — admin access only`}
             style={isActive ? { color: t.color } : undefined}
@@ -70,7 +76,10 @@ export default function MobileSourceTabBar({
                   : "text-slate-300 cursor-not-allowed"
             }`}
           >
-            <div className="relative">
+            <div
+              key={isActive ? `active-${tapKey}` : "idle"}
+              className={`relative ${isActive ? "pip-tap-scale" : ""}`}
+            >
               {Icon && <Icon className="w-5 h-5" />}
               {!isAllowed && (
                 <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 opacity-60" />

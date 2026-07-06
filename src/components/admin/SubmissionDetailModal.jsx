@@ -286,7 +286,7 @@ export default function SubmissionDetailModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         key={`jiggle-${jiggleKey}`}
-        className={`max-w-7xl sm:max-w-2xl md:max-w-4xl lg:max-w-7xl xl:max-w-[81rem] max-h-[92vh] overflow-hidden p-0 ${
+        className={`max-w-7xl sm:max-w-2xl md:max-w-4xl lg:max-w-7xl xl:max-w-[81rem] max-h-[92vh] overflow-hidden p-0 pip-mobile-sheet ${
           jiggleKey > 0 ? "pip-jiggle" : ""
         }`}
       >
