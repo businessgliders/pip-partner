@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Check } from "lucide-react";
+import { X, Sparkles, Check, ChevronRight } from "lucide-react";
 
 /**
- * "What's New" popup — replaces the old onboarding Tutorial. Surfaces the
- * latest product changes on first load, then dismisses for that user.
- *
- * Persistence: per-user localStorage key suffixed with the user's email so
- * each staff member sees the popup once per release. Bump RELEASE_KEY when
- * publishing a new round of changes to re-surface the popup for everyone.
+ * "What's New" popup — paginated tour of the latest mobile changes. Cycles
+ * through each slide via a "Next" button, then a final "Mark as read" button
+ * dismisses the popup and stores a per-user flag so it never shows again for
+ * that user (until RELEASE_KEY is bumped for the next release).
  */
-const RELEASE_KEY = "v2026-06-24-statuses";
+const RELEASE_KEY = "v2026-07-06-mobile";
 const STORAGE_PREFIX = "pip_whats_new_seen";
 
 function storageKey(email) {
@@ -34,25 +32,49 @@ function markSeen(email) {
   }
 }
 
-const HIGHLIGHTS = [
-  { title: "New Step 1 statuses" },
-  { title: "Step 2 unchanged" },
-  { title: "Renamed: Not Interested" },
-  { title: "Cleaner status dropdown" },
+const SLIDES = [
+  {
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/6fd76ad56_generated_image.png",
+    eyebrow: "Mobile",
+    title: "New iOS-style tab bar",
+    body: "Switch between Franchise, Instructor, Front Desk, and Alerts right from the bottom of the screen.",
+  },
+  {
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/d3e0999a0_generated_image.png",
+    eyebrow: "Calendar",
+    title: "Cleaner mobile calendar",
+    body: "Meetings now appear as compact colored dots so nothing overflows, plus past meetings are back in the meetings tab.",
+  },
+  {
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/c904ebbe7_generated_image.png",
+    eyebrow: "Inbox",
+    title: "Sticky status filters",
+    body: "The Upcoming pill stays pinned on the left while you scroll through the rest of your pipeline statuses.",
+  },
 ];
 
 export default function WhatsNewPopup({ userEmail, onClose }) {
   const [open, setOpen] = useState(true);
+  const [index, setIndex] = useState(0);
+  const isLast = index === SLIDES.length - 1;
+  const slide = SLIDES[index];
 
-  // Belt-and-suspenders: if the user reloads with the popup still in the DOM
-  // (e.g. error boundary kept it mounted), make sure the seen flag is set
-  // when they finally close it. The parent also won't remount it next time.
+  // Belt-and-suspenders: mark seen on unmount, so even a hard reload with the
+  // popup mounted won't re-surface it next session.
   useEffect(() => () => markSeen(userEmail), [userEmail]);
 
   const handleClose = () => {
     markSeen(userEmail);
     setOpen(false);
     setTimeout(() => onClose && onClose(), 200);
+  };
+
+  const handleNext = () => {
+    if (isLast) {
+      handleClose();
+    } else {
+      setIndex((i) => i + 1);
+    }
   };
 
   return (
@@ -75,7 +97,7 @@ export default function WhatsNewPopup({ userEmail, onClose }) {
           >
             {/* Header */}
             <div
-              className="px-6 pt-6 pb-5 relative"
+              className="px-6 pt-5 pb-4 relative"
               style={{
                 background:
                   "linear-gradient(135deg, #f1889b 0%, #e26b85 100%)",
@@ -88,43 +110,77 @@ export default function WhatsNewPopup({ userEmail, onClose }) {
               >
                 <X className="w-4 h-4" />
               </button>
-              <div className="flex items-center gap-2 text-white/90 text-[11px] font-semibold uppercase tracking-wider mb-1.5">
+              <div className="flex items-center gap-2 text-white/90 text-[11px] font-semibold uppercase tracking-wider mb-1">
                 <Sparkles className="w-3.5 h-3.5" />
                 What's New
               </div>
-              <h2 className="text-white text-xl font-semibold leading-snug">
-                Franchise pipeline updates
+              <h2 className="text-white text-lg font-semibold leading-snug">
+                Mobile updates
               </h2>
-              <p className="text-white/85 text-sm mt-1">
-                A few changes to how applications move through the board.
-              </p>
             </div>
 
-            {/* Highlights */}
-            <div className="px-6 py-5 space-y-3.5">
-              {HIGHLIGHTS.map((h, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="shrink-0 w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center">
-                    <Check className="w-3.5 h-3.5" />
+            {/* Slide */}
+            <div className="px-6 pt-5 pb-4">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  <div className="rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 overflow-hidden mb-4 flex items-center justify-center" style={{ height: 260 }}>
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="max-h-full max-w-full object-contain"
+                    />
                   </div>
-                  <div className="text-sm font-semibold text-slate-900">
-                    {h.title}
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-pink-600 mb-1">
+                    {slide.eyebrow}
                   </div>
-                </div>
+                  <h3 className="text-slate-900 text-base font-semibold mb-1.5">
+                    {slide.title}
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    {slide.body}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Dots */}
+            <div className="flex items-center justify-center gap-1.5 pb-3">
+              {SLIDES.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === index ? "w-5 bg-pink-500" : "w-1.5 bg-slate-300"
+                  }`}
+                />
               ))}
             </div>
 
             {/* Footer */}
             <div className="px-6 pb-5">
               <button
-                onClick={handleClose}
+                onClick={handleNext}
                 className="w-full h-11 rounded-xl text-white text-sm font-medium transition flex items-center justify-center gap-2"
                 style={{
                   background: "linear-gradient(to bottom, #5a3a42, #2b1a1f)",
                 }}
               >
-                <Check className="w-4 h-4" />
-                Mark as read
+                {isLast ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Mark as read
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
           </motion.div>
