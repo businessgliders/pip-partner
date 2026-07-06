@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Check, ChevronRight } from "lucide-react";
+import { X, Sparkles, Check, ChevronRight, ChevronLeft } from "lucide-react";
 
 /**
  * "What's New" popup — paginated tour of the latest mobile changes. Cycles
@@ -75,6 +75,10 @@ export default function WhatsNewPopup({ userEmail, onClose }) {
     } else {
       setIndex((i) => i + 1);
     }
+  };
+
+  const handleBack = () => {
+    setIndex((i) => Math.max(0, i - 1));
   };
 
   return (
@@ -162,10 +166,19 @@ export default function WhatsNewPopup({ userEmail, onClose }) {
             </div>
 
             {/* Footer */}
-            <div className="px-6 pb-5">
+            <div className="px-6 pb-5 flex items-center gap-2">
+              {index > 0 && (
+                <button
+                  onClick={handleBack}
+                  className="h-11 w-11 shrink-0 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center justify-center"
+                  aria-label="Back"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
               <button
                 onClick={handleNext}
-                className="w-full h-11 rounded-xl text-white text-sm font-medium transition flex items-center justify-center gap-2"
+                className="flex-1 h-11 rounded-xl text-white text-sm font-medium transition flex items-center justify-center gap-2"
                 style={{
                   background: "linear-gradient(to bottom, #5a3a42, #2b1a1f)",
                 }}
