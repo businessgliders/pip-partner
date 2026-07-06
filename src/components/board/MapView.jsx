@@ -6,24 +6,34 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { getCanadaLand, clipCircleToLand } from "./landMask";
 import { statusOrderFor } from "@/components/inbox/inboxConfig";
 
-// Status → swimlane color (matches KanbanColumn palette)
+// Status → color, aligned with the StatusBadge palette in the status dropdown
+// (see SubmissionsTable.STATUS_COLORS). Each entry uses the badge's -100/-700
+// shades so the map legend chip reads the same as the pill in the dropdown.
 const STATUS_COLORS = {
-  new: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  pending: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  scheduled: { hex: "#0ea5e9", bg: "bg-sky-50", border: "border-sky-300", text: "text-sky-700", dot: "bg-sky-500" },
-  discussion: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
-  reviewed: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
-  contacted: { hex: "#f59e0b", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
-  qualified: { hex: "#8b5cf6", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" },
-  site_selection: { hex: "#6366f1", bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", dot: "bg-indigo-500" },
-  lease: { hex: "#3b82f6", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
-  build_out: { hex: "#06b6d4", bg: "bg-cyan-50", border: "border-cyan-300", text: "text-cyan-700", dot: "bg-cyan-500" },
-  training: { hex: "#14b8a6", bg: "bg-teal-50", border: "border-teal-300", text: "text-teal-700", dot: "bg-teal-500" },
-  approved: { hex: "#10b981", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
-  invited: { hex: "#0ea5e9", bg: "bg-sky-50", border: "border-sky-300", text: "text-sky-700", dot: "bg-sky-500" },
-  closed: { hex: "#64748b", bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700", dot: "bg-slate-500" },
-  ghosted: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
-  declined: { hex: "#f43f5e", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
+  // Franchise pipeline
+  new: { hex: "#1d4ed8", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  discovery: { hex: "#b45309", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  no_show: { hex: "#be123c", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
+  nda: { hex: "#0e7490", bg: "bg-cyan-50", border: "border-cyan-300", text: "text-cyan-700", dot: "bg-cyan-500" },
+  fdd: { hex: "#6d28d9", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" },
+  signed: { hex: "#a21caf", bg: "bg-fuchsia-50", border: "border-fuchsia-300", text: "text-fuchsia-700", dot: "bg-fuchsia-500" },
+  site_selection: { hex: "#4338ca", bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", dot: "bg-indigo-500" },
+  lease: { hex: "#1d4ed8", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  build_out: { hex: "#0e7490", bg: "bg-cyan-50", border: "border-cyan-300", text: "text-cyan-700", dot: "bg-cyan-500" },
+  training: { hex: "#0f766e", bg: "bg-teal-50", border: "border-teal-300", text: "text-teal-700", dot: "bg-teal-500" },
+  closed: { hex: "#475569", bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-600", dot: "bg-slate-500" },
+  ghosted: { hex: "#6d28d9", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" },
+  // Legacy franchise aliases (map to their replacement colors)
+  scheduled: { hex: "#7e22ce", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
+  discussion: { hex: "#b45309", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  contacted: { hex: "#b45309", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  qualified: { hex: "#047857", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  // Hiring / influencer pipeline
+  pending: { hex: "#1d4ed8", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
+  reviewed: { hex: "#b45309", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
+  invited: { hex: "#047857", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  approved: { hex: "#047857", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", dot: "bg-emerald-500" },
+  declined: { hex: "#be123c", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
 
 const getStatusColor = (status) => STATUS_COLORS[String(status).toLowerCase()] || { hex: "#8b5cf6", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" };
@@ -606,7 +616,11 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
                               style={{ background: getStatusColor(status).hex }}
                             />
                             <span className="capitalize text-slate-700 truncate">
-                              {String(status).replace(/_/g, " ")}
+                              {status === "closed" || status === "declined"
+                                ? "Not Interested"
+                                : status === "fdd" || status === "nda"
+                                ? status.toUpperCase()
+                                : String(status).replace(/_/g, " ")}
                             </span>
                           </span>
                           <span className="text-slate-400 tabular-nums shrink-0">

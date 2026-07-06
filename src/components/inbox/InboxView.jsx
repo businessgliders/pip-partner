@@ -42,6 +42,8 @@ export default function InboxView({
   unreadCountByTicket = {},
   markAsRead,
   onMobileThreadStateChange,
+  initialTicketId = null,
+  onInitialTicketConsumed,
 }) {
   const sourceKey = activeTab;
   const meta = SOURCE_META[sourceKey] || SOURCE_META.franchise;
@@ -51,7 +53,7 @@ export default function InboxView({
 
   const [statusFilter, setStatusFilter] = useState(() => statusOrderFor(sourceKey)[0] || null);
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState(initialTicketId || null);
   const notInterestedKey = notInterestedStatusFor(sourceKey);
   // < xl (mobile + tablet + narrow desktop) — details opens as a slide-in
   // drawer overlay. xl+ uses a persistent side column. Consistent visual
@@ -64,10 +66,13 @@ export default function InboxView({
   // Reset state when source changes — default to the first status of the new
   // source so the user lands on a focused list (and the first conversation in
   // that list will auto-preselect via the effect below on desktop).
+  // If we're being handed an initialTicketId at the same time (deep-link from
+  // calendar/map), keep it selected instead of clearing.
   useEffect(() => {
     setStatusFilter(statusOrderFor(sourceKey)[0] || null);
     setSearch("");
-    setSelectedId(null);
+    setSelectedId(initialTicketId || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceKey]);
 
   // Close the drawer whenever the user switches to a different conversation.
@@ -220,6 +225,34 @@ export default function InboxView({
       );
     });
   }, [tickets, search, statusFilter, notInterestedKey]);
+
+  // Deep-link from another view (calendar/map): when an initialTicketId is
+  // provided, point the status rail at that ticket's bucket so it's visible
+  // in the list, then hand the "consumed" signal back up so the parent can
+  // clear its handoff state.
+  const initialConsumedRef = React.useRef(false);
+  useEffect(() => {
+    if (!initialTicketId || initialConsumedRef.current) return;
+    if (!tickets || tickets.length === 0) return;
+    const t = tickets.find((x) => x.id === initialTicketId);
+    if (!t) return;
+    // Prefer the archived bucket for archived tickets, otherwise the ticket's
+    // own status (or its folded rail parent).
+    if (t.archived) {
+      setStatusFilter(notInterestedKey);
+    } else {
+      const bucketKey = foldedChildToParent[t.status] || t.status;
+      if (statuses.includes(bucketKey)) setStatusFilter(bucketKey);
+    }
+    setSelectedId(initialTicketId);
+    initialConsumedRef.current = true;
+    onInitialTicketConsumed?.();
+  }, [initialTicketId, tickets, notInterestedKey, foldedChildToParent, statuses, onInitialTicketConsumed]);
+
+  // Reset the consumed guard if the parent hands us a NEW ticket id later.
+  useEffect(() => {
+    initialConsumedRef.current = false;
+  }, [initialTicketId]);
 
   // Auto-select the first available thread — desktop only. On mobile/tablet
   // the user lands on the list and picks a conversation themselves.

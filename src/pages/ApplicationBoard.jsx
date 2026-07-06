@@ -113,6 +113,9 @@ export default function ApplicationBoard() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [highlightMessageId, setHighlightMessageId] = useState(null);
   const [highlightedTicketId, setHighlightedTicketId] = useState(null);
+  // Deep-link handoff — set when clicking a ticket in Calendar/Map so the
+  // Inbox view can auto-select that conversation once mounted.
+  const [inboxInitialTicketId, setInboxInitialTicketId] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState(() => {
@@ -659,6 +662,8 @@ export default function ApplicationBoard() {
               onMobileThreadStateChange={({ threadOpen }) =>
                 setMobileInboxThreadOpen(threadOpen)
               }
+              initialTicketId={inboxInitialTicketId}
+              onInitialTicketConsumed={() => setInboxInitialTicketId(null)}
             />
           </div>
         ) : effectiveViewMode === "table" ? (
@@ -685,7 +690,12 @@ export default function ApplicationBoard() {
               tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
               accentColor={board.color}
               statusOrder={board.statuses}
-              onTicketClick={(t) => setSelectedTicket(t)}
+              onTicketClick={(t) => {
+                // Route through the Inbox view so map + inbox share one
+                // details experience (conversation + contact panel).
+                setInboxInitialTicketId(t?.id || null);
+                setViewMode("inbox");
+              }}
             />
           </div>
         ) : effectiveViewMode === "calendar" ? (
@@ -693,7 +703,12 @@ export default function ApplicationBoard() {
             <CalendarView
               tickets={tickets.filter((t) => !t.archived && matchesSearch(t))}
               accentColor={board.color}
-              onTicketClick={(t) => setSelectedTicket(t)}
+              onTicketClick={(t) => {
+                // Route through the Inbox view so calendar + inbox share one
+                // details experience (conversation + contact panel).
+                setInboxInitialTicketId(t?.id || null);
+                setViewMode("inbox");
+              }}
             />
           </div>
         ) : (
