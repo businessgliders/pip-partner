@@ -557,7 +557,7 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         <div
           className="fixed left-0 right-0 z-40 sm:hidden bg-white flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 pip-slide-up"
           style={{
-            top: "calc(env(safe-area-inset-top, 0px) + 56px)",
+            top: "calc(env(safe-area-inset-top, 0px) + 112px)",
             bottom: "env(safe-area-inset-bottom, 0px)",
           }}
         >
