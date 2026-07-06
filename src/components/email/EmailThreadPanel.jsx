@@ -8,6 +8,7 @@ import ComposerDragHandle from "./ComposerDragHandle";
 import DraftConfirmDialog from "./DraftConfirmDialog";
 import { buildWelcomeHtml } from "./welcomeEmailHtml";
 import { useEmailDraft } from "@/hooks/useEmailDraft";
+import FollowUpControl from "@/components/admin/FollowUpControl";
 
 function isHtmlEmpty(html) {
   return !(html || "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, "").trim();
@@ -424,6 +425,13 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               />
             );
           })}
+          {ticket?.follow_up?.enabled && (
+            <div className="mt-2 flex justify-end">
+              <div className="max-w-[80%] w-full">
+                <FollowUpControl ticket={ticket} ticketType={ticketType} />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t bg-white">
@@ -502,6 +510,13 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
                   />
                 );
               })}
+              {ticket?.follow_up?.enabled && (
+                <div className="mt-2 flex justify-end">
+                  <div className="max-w-[80%] w-full">
+                    <FollowUpControl ticket={ticket} ticketType={ticketType} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="border-t bg-white overflow-y-auto" style={{ flex: "0 0 60%" }}>
@@ -574,6 +589,13 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
                   />
                 );
               })}
+              {ticket?.follow_up?.enabled && (
+                <div className="mt-2 flex justify-end">
+                  <div className="max-w-[80%] w-full">
+                    <FollowUpControl ticket={ticket} ticketType={ticketType} />
+                  </div>
+                </div>
+              )}
             </div>
             <div className="shrink-0">
               <EmailComposer

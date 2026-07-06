@@ -78,7 +78,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
     const label = isWelcome
       ? "Auto-reply welcome sent"
       : isFollowUp
-      ? message.template_name
+      ? `AI auto · ${message.template_name}`
       : `Auto-reply sent: ${message.template_name}`;
     const palette = isFollowUp
       ? {
@@ -113,12 +113,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
             </div>
           </div>
-          {isFollowUp && (
-            <div className="mt-1 mr-1 flex items-center gap-1 text-[10px] text-amber-700/80">
-              <Bot className="w-2.5 h-2.5" />
-              <span>Auto Follow-up active</span>
-            </div>
-          )}
+
         </div>
         <MessageDialog open={open} onOpenChange={setOpen} message={message} />
       </>

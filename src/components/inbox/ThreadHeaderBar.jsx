@@ -106,13 +106,9 @@ export default function ThreadHeaderBar({
           </div>
         )}
 
-        {/* Follow-up bot — active pill inline; when inactive, hidden here and
-            surfaced in the More menu below to avoid cluttering the strip. */}
-        {followUpActive && (
-          <div className="shrink-0">
-            <FollowUpControl ticket={ticket} ticketType={ticketType} iconOnly />
-          </div>
-        )}
+        {/* Follow-up bot — the active sequence now renders as an expanded card
+            inline in the thread (below the most recent message), so we omit it
+            from Row 2 here. Inactive start controls stay in the More menu. */}
 
         {/* "More" — overflow home. Right now hosts the follow-up start
             controls (only when no sequence is running) but designed to
