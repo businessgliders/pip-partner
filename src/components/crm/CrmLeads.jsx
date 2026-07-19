@@ -38,7 +38,7 @@ export default function CrmLeads({ source, currentUser }) {
   const [sort, setSort] = useState({ key: "created", dir: "desc" });
   const [expandedId, setExpandedId] = useState(null);
   const [emailTicket, setEmailTicket] = useState(null);
-  const { unreadByTicket, recentReplyTicketIds } = useReplyNotifications();
+  const { unreadByTicket, recentReplyTicketIds, markTicketRead } = useReplyNotifications();
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["crm-leads", board.entity],
@@ -250,6 +250,7 @@ export default function CrmLeads({ source, currentUser }) {
               currentUser={currentUser}
               unreadCount={unreadByTicket[t.id] || 0}
               recentlyReplied={recentReplyTicketIds.has(t.id)}
+              onDismissUnread={(id) => markTicketRead.mutate(id)}
             />
           ))}
         </div>

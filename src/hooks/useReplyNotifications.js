@@ -92,5 +92,18 @@ export default function useReplyNotifications() {
     onSuccess: invalidate,
   });
 
-  return { user, ...derived, markRead, markAllRead };
+  // Dismiss every unread reply belonging to one lead (used by the leads
+  // list inline "×" and by the email drawer when a thread is opened).
+  const markTicketRead = useMutation({
+    mutationFn: async (ticketId) => {
+      const unread = derived.notifications.filter((n) => n.unread && n.ticket.id === ticketId);
+      if (!unread.length) return;
+      await base44.entities.EmailMessage.bulkUpdate(
+        unread.map((n) => ({ id: n.message.id, read_by: [...(n.message.read_by || []), user.email] }))
+      );
+    },
+    onSuccess: invalidate,
+  });
+
+  return { user, ...derived, markRead, markAllRead, markTicketRead };
 }

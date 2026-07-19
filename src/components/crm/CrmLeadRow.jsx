@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import FddCountdownPill from "@/components/board/FddCountdownPill";
-import { ChevronDown, Copy, Mail, MoreHorizontal, Archive, Check, Bot, Reply } from "lucide-react";
+import { ChevronDown, Copy, Mail, MoreHorizontal, Archive, Check, Bot, Reply, X } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -15,7 +15,7 @@ import { CRM, dotFor } from "./crmTheme";
 
 export default function CrmLeadRow({
   ticket, board, columns, gridTemplate, expanded, onToggle, onEmail, onUpdate, currentUser,
-  unreadCount = 0, recentlyReplied = false,
+  unreadCount = 0, recentlyReplied = false, onDismissUnread,
 }) {
   const [copied, setCopied] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
@@ -48,11 +48,20 @@ export default function CrmLeadRow({
           <span className="text-[13px] font-semibold truncate" style={{ color: CRM.ink }}>{name}</span>
           {unreadCount > 0 && (
             <span
-              className="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-bold text-white shrink-0"
+              className="inline-flex items-center gap-1 h-5 pl-2 pr-1 rounded-full text-[10px] font-bold text-white shrink-0"
               style={{ background: "#f1889b" }}
               title={`${unreadCount} unread ${unreadCount === 1 ? "reply" : "replies"}`}
             >
               <Reply className="w-3 h-3" /> {unreadCount}
+              <span
+                role="button"
+                tabIndex={0}
+                title="Dismiss"
+                onClick={(e) => { e.stopPropagation(); onDismissUnread?.(ticket.id); }}
+                className="w-3.5 h-3.5 rounded-full hover:bg-white/30 flex items-center justify-center"
+              >
+                <X className="w-2.5 h-2.5" />
+              </span>
             </span>
           )}
           {unreadCount === 0 && recentlyReplied && (
