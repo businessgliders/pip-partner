@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Users } from "lucide-react";
+
+const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
 import CrmSidebar from "./CrmSidebar";
 import CrmUserMenu from "./CrmUserMenu";
 import CrmNotificationBell from "./CrmNotificationBell";
@@ -61,9 +63,22 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
             >
               <Menu className="w-5 h-5" style={{ color: CRM.ink }} />
             </button>
-            <h1 className="text-xl lg:text-2xl font-semibold truncate" style={{ color: CRM.ink }}>
-              {title}
-            </h1>
+            {page === "leads" ? (
+              <>
+                {/* Mobile/tablet: icon + lead type only */}
+                <h1 className="lg:hidden flex items-center gap-2 text-xl font-semibold truncate" style={{ color: CRM.ink }}>
+                  <Users className="w-5 h-5 shrink-0" style={{ color: CRM.accent }} />
+                  <span className="truncate">{SOURCE_LABELS[source] || "Franchising"}</span>
+                </h1>
+                <h1 className="hidden lg:block text-2xl font-semibold truncate" style={{ color: CRM.ink }}>
+                  {title}
+                </h1>
+              </>
+            ) : (
+              <h1 className="text-xl lg:text-2xl font-semibold truncate" style={{ color: CRM.ink }}>
+                {title}
+              </h1>
+            )}
           </div>
           <div className="flex items-center gap-1.5">
             <CrmNotificationBell currentUser={user} />

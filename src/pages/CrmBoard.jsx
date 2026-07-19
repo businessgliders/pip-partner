@@ -13,7 +13,7 @@ import CrmProjects from "@/components/crm/CrmProjects";
 import CrmSplash from "@/components/crm/CrmSplash";
 import CrmWelcomeSplash from "@/components/crm/CrmWelcomeSplash";
 
-const PLACEHOLDERS = { projects: "Tasks", delivery: "Build Out", financials: "Financials" };
+const PLACEHOLDERS = { projects: "Tasks", delivery: "Build Out", financials: "Contracts" };
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
 
 export default function CrmBoard() {
@@ -55,7 +55,7 @@ export default function CrmBoard() {
         {page === "settings" && <CrmSettings onNavigate={onNavigate} />}
         {page === "projects" && <CrmProjects />}
         {page === "delivery" && <CrmSplash label="Build Out" />}
-        {page === "financials" && <CrmSplash label="Financials" />}
+        {page === "financials" && <CrmSplash label="Contracts" />}
       </CrmShell>
     </>
   );
