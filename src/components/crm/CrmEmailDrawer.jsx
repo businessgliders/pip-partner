@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { X, CalendarDays } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import FollowUpControl from "@/components/admin/FollowUpControl";
+import FddCountdownPill from "@/components/board/FddCountdownPill";
 import { displayName } from "@/components/board/boardConfig";
 import { CRM } from "./crmTheme";
 
@@ -72,7 +73,14 @@ export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClos
                 {format(new Date(meeting.start), "MMM d, h:mma").toLowerCase()}
               </span>
             )}
-            <FollowUpControl ticket={ticket} ticketType={ticketType} iconOnly withLabel />
+            {ticketType === "FranchiseInquiry" && <FddCountdownPill ticket={ticket} />}
+            {/* Full labelled pill on md+, icon-only when the header is crowded on small screens */}
+            <span className="hidden md:inline-flex">
+              <FollowUpControl ticket={ticket} ticketType={ticketType} iconOnly withLabel />
+            </span>
+            <span className="md:hidden inline-flex">
+              <FollowUpControl ticket={ticket} ticketType={ticketType} iconOnly />
+            </span>
             <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-white/60">
               <X className="w-5 h-5" style={{ color: CRM.ink }} />
             </button>

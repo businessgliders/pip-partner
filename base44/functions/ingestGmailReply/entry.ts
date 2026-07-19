@@ -79,6 +79,10 @@ const NOTIFY_FROM = {
   franchise: 'franchise@pilatesinpinkstudio.com',
   hiring: 'hire@pilatesinpinkstudio.com',
 };
+const NOTIFY_FROM_NAME = {
+  franchise: 'Franchise @ Pilates in Pink \u2122',
+  hiring: 'Hire @ Pilates in Pink \u2122',
+};
 
 function escapeHtml(s) {
   return String(s || '')
@@ -121,7 +125,7 @@ ${snippet ? `<div style="font-size:13px;color:#5c4a3f;background:#fdf8f4;border-
 </td></tr></table></td></tr></table></body></html>`;
 
   const headers = [
-    `From: ${rfc2047('PiP Partner')} <${NOTIFY_FROM[group]}>`,
+    `From: ${rfc2047(NOTIFY_FROM_NAME[group])} <${NOTIFY_FROM[group]}>`,
     `To: ${recipients.join(', ')}`,
     `Subject: ${rfc2047(`New ${groupLabel} reply \u00b7 ${leadName}`)}`,
     'MIME-Version: 1.0',

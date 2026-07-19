@@ -172,11 +172,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
                 </div>
               )
             ) : (
-              message.to_email && (
+              message.from_email && (
                 <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
                   <div className="truncate">
-                    <span className="text-gray-400">To:</span>{" "}
-                    <span className="font-medium text-gray-700">{toDisplay}</span>
+                    <span className="text-gray-400">From:</span>{" "}
+                    <span className="font-medium text-gray-700">{fromDisplay}</span>
                   </div>
                 </div>
               )

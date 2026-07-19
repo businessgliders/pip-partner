@@ -1,30 +1,28 @@
 import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, LayoutDashboard, CalendarDays, Bell, ArrowRight, UserRound } from "lucide-react";
-import { CRM } from "./crmTheme";
+import { Sparkles, ArrowRight, LogOut } from "lucide-react";
 
-const ICON = "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/35f492e1c_Pilatesinpinklogojusticon1.png";
 const RESTRICTED_EMAILS = ["info@pilatesinpinkstudio.com"];
 
 const SLIDES = [
   {
-    icon: Sparkles,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/fb648300b_generated_image.png",
     title: "Welcome to the new PiP Partner",
-    body: "The Application Board has been fully redesigned: a warm new look, a simpler sidebar, and everything organized around your leads.",
+    body: "The Application Board has been fully redesigned: a warm new look, a simpler sidebar, and a dashboard that greets you with live metrics and notifications.",
   },
   {
-    icon: LayoutDashboard,
-    title: "Dashboard & Leads",
-    body: "Your dashboard greets you with live metrics and notifications. Leads open inline with emails, attributed notes, and AI follow-up at a glance.",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/bd0d84591_generated_image.png",
+    title: "Leads, reimagined",
+    body: "Leads open inline with the full email conversation, attributed team notes, and AI follow-up progress visible at a glance.",
   },
   {
-    icon: CalendarDays,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/40602c002_generated_image.png",
     title: "Bookings & Tasks",
-    body: "Bookings live on a calendar filtered by Franchise or Hiring. The new Tasks board gives you custom swimlanes with tasks linked to leads.",
+    body: "Bookings live on a calendar filtered by Franchise or Hiring, and the new Tasks board gives you custom swimlanes with tasks linked to leads.",
   },
   {
-    icon: Bell,
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/5a531a851_generated_image.png",
     title: "Smart email notifications",
     body: "When a lead replies, your team gets an email with a direct link into the conversation. Manage recipients under Settings · Notification preferences.",
   },
@@ -44,7 +42,6 @@ export default function CrmWelcomeSplash({ user }) {
 
   const isLast = step === SLIDES.length - 1;
   const slide = SLIDES[step];
-  const Icon = slide.icon;
 
   const gotIt = async () => {
     setSaving(true);
@@ -59,23 +56,23 @@ export default function CrmWelcomeSplash({ user }) {
   const switchUser = () => base44.auth.logout("/login");
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 crm-root pip-fade-in" style={{ background: "rgba(42,26,31,0.55)" }}>
-      <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden pip-pop-in text-center">
-        <div className="pt-8 pb-6 px-7" style={{ background: "linear-gradient(180deg,#fbe0e2 0%,#ffffff 100%)" }}>
-          <img src={ICON} alt="" className="w-14 h-14 mx-auto mb-3" />
-          <div className="text-[10px] tracking-[0.25em] font-semibold" style={{ color: CRM.brown }}>
-            PIP PARTNER · WHAT'S NEW
-          </div>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 crm-root pip-fade-in bg-black/30 backdrop-blur-md">
+      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl pip-pop-in text-center">
+        {/* Hero image */}
+        <div className="h-44 sm:h-52 w-full overflow-hidden bg-[#fbe0e2]">
+          <img src={slide.image} alt="" className="w-full h-full object-cover" />
         </div>
-        <div className="px-7 pb-2 min-h-[170px]">
-          <span className="w-11 h-11 rounded-full inline-flex items-center justify-center mb-3" style={{ background: CRM.blush }}>
-            <Icon className="w-5 h-5" style={{ color: "#a34a5c" }} />
+
+        <div className="px-8 pt-6 pb-2">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-pink-50 text-pink-500 text-[11px] font-semibold mb-3">
+            <Sparkles className="w-3 h-3" /> NEW
           </span>
-          <h2 className="text-[17px] font-semibold mb-2" style={{ color: CRM.ink }}>{slide.title}</h2>
-          <p className="text-[13px] leading-relaxed" style={{ color: CRM.sub }}>{slide.body}</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{slide.title}</h2>
+          <p className="text-[13px] leading-relaxed text-gray-500 min-h-[60px]">{slide.body}</p>
         </div>
+
         {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 py-4">
+        <div className="flex items-center justify-center gap-1.5 py-3">
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -85,47 +82,48 @@ export default function CrmWelcomeSplash({ user }) {
               style={{
                 width: i === step ? 18 : 6,
                 height: 6,
-                background: i === step ? "#f1889b" : "rgba(182,118,81,0.25)",
+                background: i === step ? "#e989a0" : "#f0dcd9",
               }}
             />
           ))}
         </div>
-        <div className="px-7 pb-7">
+
+        <div className="px-8 pb-8 pt-2 flex items-center justify-center gap-3">
           {!isLast ? (
             <button
               type="button"
               onClick={() => setStep(step + 1)}
-              className="w-full h-11 rounded-full text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
-              style={{ background: CRM.accentSoft, color: "#5b3038" }}
+              className="h-11 px-7 rounded-full text-sm font-semibold inline-flex items-center gap-1.5 text-white"
+              style={{ background: "#e989a0" }}
             >
               Next <ArrowRight className="w-4 h-4" />
             </button>
           ) : restricted ? (
-            <>
-              <p className="text-[11px] mb-3" style={{ color: CRM.sub }}>
-                This account doesn't have access to the Application Board at this time. Please sign in with a different user.
-              </p>
-              <button
-                type="button"
-                onClick={switchUser}
-                className="w-full h-11 rounded-full text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
-                style={{ background: "#2a1a1f", color: "#fbe0e2" }}
-              >
-                <UserRound className="w-4 h-4" /> Switch user
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={switchUser}
+              className="h-11 px-6 rounded-full text-sm font-semibold inline-flex items-center gap-2 border border-gray-200 text-gray-700 hover:bg-gray-50"
+            >
+              <LogOut className="w-4 h-4" /> Switch account
+            </button>
           ) : (
             <button
               type="button"
               onClick={gotIt}
               disabled={saving}
-              className="w-full h-11 rounded-full text-[13px] font-semibold disabled:opacity-60"
-              style={{ background: "#f6d75e", color: "#4a3a10" }}
+              className="h-11 px-8 rounded-full text-sm font-semibold text-white disabled:opacity-60"
+              style={{ background: "#e989a0" }}
             >
               Got it
             </button>
           )}
         </div>
+
+        {restricted && isLast && (
+          <p className="px-8 pb-6 -mt-4 text-[11px] text-gray-400">
+            This account doesn't have access to the Application Board at this time.
+          </p>
+        )}
       </div>
     </div>
   );
