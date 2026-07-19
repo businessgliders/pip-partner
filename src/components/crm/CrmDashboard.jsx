@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
-import { Bot, CalendarDays } from "lucide-react";
+import { Bot, FileSignature } from "lucide-react";
 import { displayName, BOARD_TYPES } from "@/components/board/boardConfig";
 import useReplyNotifications from "@/hooks/useReplyNotifications";
 import CrmDashboardNotifications from "./CrmDashboardNotifications";
@@ -37,6 +37,10 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
       return resp?.data?.bookingsList || [];
     },
   });
+  const { data: contracts = [] } = useQuery({
+    queryKey: ["crm-contracts"],
+    queryFn: () => base44.entities.Contract.list("-created_date", 500),
+  });
   // Shared notification feed (same source as the header bell + sidebar badges)
   const { notifications: replyNotifs } = useReplyNotifications();
 
@@ -59,17 +63,6 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
     });
     return map;
   }, [all]);
-
-  // Meetings in the next 7 days.
-  const meetingsThisWeek = useMemo(() => {
-    const now = Date.now();
-    const weekEnd = now + 7 * 24 * 3600 * 1000;
-    return bookings.filter((b) => {
-      if (!b?.start) return false;
-      const ts = new Date(b.start).getTime();
-      return ts >= now && ts <= weekEnd;
-    }).length;
-  }, [bookings]);
 
   const signed = fr.filter((t) =>
     ["signed", "site_selection", "lease", "build_out", "training"].includes(t.status)
@@ -183,19 +176,22 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
             </div>
           </div>
 
-          {/* Meetings this week tile */}
+          {/* Contracts tile */}
           <button
             type="button"
-            onClick={() => onNavigate("bookings")}
+            onClick={() => onNavigate("financials")}
             className="relative overflow-hidden rounded-2xl p-5 text-left hover:brightness-[0.98] transition"
             style={{ background: "#fbe0e2", boxShadow: CRM.cardShadow }}
           >
-            <CalendarDays className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "#a34a5c", opacity: 0.12 }} />
+            <FileSignature className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "#a34a5c", opacity: 0.12 }} />
             <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#a34a5c" }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
-              Meetings this week
+              Contracts
             </div>
-            <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{meetingsThisWeek}</div>
+            <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{contracts.length}</div>
+            <div className="text-[11px] font-semibold mt-1" style={{ color: "#a34a5c" }}>
+              {contracts.filter((c) => c.status === "signed").length} signed
+            </div>
           </button>
         </div>
       </div>
