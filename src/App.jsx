@@ -15,7 +15,7 @@ import InfluencerProgram from './pages/InfluencerProgram';
 import AdminHome from './pages/AdminHome';
 import AdminSettingsTemplates from './pages/AdminSettingsTemplates';
 import AdminSettingsSignature from './pages/AdminSettingsSignature';
-import ApplicationBoard from './pages/ApplicationBoard';
+import CrmBoard from './pages/CrmBoard';
 import AdminGate from './components/AdminGate';
 import BoardAccessGate from './components/BoardAccessGate';
 import PublicForm from './pages/PublicForm';
@@ -116,7 +116,7 @@ const AuthenticatedApp = () => {
         <Route path="/Settings" element={<AdminGate><AdminHome /></AdminGate>} />
         <Route path="/Settings/Templates" element={<AdminGate><AdminSettingsTemplates /></AdminGate>} />
         <Route path="/Settings/Signature" element={<AdminGate><AdminSettingsSignature /></AdminGate>} />
-        <Route path="/ApplicationBoard" element={<BoardAccessGate><ApplicationBoard /></BoardAccessGate>} />
+        <Route path="/ApplicationBoard" element={<BoardAccessGate><CrmBoard /></BoardAccessGate>} />
       </Route>
       <Route path="/Settings/Submissions" element={<Navigate to="/ApplicationBoard?view=table" replace />} />
       <Route path="/AdminDashboard/*" element={<Navigate to="/Settings" replace />} />
