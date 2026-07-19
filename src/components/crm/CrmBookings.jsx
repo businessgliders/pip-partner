@@ -7,12 +7,13 @@ import CrmBookingsCalendar from "./CrmBookingsCalendar";
 import { CRM } from "./crmTheme";
 
 const FILTERS = [
+  { key: "all", label: "All" },
   { key: "franchise", label: "Franchise" },
   { key: "hiring", label: "Hiring" },
 ];
 
 export default function CrmBookings({ currentUser }) {
-  const [srcFilter, setSrcFilter] = useState("franchise");
+  const [srcFilter, setSrcFilter] = useState("all");
   const [detailTicket, setDetailTicket] = useState(null);
 
   const { data: bookings = [], isLoading } = useQuery({
@@ -53,6 +54,7 @@ export default function CrmBookings({ currentUser }) {
   // Calendar bookings filtered by source. Unmatched bookings (no lead found)
   // stay visible under Franchise so no meeting silently disappears.
   const calendarBookings = useMemo(() => {
+    if (srcFilter === "all") return bookings;
     return bookings.filter((b) => {
       // The Cal event type is the source of truth (franchise vs hiring).
       if (b.source) return b.source === srcFilter;

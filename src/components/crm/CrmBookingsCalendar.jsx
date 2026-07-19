@@ -4,11 +4,24 @@ import {
   eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths, startOfDay,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getStatusLabel, displayName } from "@/components/board/boardConfig";
-import { CRM, dotFor } from "./crmTheme";
+import { displayName } from "@/components/board/boardConfig";
+import { CRM } from "./crmTheme";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const BORDER = "1px solid rgba(182,118,81,0.10)";
+
+// Colors keyed by lead type (not status). Unmatched bookings fall under Franchise.
+const TYPE_COLORS = {
+  franchise: "#e0637a",
+  instructor: "#d97a4a",
+  frontadmin: "#5e8b7e",
+};
+const TYPE_LEGEND = [
+  { key: "franchise", label: "Franchise" },
+  { key: "instructor", label: "Instructor" },
+  { key: "frontadmin", label: "Front Desk" },
+];
+const typeColor = (b) => TYPE_COLORS[b._ticket?._boardKey] || TYPE_COLORS.franchise;
 
 // Month-grid calendar of Cal.com bookings in the CRM design language.
 export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect }) {
@@ -33,18 +46,6 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
     Object.values(map).forEach((list) => list.sort((a, b) => new Date(a.start) - new Date(b.start)));
     return map;
   }, [bookings, ticketByEmail]);
-
-  const visibleStatuses = useMemo(() => {
-    const seen = new Map();
-    days.forEach((day) => {
-      (byDay[format(day, "yyyy-MM-dd")] || []).forEach((b) => {
-        if (b._ticket?.status && !seen.has(b._ticket.status)) {
-          seen.set(b._ticket.status, getStatusLabel(b._ticket._boardKey, b._ticket.status));
-        }
-      });
-    });
-    return Array.from(seen.entries());
-  }, [days, byDay]);
 
   return (
     <div className="crm-card overflow-hidden pb-0">
@@ -121,7 +122,7 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
                     type="button"
                     onClick={() => b._ticket && onSelect(b._ticket)}
                     className="w-2 h-2 rounded-full"
-                    style={{ background: b._ticket ? dotFor(b._ticket.status) : CRM.accent }}
+                    style={{ background: typeColor(b) }}
                     aria-label={b._ticket ? displayName(b._ticket) : b.title || "Meeting"}
                   />
                 ))}
@@ -130,7 +131,7 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
               {/* Tablet+: labelled chips */}
               <div className="hidden sm:block space-y-0.5">
                 {dayBookings.slice(0, 3).map((b, i) => {
-                  const color = b._ticket ? dotFor(b._ticket.status) : CRM.accent;
+                  const color = typeColor(b);
                   return (
                     <button
                       key={i}
@@ -160,17 +161,15 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
         })}
       </div>
 
-      {/* Legend */}
-      {visibleStatuses.length > 0 && (
-        <div className="px-5 py-3 flex flex-wrap gap-3 justify-end" style={{ background: "#fdf8f4" }}>
-          {visibleStatuses.map(([status, label]) => (
-            <div key={status} className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: dotFor(status) }} />
-              <span className="text-[11px] font-medium" style={{ color: CRM.sub }}>{label}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Legend — lead types */}
+      <div className="px-5 py-3 flex flex-wrap gap-3 justify-end" style={{ background: "#fdf8f4" }}>
+        {TYPE_LEGEND.map(({ key, label }) => (
+          <div key={key} className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: TYPE_COLORS[key] }} />
+            <span className="text-[11px] font-medium" style={{ color: CRM.sub }}>{label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

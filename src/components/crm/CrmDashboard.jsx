@@ -9,12 +9,14 @@ import useReplyNotifications from "@/hooks/useReplyNotifications";
 import CrmDashboardNotifications from "./CrmDashboardNotifications";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
+import CrmAiFollowUpsModal from "./CrmAiFollowUpsModal";
 import { CRM } from "./crmTheme";
 
 const groupOf = (boardKey) => (boardKey === "franchise" ? "franchise" : "hiring");
 
 export default function CrmDashboard({ onNavigate, currentUser }) {
   const [detailTicket, setDetailTicket] = useState(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
 
   const { data: franchise = [] } = useQuery({
     queryKey: ["crm-leads", "FranchiseInquiry"],
@@ -146,7 +148,7 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
           {/* Active AI follow-ups tile */}
           <button
             type="button"
-            onClick={() => onNavigate("leads", "franchise", { filter: "ai" })}
+            onClick={() => setAiModalOpen(true)}
             className="relative overflow-hidden rounded-2xl p-5 text-left hover:brightness-[0.98] transition"
             style={{ background: "#e8e4d8", boxShadow: CRM.cardShadow }}
           >
@@ -200,6 +202,14 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
 
       {/* Row 2: upcoming bookings — calendar schedule view */}
       <CrmUpcomingBookingsWidget bookings={bookings} ticketByEmail={ticketByEmail} onNavigate={onNavigate} />
+
+      {aiModalOpen && (
+        <CrmAiFollowUpsModal
+          leads={activeFollowUps}
+          onOpenLead={(t) => { setAiModalOpen(false); setDetailTicket(t); }}
+          onClose={() => setAiModalOpen(false)}
+        />
+      )}
 
       {detailTicket && detailBoard && (
         <CrmLeadDetailDrawer
