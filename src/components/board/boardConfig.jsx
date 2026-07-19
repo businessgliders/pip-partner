@@ -35,8 +35,23 @@ export function getStatusMeta(boardKey, status) {
   return STATUS_META?.[boardKey]?.[status] || null;
 }
 
+// Friendly formatting for statuses without an explicit label:
+// Title Case each word, acronyms fully capitalized (e.g. "fdd" → "FDD").
+const STATUS_ACRONYMS = new Set(["fdd", "nda", "hq"]);
+export function formatStatusLabel(status) {
+  return String(status || "")
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map((w) =>
+      STATUS_ACRONYMS.has(w.toLowerCase())
+        ? w.toUpperCase()
+        : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+    )
+    .join(" ");
+}
+
 export function getStatusLabel(boardKey, status) {
-  return getStatusMeta(boardKey, status)?.label || status;
+  return getStatusMeta(boardKey, status)?.label || formatStatusLabel(status);
 }
 
 export const BOARD_TYPES = [

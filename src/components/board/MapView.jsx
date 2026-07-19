@@ -5,6 +5,7 @@ import { MapPin, Loader2, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getCanadaLand, clipCircleToLand } from "./landMask";
 import { statusOrderFor } from "@/components/inbox/inboxConfig";
+import { getStatusLabel } from "@/components/board/boardConfig";
 
 // Status → color, aligned with the StatusBadge palette in the status dropdown
 // (see SubmissionsTable.STATUS_COLORS). Each entry uses the badge's -100/-700
@@ -36,7 +37,26 @@ const STATUS_COLORS = {
   declined: { hex: "#be123c", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
 
-const getStatusColor = (status) => STATUS_COLORS[String(status).toLowerCase()] || { hex: "#8b5cf6", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" };
+// Territory progression gradient — yellow → green as the lead moves down the
+// franchise pipeline. Keyed by status, ordered to match the board flow.
+const TERRITORY_GRADIENT = {
+  new: "#eab308",
+  discovery: "#d0bb0e",
+  no_show: "#b6b313",
+  nda: "#9cab19",
+  fdd: "#82a31e",
+  signed: "#689b24",
+  site_selection: "#4e9329",
+  lease: "#348b2f",
+  build_out: "#268536",
+  training: "#15803d",
+};
+
+const getStatusColor = (status) => {
+  const key = String(status).toLowerCase();
+  if (TERRITORY_GRADIENT[key]) return { hex: TERRITORY_GRADIENT[key] };
+  return STATUS_COLORS[key] || { hex: "#8b5cf6", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" };
+};
 
 // Statuses that should NOT render a per-ticket radius circle on the map.
 const NO_RADIUS_STATUSES = new Set(["ghosted", "declined"]);
@@ -484,11 +504,12 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
                   <button
                     type="button"
                     onClick={() => toggleSection(status)}
-                    className={`w-full flex items-center justify-between px-4 py-2 text-xs font-semibold sticky top-0 capitalize border-l-4 ${c.bg} ${c.text} ${c.border} hover:brightness-95 transition`}
+                    className="w-full flex items-center justify-between px-4 py-2 text-xs font-semibold sticky top-0 border-l-4 hover:brightness-95 transition"
+                    style={{ background: `${c.hex}1f`, color: c.hex, borderLeftColor: c.hex }}
                   >
                     <span className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-                      {status} ({statusTickets.length})
+                      <span className="w-2 h-2 rounded-full" style={{ background: c.hex }} />
+                      {getStatusLabel("franchise", status)} ({statusTickets.length})
                     </span>
                     {isCollapsed ? (
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -615,12 +636,8 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
                               className="w-2.5 h-2.5 rounded-full shrink-0"
                               style={{ background: getStatusColor(status).hex }}
                             />
-                            <span className="capitalize text-slate-700 truncate">
-                              {status === "closed" || status === "declined"
-                                ? "Not Interested"
-                                : status === "fdd" || status === "nda"
-                                ? status.toUpperCase()
-                                : String(status).replace(/_/g, " ")}
+                            <span className="text-slate-700 truncate">
+                              {status === "declined" ? "Not Interested" : getStatusLabel("franchise", status)}
                             </span>
                           </span>
                           <span className="text-slate-400 tabular-nums shrink-0">
