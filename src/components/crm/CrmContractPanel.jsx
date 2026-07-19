@@ -164,7 +164,7 @@ export default function CrmContractPanel({ lead, group, currentUser, onBack }) {
                     href={file.webViewLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="block text-sm font-medium truncate hover:underline"
+                    className="block text-sm font-medium break-all hover:underline"
                     style={{ color: CRM.ink }}
                   >
                     {file.name}
@@ -180,7 +180,7 @@ export default function CrmContractPanel({ lead, group, currentUser, onBack }) {
                   style={{
                     color: statusMeta?.color,
                     borderColor: "rgba(182,118,81,0.15)",
-                    background: "#fff",
+                    background: "var(--crm-card-bg)",
                   }}
                 >
                   {CONTRACT_STATUSES.map((s) => (

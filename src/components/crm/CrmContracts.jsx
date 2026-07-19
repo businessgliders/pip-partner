@@ -71,8 +71,8 @@ export default function CrmContracts({ currentUser }) {
                 onClick={() => { setGroupKey(g.key); setSelected(null); }}
                 className="h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors"
                 style={{
-                  background: active ? CRM.ink : "#fff",
-                  color: active ? "#fff" : CRM.sub,
+                  background: active ? CRM.ink : "var(--crm-card-bg)",
+                  color: active ? "var(--crm-page-bg)" : CRM.sub,
                   boxShadow: active ? "none" : CRM.cardShadow,
                 }}
               >

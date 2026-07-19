@@ -39,6 +39,30 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* ————— CRM (Application Hub) theme tokens ————— */
+    --crm-page-bg: #faf5f0;
+    --crm-sidebar-bg: #fbe0e2;
+    --crm-ink: #2d2320;
+    --crm-sub: #96806f;
+    --crm-accent: #f1889b;
+    --crm-accent-soft: #f7b1bd;
+    --crm-blush: #fbe0e2;
+    --crm-brown: #b67651;
+    --crm-card-bg: #ffffff;
+    --crm-card-shadow: 0 2px 14px rgba(182, 118, 81, 0.10);
+    --crm-card-border: 1px solid rgba(182, 118, 81, 0.08);
+    /* Dashboard tiles */
+    --tile-rose-bg: #f7b1bd;
+    --tile-rose-fg: #5b3038;
+    --tile-rose-strong: #3d1f26;
+    --tile-sage-bg: #e8e4d8;
+    --tile-sage-fg: #6b6353;
+    --tile-peach-bg: #fbe9dc;
+    --tile-peach-fg: #7a4a30;
+    --tile-peach-sub: #b08668;
+    --tile-pink-bg: #fbe0e2;
+    --tile-pink-fg: #a34a5c;
   }
 
   .dark {
@@ -74,6 +98,30 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* ————— CRM (Application Hub) dark theme tokens ————— */
+    --crm-page-bg: #171214;
+    --crm-sidebar-bg: #241a1d;
+    --crm-ink: #f1e7e2;
+    --crm-sub: #a89283;
+    --crm-accent: #f1889b;
+    --crm-accent-soft: #6d3641;
+    --crm-blush: #3a262c;
+    --crm-brown: #d9a175;
+    --crm-card-bg: #221a1d;
+    --crm-card-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+    --crm-card-border: 1px solid rgba(255, 255, 255, 0.06);
+    /* Dashboard tiles */
+    --tile-rose-bg: #4a2b33;
+    --tile-rose-fg: #f0c9d1;
+    --tile-rose-strong: #fde7ec;
+    --tile-sage-bg: #2b2a24;
+    --tile-sage-fg: #c9c2ac;
+    --tile-peach-bg: #33241b;
+    --tile-peach-fg: #e3b090;
+    --tile-peach-sub: #b08668;
+    --tile-pink-bg: #3a2229;
+    --tile-pink-fg: #eba2b1;
   }
 }
 
@@ -232,7 +280,42 @@
   font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
 .crm-card {
-  background: #ffffff;
+  background: var(--crm-card-bg);
   border-radius: 1rem;
-  box-shadow: 0 2px 14px rgba(182, 118, 81, 0.10);
+  box-shadow: var(--crm-card-shadow);
 }
+
+/* ————— Dark mode overrides for the Application Hub ————— */
+/* Hardcoded utility classes used across the hub remapped onto dark tokens. */
+.dark .crm-root .bg-white,
+.dark .crm-root.bg-white {
+  background-color: var(--crm-card-bg) !important;
+}
+.dark .crm-root .bg-white\/80,
+.dark .crm-root .bg-white\/60,
+.dark .crm-root .bg-white\/50 {
+  background-color: rgba(34, 26, 29, 0.7) !important;
+}
+.dark .crm-root .hover\:bg-white\/50:hover,
+.dark .crm-root .hover\:bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+}
+.dark .crm-root .hover\:bg-\[\#fdf8f4\]:hover,
+.dark .crm-root .hover\:bg-\[\#faf1ea\]:hover,
+.dark .crm-root .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+.dark .crm-root input,
+.dark .crm-root select,
+.dark .crm-root textarea {
+  background-color: var(--crm-card-bg);
+  color: var(--crm-ink);
+}
+.dark .crm-root .text-gray-900 { color: var(--crm-ink) !important; }
+.dark .crm-root .text-gray-700,
+.dark .crm-root .text-gray-600,
+.dark .crm-root .text-gray-500,
+.dark .crm-root .text-gray-400 { color: var(--crm-sub) !important; }
+.dark .crm-root .border-gray-200 { border-color: rgba(255, 255, 255, 0.12) !important; }
+.dark .crm-root .ring-white { --tw-ring-color: rgba(255, 255, 255, 0.15); }
+.dark .crm-root .bg-gray-900 { background-color: var(--crm-accent) !important; color: #2d1218 !important; }

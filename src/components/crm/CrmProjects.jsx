@@ -2,7 +2,10 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { DragDropContext } from "@hello-pangea/dnd";
-import { Plus, Search, Columns3 } from "lucide-react";
+import { Plus, Search, Columns3, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import CrmProjectColumn, { COLUMN_PALETTES } from "./CrmProjectColumn";
 import CrmProjectDialog from "./CrmProjectDialog";
 import CrmTaskColumnsDialog from "./CrmTaskColumnsDialog";
@@ -122,7 +125,27 @@ export default function CrmProjects() {
       <div className="relative crm-card p-4">
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-          <div className="flex items-center gap-1.5">
+          {/* Filters — dropdown on mobile, pills on sm+ */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="sm:hidden inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-[12px] font-medium shrink-0"
+                style={{ background: CRM.blush, color: "#a34a5c" }}
+              >
+                {FILTERS.find((f) => f.key === filter)?.label}
+                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="crm-root">
+              {FILTERS.map((f) => (
+                <DropdownMenuItem key={f.key} onClick={() => setFilter(f.key)} className="text-[12px]">
+                  {f.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div className="hidden sm:flex items-center gap-1.5">
             {FILTERS.map((f) => (
               <button
                 key={f.key}

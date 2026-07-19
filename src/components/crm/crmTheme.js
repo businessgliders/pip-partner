@@ -1,16 +1,18 @@
 // Shared design tokens for the Lemlii-inspired CRM redesign,
-// mapped onto the Pilates in Pink palette.
+// mapped onto the Pilates in Pink palette. Values live as CSS variables
+// (defined in src/index.css under :root and .dark) so the whole hub
+// switches automatically in dark mode.
 export const CRM = {
-  pageBg: "#faf5f0",       // warm cream (from f6eee7)
-  sidebarBg: "#fbe0e2",    // soft pink
-  ink: "#2d2320",          // near-black warm
-  sub: "#96806f",          // muted brown-grey
-  accent: "#f1889b",       // brand pink
-  accentSoft: "#f7b1bd",   // blush
-  blush: "#fbe0e2",
-  brown: "#b67651",
-  cardShadow: "0 2px 14px rgba(182,118,81,0.10)",
-  cardBorder: "1px solid rgba(182,118,81,0.08)",
+  pageBg: "var(--crm-page-bg)",
+  sidebarBg: "var(--crm-sidebar-bg)",
+  ink: "var(--crm-ink)",
+  sub: "var(--crm-sub)",
+  accent: "var(--crm-accent)",
+  accentSoft: "var(--crm-accent-soft)",
+  blush: "var(--crm-blush)",
+  brown: "var(--crm-brown)",
+  cardShadow: "var(--crm-card-shadow)",
+  cardBorder: "var(--crm-card-border)",
 };
 
 // Status → dot color, matched to the palette used across the app.

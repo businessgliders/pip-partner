@@ -7,10 +7,12 @@ import CrmUserMenu from "./CrmUserMenu";
 import CrmNotificationBell from "./CrmNotificationBell";
 import { CRM } from "./crmTheme";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
+import useTheme from "@/hooks/useTheme";
 
 export default function CrmShell({ page, source, onNavigate, title, user, children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   useLockBodyScroll(mobileNavOpen);
+  useTheme(true); // applies light/dark/auto theme to the hub
   const initials = (user?.full_name || user?.email || "?")
     .split(" ")
     .map((p) => p[0])

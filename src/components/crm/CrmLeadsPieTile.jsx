@@ -1,0 +1,69 @@
+import React from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+
+const SEGMENTS = [
+  { key: "franchise", label: "Franchising", color: "#f1889b" },
+  { key: "instructor", label: "Instructor", color: "#c4896b" },
+  { key: "frontadmin", label: "Front Desk", color: "#d4a088" },
+];
+
+// Dashboard "Total leads" tile rendered as a donut/pie breakdown per board.
+export default function CrmLeadsPieTile({ counts, total, signed, onClick }) {
+  const data = SEGMENTS.map((s) => ({ ...s, value: counts[s.key] || 0 }));
+  const hasData = total > 0;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-2xl p-5 text-left flex flex-col flex-1 hover:brightness-[0.98] transition"
+      style={{ background: "var(--tile-rose-bg)", boxShadow: "var(--crm-card-shadow)" }}
+    >
+      <span className="text-[12px] font-semibold" style={{ color: "var(--tile-rose-fg)" }}>
+        Total leads <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/50 ml-1 align-middle">ALL TIME</span>
+      </span>
+
+      <div className="relative h-36 mt-2 min-w-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={hasData ? data : [{ value: 1, color: "rgba(255,255,255,0.35)" }]}
+              dataKey="value"
+              innerRadius="62%"
+              outerRadius="95%"
+              paddingAngle={hasData ? 2 : 0}
+              strokeWidth={0}
+              isAnimationActive={false}
+            >
+              {(hasData ? data : [{ color: "rgba(255,255,255,0.35)" }]).map((d, i) => (
+                <Cell key={i} fill={d.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-3xl font-bold leading-none" style={{ color: "var(--tile-rose-strong)" }}>{total}</span>
+          <span className="text-[9px] tracking-[0.12em] uppercase font-semibold mt-1 opacity-70" style={{ color: "var(--tile-rose-fg)" }}>
+            leads
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-1.5 text-[12px]" style={{ color: "var(--tile-rose-fg)" }}>
+        {data.map((d) => (
+          <div key={d.key} className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
+            <span className="flex-1">{d.label}</span>
+            <strong>{d.value}</strong>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-auto pt-4">
+        <div className="text-[10px] tracking-[0.15em] uppercase font-semibold opacity-70" style={{ color: "var(--tile-rose-fg)" }}>
+          Signed franchises
+        </div>
+        <div className="text-xl font-bold" style={{ color: "var(--tile-rose-strong)" }}>{signed}</div>
+      </div>
+    </button>
+  );
+}

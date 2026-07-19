@@ -10,6 +10,7 @@ import CrmDashboardNotifications from "./CrmDashboardNotifications";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
 import CrmAiFollowUpsModal from "./CrmAiFollowUpsModal";
+import CrmLeadsPieTile from "./CrmLeadsPieTile";
 import { CRM } from "./crmTheme";
 
 const groupOf = (boardKey) => (boardKey === "franchise" ? "franchise" : "hiring");
@@ -115,38 +116,22 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
 
         {/* Column 2: total leads + follow-ups tile */}
         <div className="flex flex-col gap-4">
-          <button
-            type="button"
+          <CrmLeadsPieTile
+            counts={{ franchise: fr.length, instructor: ins.length, frontadmin: fa.length }}
+            total={all.length}
+            signed={signed}
             onClick={() => goToLeads("franchise")}
-            className="rounded-2xl p-5 text-left flex flex-col flex-1"
-            style={{ background: CRM.accentSoft, boxShadow: CRM.cardShadow }}
-          >
-            <span className="text-[12px] font-semibold" style={{ color: "#5b3038" }}>
-              Total leads <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/50 ml-1 align-middle">ALL TIME</span>
-            </span>
-            <span className="text-4xl font-bold mt-2" style={{ color: "#3d1f26" }}>{all.length}</span>
-            <div className="mt-4 space-y-1.5 text-[12px]" style={{ color: "#5b3038" }}>
-              <div className="flex justify-between"><span>Franchising</span><strong>{fr.length}</strong></div>
-              <div className="flex justify-between"><span>Instructor</span><strong>{ins.length}</strong></div>
-              <div className="flex justify-between"><span>Front Desk</span><strong>{fa.length}</strong></div>
-            </div>
-            <div className="mt-auto pt-5">
-              <div className="text-[10px] tracking-[0.15em] uppercase font-semibold opacity-70" style={{ color: "#5b3038" }}>
-                Signed franchises
-              </div>
-              <div className="text-xl font-bold" style={{ color: "#3d1f26" }}>{signed}</div>
-            </div>
-          </button>
+          />
 
           {/* Active AI follow-ups tile */}
           <button
             type="button"
             onClick={() => setAiModalOpen(true)}
             className="relative overflow-hidden rounded-2xl p-5 text-left hover:brightness-[0.98] transition"
-            style={{ background: "#e8e4d8", boxShadow: CRM.cardShadow }}
+            style={{ background: "var(--tile-sage-bg)", boxShadow: CRM.cardShadow }}
           >
-            <Bot className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "#6b6353", opacity: 0.12 }} />
-            <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#6b6353" }}>
+            <Bot className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "var(--tile-sage-fg)", opacity: 0.12 }} />
+            <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "var(--tile-sage-fg)" }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
               Active AI follow-ups
             </div>
@@ -156,11 +141,11 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
 
         {/* Column 3: inquiries sparkline + meetings tile */}
         <div className="flex flex-col gap-4">
-          <div className="rounded-2xl p-5 flex flex-col flex-1" style={{ background: "#fbe9dc", boxShadow: CRM.cardShadow }}>
-            <div className="text-[13px] font-semibold leading-tight" style={{ color: "#7a4a30" }}>
+          <div className="rounded-2xl p-5 flex flex-col flex-1" style={{ background: "var(--tile-peach-bg)", boxShadow: CRM.cardShadow }}>
+            <div className="text-[13px] font-semibold leading-tight" style={{ color: "var(--tile-peach-fg)" }}>
               Inquiries received
             </div>
-            <div className="text-[10px] tracking-wider uppercase font-semibold mt-0.5" style={{ color: "#b08668" }}>
+            <div className="text-[10px] tracking-wider uppercase font-semibold mt-0.5" style={{ color: "var(--tile-peach-sub)" }}>
               Last 8 months
             </div>
             <div className="flex-1 min-h-[80px] mt-2">
@@ -170,7 +155,7 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex items-end justify-between mt-2 text-[9px] font-semibold" style={{ color: "#b08668" }}>
+            <div className="flex items-end justify-between mt-2 text-[9px] font-semibold" style={{ color: "var(--tile-peach-sub)" }}>
               <span>{sparkData[0]?.label}</span>
               <span>{sparkData[sparkData.length - 1]?.label}</span>
             </div>
@@ -181,15 +166,15 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
             type="button"
             onClick={() => onNavigate("financials")}
             className="relative overflow-hidden rounded-2xl p-5 text-left hover:brightness-[0.98] transition"
-            style={{ background: "#fbe0e2", boxShadow: CRM.cardShadow }}
+            style={{ background: "var(--tile-pink-bg)", boxShadow: CRM.cardShadow }}
           >
-            <FileSignature className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "#a34a5c", opacity: 0.12 }} />
-            <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#a34a5c" }}>
+            <FileSignature className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "var(--tile-pink-fg)", opacity: 0.12 }} />
+            <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "var(--tile-pink-fg)" }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
               Contracts
             </div>
             <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{contracts.length}</div>
-            <div className="text-[11px] font-semibold mt-1" style={{ color: "#a34a5c" }}>
+            <div className="text-[11px] font-semibold mt-1" style={{ color: "var(--tile-pink-fg)" }}>
               {contracts.filter((c) => c.status === "signed").length} signed
             </div>
           </button>
