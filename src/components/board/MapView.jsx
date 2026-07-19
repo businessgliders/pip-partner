@@ -18,11 +18,11 @@ const STATUS_COLORS = {
   fdd: { hex: "#6d28d9", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" },
   signed: { hex: "#a21caf", bg: "bg-fuchsia-50", border: "border-fuchsia-300", text: "text-fuchsia-700", dot: "bg-fuchsia-500" },
   site_selection: { hex: "#4338ca", bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", dot: "bg-indigo-500" },
-  lease: { hex: "#1d4ed8", bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", dot: "bg-blue-500" },
-  build_out: { hex: "#0e7490", bg: "bg-cyan-50", border: "border-cyan-300", text: "text-cyan-700", dot: "bg-cyan-500" },
+  lease: { hex: "#15803d", bg: "bg-green-50", border: "border-green-300", text: "text-green-700", dot: "bg-green-500" },
+  build_out: { hex: "#c2410c", bg: "bg-orange-50", border: "border-orange-300", text: "text-orange-700", dot: "bg-orange-500" },
   training: { hex: "#0f766e", bg: "bg-teal-50", border: "border-teal-300", text: "text-teal-700", dot: "bg-teal-500" },
   closed: { hex: "#475569", bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-600", dot: "bg-slate-500" },
-  ghosted: { hex: "#6d28d9", bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", dot: "bg-violet-500" },
+  ghosted: { hex: "#a16207", bg: "bg-yellow-50", border: "border-yellow-300", text: "text-yellow-700", dot: "bg-yellow-500" },
   // Legacy franchise aliases (map to their replacement colors)
   scheduled: { hex: "#7e22ce", bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", dot: "bg-purple-500" },
   discussion: { hex: "#b45309", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", dot: "bg-amber-500" },
@@ -134,7 +134,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   const ticketsWithQuery = useMemo(
     () =>
       (tickets || [])
-        .filter((t) => t.status !== "closed")
+        .filter((t) => t.status !== "closed" && t.status !== "ghosted")
         .slice()
         .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
         .slice(0, MAX_MAP_PINS)
@@ -144,7 +144,7 @@ export default function MapView({ tickets, accentColor = "#f1889b", statusOrder 
   );
 
   const totalEligibleCount = useMemo(
-    () => (tickets || []).filter((t) => t.status !== "closed" && !!buildQuery(t)).length,
+    () => (tickets || []).filter((t) => t.status !== "closed" && t.status !== "ghosted" && !!buildQuery(t)).length,
     [tickets]
   );
   const cappedOut = Math.max(0, totalEligibleCount - ticketsWithQuery.length);
