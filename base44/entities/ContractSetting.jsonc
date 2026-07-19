@@ -1,0 +1,48 @@
+{
+  "name": "ContractSetting",
+  "type": "object",
+  "properties": {
+    "board_key": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "instructor",
+        "frontadmin"
+      ],
+      "description": "Which lead board this setting covers"
+    },
+    "statuses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Lead statuses that qualify for contracts on this board"
+    }
+  },
+  "required": [
+    "board_key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

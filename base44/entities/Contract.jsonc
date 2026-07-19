@@ -1,0 +1,78 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "ticket_id": {
+      "type": "string",
+      "description": "ID of the lead this contract belongs to"
+    },
+    "ticket_type": {
+      "type": "string",
+      "enum": [
+        "FranchiseInquiry",
+        "InstructorApplication",
+        "FrontAdminApplication"
+      ],
+      "description": "Entity name of the parent lead"
+    },
+    "lead_type": {
+      "type": "string",
+      "description": "Board key of the lead: franchise | instructor | frontadmin"
+    },
+    "lead_name": {
+      "type": "string",
+      "description": "Display name of the lead at time of upload"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "signed"
+      ],
+      "default": "draft",
+      "description": "Contract lifecycle status"
+    },
+    "drive_file_id": {
+      "type": "string",
+      "description": "Google Drive file ID"
+    },
+    "drive_file_url": {
+      "type": "string",
+      "description": "Google Drive webViewLink"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "uploaded_by": {
+      "type": "string",
+      "description": "Email of the staff member who uploaded/tracked this file"
+    }
+  },
+  "required": [
+    "ticket_id",
+    "drive_file_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

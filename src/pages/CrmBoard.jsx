@@ -10,6 +10,7 @@ import CrmBookings from "@/components/crm/CrmBookings";
 import CrmTemplates from "@/components/crm/CrmTemplates";
 import CrmSettings from "@/components/crm/CrmSettings";
 import CrmProjects from "@/components/crm/CrmProjects";
+import CrmContracts from "@/components/crm/CrmContracts";
 import CrmSplash from "@/components/crm/CrmSplash";
 import CrmWelcomeSplash from "@/components/crm/CrmWelcomeSplash";
 
@@ -55,7 +56,7 @@ export default function CrmBoard() {
         {page === "settings" && <CrmSettings onNavigate={onNavigate} />}
         {page === "projects" && <CrmProjects />}
         {page === "delivery" && <CrmSplash label="Build Out" />}
-        {page === "financials" && <CrmSplash label="Contracts" />}
+        {page === "financials" && <CrmContracts currentUser={user} />}
       </CrmShell>
     </>
   );
