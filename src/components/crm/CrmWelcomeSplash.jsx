@@ -26,6 +26,11 @@ const SLIDES = [
     title: "Smart email notifications",
     body: "When a lead replies, your team gets an email with a direct link into the conversation. Manage recipients under Settings · Notification preferences.",
   },
+  {
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/91a79cbd4_generated_image.png",
+    title: "Introducing Contracts",
+    body: "A new Contracts hub in the sidebar. Contract-ready leads get their own Google Drive folder where you can upload agreements and track them as Draft, Sent or Signed.",
+  },
 ];
 
 // One-time intro splash. Shown until the user taps "Got it" (persisted on their
@@ -38,7 +43,7 @@ export default function CrmWelcomeSplash({ user }) {
 
   const restricted = RESTRICTED_EMAILS.includes((user?.email || "").toLowerCase());
 
-  if (dismissed || (!restricted && user?.crm_intro_seen)) return null;
+  if (dismissed || (!restricted && user?.crm_intro_seen_v2)) return null;
 
   const isLast = step === SLIDES.length - 1;
   const slide = SLIDES[step];
@@ -46,7 +51,7 @@ export default function CrmWelcomeSplash({ user }) {
   const gotIt = async () => {
     setSaving(true);
     try {
-      await base44.auth.updateMe({ crm_intro_seen: true });
+      await base44.auth.updateMe({ crm_intro_seen_v2: true });
       queryClient.invalidateQueries({ queryKey: ["crm-current-user"] });
     } finally {
       setDismissed(true);
