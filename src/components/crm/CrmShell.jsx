@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
 import CrmSidebar from "./CrmSidebar";
 import CrmUserMenu from "./CrmUserMenu";
+import CrmNotificationBell from "./CrmNotificationBell";
 import { CRM } from "./crmTheme";
 
 export default function CrmShell({ page, source, onNavigate, title, user, children }) {
@@ -64,7 +65,10 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
               {title}
             </h1>
           </div>
-          <CrmUserMenu user={user} initials={initials} />
+          <div className="flex items-center gap-1.5">
+            <CrmNotificationBell currentUser={user} />
+            <CrmUserMenu user={user} initials={initials} />
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 lg:px-8 py-6 pip-view-in">

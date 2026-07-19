@@ -6,6 +6,7 @@ import { Search, ArrowUpDown } from "lucide-react";
 import { BOARD_TYPES, getStatusLabel, displayName } from "@/components/board/boardConfig";
 import CrmLeadRow from "./CrmLeadRow";
 import CrmEmailDrawer from "./CrmEmailDrawer";
+import useReplyNotifications from "@/hooks/useReplyNotifications";
 import { CRM } from "./crmTheme";
 
 // Column definitions per board (between Name and Inquiry date).
@@ -37,6 +38,7 @@ export default function CrmLeads({ source, currentUser }) {
   const [sort, setSort] = useState({ key: "created", dir: "desc" });
   const [expandedId, setExpandedId] = useState(null);
   const [emailTicket, setEmailTicket] = useState(null);
+  const { unreadByTicket, recentReplyTicketIds } = useReplyNotifications();
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["crm-leads", board.entity],
@@ -227,6 +229,8 @@ export default function CrmLeads({ source, currentUser }) {
               onEmail={() => setEmailTicket(t)}
               onUpdate={handleUpdate}
               currentUser={currentUser}
+              unreadCount={unreadByTicket[t.id] || 0}
+              recentlyReplied={recentReplyTicketIds.has(t.id)}
             />
           ))}
         </div>

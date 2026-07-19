@@ -11,7 +11,7 @@ import { displayName } from "@/components/board/boardConfig";
 import { CRM } from "./crmTheme";
 
 // Right-hand slide-in drawer hosting the full email thread + composer for a lead.
-export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClose }) {
+export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClose, highlightMessageId }) {
   // Cal.com meeting for this lead (shared cache with the Bookings page).
   const { data: bookings = [] } = useQuery({
     queryKey: ["crm-bookings-all"],
@@ -87,7 +87,7 @@ export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClos
           </div>
         </div>
         <div className="flex-1 min-h-0">
-          <EmailThreadPanel ticket={ticket} ticketType={ticketType} currentUser={currentUser} hideHeader />
+          <EmailThreadPanel ticket={ticket} ticketType={ticketType} currentUser={currentUser} hideHeader highlightMessageId={highlightMessageId} />
         </div>
       </div>
     </div>,

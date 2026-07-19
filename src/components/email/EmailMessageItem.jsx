@@ -101,7 +101,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
         <div className="flex flex-col items-end mb-3" id={`msg-${message.id}`}>
           <div
             className={`max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} cursor-pointer transition-all ${
-              isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""
+              isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""
             }`}
             onClick={() => setOpen(true)}
           >
@@ -142,7 +142,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               : isInternal
               ? "bg-amber-50 border border-amber-200 rounded-br-sm"
               : "bg-pink-100 rounded-br-sm"
-          } ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
+          } ${isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
           onClick={() => setOpen(true)}
         >
           {message.is_ai_summary && (
