@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Search, ArrowUpDown } from "lucide-react";
@@ -52,6 +53,24 @@ export default function CrmLeads({ source, currentUser }) {
 
   // Terminal statuses hidden from the "Active" tab
   const TERMINAL = ["ghosted", "closed", "declined"];
+
+  // Deep link from notification emails: ?ticket=<id>&openEmail=1 expands the
+  // lead and opens the email panel, then clears the params from the URL.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepTicketId = searchParams.get("ticket");
+  useEffect(() => {
+    if (!deepTicketId || tickets.length === 0) return;
+    const t = tickets.find((x) => x.id === deepTicketId);
+    if (t) {
+      if (TERMINAL.includes(t.status)) setTab(t.status);
+      setExpandedId(t.id);
+      if (searchParams.get("openEmail")) setEmailTicket(t);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete("ticket");
+    next.delete("openEmail");
+    setSearchParams(next, { replace: true });
+  }, [deepTicketId, tickets]);
 
   const counts = useMemo(() => {
     const c = { all: active.filter((t) => !TERMINAL.includes(t.status)).length };

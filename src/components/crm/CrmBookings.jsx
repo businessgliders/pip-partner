@@ -25,7 +25,7 @@ export default function CrmBookings({ currentUser }) {
   });
 
   // Fetch all lead tickets so bookings can be paired to a lead + status.
-  const { data: allTickets = [] } = useQuery({
+  const { data: allTickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ["crm-bookings-tickets"],
     queryFn: async () => {
       const [fr, ins, fa] = await Promise.all([
@@ -87,7 +87,7 @@ export default function CrmBookings({ currentUser }) {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || ticketsLoading ? (
         <div className="crm-card p-10 text-center text-sm" style={{ color: CRM.sub }}>Loading…</div>
       ) : (
         <div className="pb-10">

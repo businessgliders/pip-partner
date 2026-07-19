@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { PenLine, LayoutTemplate, Bell, Users } from "lucide-react";
 import CrmSignatureDialog from "./CrmSignatureDialog";
+import CrmNotificationsDialog from "./CrmNotificationsDialog";
 import { CRM } from "./crmTheme";
 
 function SettingCard({ icon: Icon, title, description, onClick, disabled }) {
@@ -24,6 +25,7 @@ function SettingCard({ icon: Icon, title, description, onClick, disabled }) {
 
 export default function CrmSettings({ onNavigate }) {
   const [sigOpen, setSigOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -52,12 +54,13 @@ export default function CrmSettings({ onNavigate }) {
         <SettingCard
           icon={Bell}
           title="Notification preferences"
-          description="Coming soon."
-          disabled
+          description="Choose who gets emailed when leads reply."
+          onClick={() => setNotifOpen(true)}
         />
       </div>
 
       {sigOpen && <CrmSignatureDialog onClose={() => setSigOpen(false)} />}
+      {notifOpen && <CrmNotificationsDialog onClose={() => setNotifOpen(false)} />}
     </div>
   );
 }

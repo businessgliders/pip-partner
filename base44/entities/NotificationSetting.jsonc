@@ -1,0 +1,52 @@
+{
+  "name": "NotificationSetting",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "hiring"
+      ],
+      "description": "Which lead group this notification setting covers"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether inbound-reply email notifications are sent for this group"
+    },
+    "emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Recipient email addresses for notifications"
+    }
+  },
+  "required": [
+    "source"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { base64UrlEncode, rfc2047, base64Utf8, wrapBase64Lines } from '../../shared/gmailMime.ts';
 
 const ENTITY_NAMES = [
   'FranchiseInquiry',
@@ -58,6 +59,85 @@ function parseFrom(value) {
   const m = value.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
   if (m) return { name: m[1].trim(), email: m[2].trim() };
   return { name: '', email: value.trim() };
+}
+
+// ————— Inbound reply notifications —————
+// Recipients are configured per group in the NotificationSetting entity
+// (managed under Settings → Notification preferences in the CRM).
+const NOTIFY_GROUPS = {
+  FranchiseInquiry: 'franchise',
+  InstructorApplication: 'hiring',
+  FrontAdminApplication: 'hiring',
+};
+const NOTIFY_BOARD_KEYS = {
+  FranchiseInquiry: 'franchise',
+  InstructorApplication: 'instructor',
+  FrontAdminApplication: 'frontadmin',
+  InfluencerApplication: 'influencer',
+};
+const NOTIFY_FROM = {
+  franchise: 'franchise@pilatesinpinkstudio.com',
+  hiring: 'hire@pilatesinpinkstudio.com',
+};
+
+function escapeHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+async function notifyInboundReply(base44, accessToken, parentType, parentId, from, subject, snippet) {
+  const group = NOTIFY_GROUPS[parentType];
+  if (!group) return;
+
+  const settings = await base44.asServiceRole.entities.NotificationSetting.filter(
+    { source: group }, '-created_date', 1
+  );
+  const setting = settings[0];
+  if (!setting || setting.enabled === false) return;
+  const recipients = (setting.emails || []).map((e) => String(e || '').trim()).filter(Boolean);
+  if (recipients.length === 0) return;
+
+  let leadName = from.name || from.email || 'A lead';
+  try {
+    const t = await base44.asServiceRole.entities[parentType].get(parentId);
+    if (t) {
+      leadName = t.full_name || `${t.first_name || ''} ${t.last_name || ''}`.trim() || leadName;
+    }
+  } catch (_) {}
+
+  const appBase = (Deno.env.get('APP_BASE_URL') || '').replace(/\/+$/, '');
+  const link = `${appBase}/ApplicationBoard?page=leads&source=${NOTIFY_BOARD_KEYS[parentType]}&ticket=${parentId}&openEmail=1`;
+  const groupLabel = group === 'franchise' ? 'Franchising' : 'Hiring';
+
+  const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#faf5f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;"><tr><td align="center">
+<table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:#ffffff;border-radius:20px;border:1px solid #f3d9c9;">
+<tr><td style="padding:28px;">
+<div style="font-size:10px;letter-spacing:2px;color:#b67651;font-weight:700;margin-bottom:14px;">PIP PARTNER &middot; ${groupLabel.toUpperCase()}</div>
+<div style="font-size:18px;font-weight:600;color:#2f2430;margin-bottom:6px;">New reply from ${escapeHtml(leadName)}</div>
+<div style="font-size:13px;color:#8a7264;margin-bottom:14px;">${escapeHtml(subject || '')}</div>
+${snippet ? `<div style="font-size:13px;color:#5c4a3f;background:#fdf8f4;border-radius:12px;padding:12px 14px;margin-bottom:20px;">${escapeHtml(snippet)}</div>` : ''}
+<a href="${link}" style="display:inline-block;background:#fbe0e2;color:#a34a5c;font-size:13px;font-weight:600;padding:10px 20px;border-radius:999px;text-decoration:none;">Open in email panel</a>
+</td></tr></table></td></tr></table></body></html>`;
+
+  const headers = [
+    `From: ${rfc2047('PiP Partner')} <${NOTIFY_FROM[group]}>`,
+    `To: ${recipients.join(', ')}`,
+    `Subject: ${rfc2047(`New ${groupLabel} reply \u00b7 ${leadName}`)}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: base64',
+  ];
+  const raw = base64UrlEncode(headers.join('\r\n') + '\r\n\r\n' + wrapBase64Lines(base64Utf8(html)));
+
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw }),
+  });
+  if (!res.ok) {
+    console.error('inbound notification send failed', res.status, await res.text());
+  }
 }
 
 async function processMessageId(base44, accessToken, messageId) {
@@ -213,6 +293,13 @@ async function processMessageId(base44, accessToken, messageId) {
     read_by: [],
     read_at: [],
   });
+
+  // Notify configured staff about the inbound reply (never blocks ingestion).
+  try {
+    await notifyInboundReply(base44, accessToken, parentType, parentId, from, subject, msg.snippet || '');
+  } catch (e) {
+    console.error('inbound notification failed', e);
+  }
 
   return { messageId, status: 'ingested', parent: parentId, parent_type: parentType };
 }

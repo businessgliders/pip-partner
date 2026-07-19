@@ -65,10 +65,11 @@ export default function CrmLeadNotes({ ticket, currentUser, onUpdate }) {
             type="button"
             onClick={addNote}
             disabled={!draft.trim()}
-            className="h-9 px-3.5 rounded-full text-[12px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-40 shrink-0"
+            title="Add note"
+            className="w-9 h-9 rounded-full inline-flex items-center justify-center disabled:opacity-40 shrink-0"
             style={{ background: CRM.accentSoft, color: "#5b3038" }}
           >
-            <Send className="w-3 h-3" /> Add
+            <Send className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

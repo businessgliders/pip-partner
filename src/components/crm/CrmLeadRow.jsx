@@ -115,8 +115,9 @@ export default function CrmLeadRow({
             className="overflow-hidden"
           >
             <div className="px-5 pb-5 pt-1" style={{ borderTop: "1px solid rgba(182,118,81,0.08)" }}>
-              {/* Actions row */}
-              <div className="flex items-center justify-end pt-3 mb-4">
+              {/* Actions row — lead functions left, overflow menu right */}
+              <div className="flex items-center justify-between gap-3 pt-3 mb-4">
+                <CrmLeadActions ticket={ticket} board={board} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -139,11 +140,8 @@ export default function CrmLeadRow({
               </div>
 
               <div className="grid sm:grid-cols-2 gap-5">
-                {/* Left: functions + emails + notes */}
+                {/* Left: emails + notes */}
                 <div className="space-y-4">
-                  {/* Lead functions — FDD, Cal.com, AI follow-up */}
-                  <CrmLeadActions ticket={ticket} board={board} />
-
                   {/* Emails — preview of the thread, click to open the panel */}
                   <div>
                     <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
