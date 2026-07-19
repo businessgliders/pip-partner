@@ -97,7 +97,7 @@ export default function CrmContractPanel({ lead, group, currentUser, onBack }) {
   const files = driveData?.files || [];
 
   return (
-    <div className="crm-card p-5">
+    <div className="crm-card p-4 sm:p-5 min-w-0">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-2 min-w-0">
@@ -157,14 +157,14 @@ export default function CrmContractPanel({ lead, group, currentUser, onBack }) {
             const status = contract?.status || "draft";
             const statusMeta = CONTRACT_STATUSES.find((s) => s.key === status);
             return (
-              <div key={file.id} className="flex items-center gap-3 py-3">
+              <div key={file.id} className="flex items-center gap-2 sm:gap-3 py-3 min-w-0">
                 <FileText className="w-4 h-4 shrink-0" style={{ color: CRM.brown }} />
                 <div className="flex-1 min-w-0">
                   <a
                     href={file.webViewLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="block text-sm font-medium break-all hover:underline"
+                    className="block text-[13px] sm:text-sm font-medium break-all hover:underline"
                     style={{ color: CRM.ink }}
                   >
                     {file.name}

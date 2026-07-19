@@ -67,7 +67,7 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
                 type="button"
                 onClick={() => setSrc(f.key)}
                 className="px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-all"
-                style={src === f.key ? { background: CRM.accentSoft, color: "#5b3038" } : { color: CRM.sub }}
+                style={src === f.key ? { background: CRM.accentSoft, color: "var(--tile-rose-fg)" } : { color: CRM.sub }}
               >
                 {f.label}
               </button>
@@ -77,7 +77,7 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
             type="button"
             onClick={() => onNavigate("bookings")}
             className="text-[11px] font-semibold px-3 py-1 rounded-full"
-            style={{ background: CRM.blush, color: "#a34a5c" }}
+            style={{ background: CRM.blush, color: "var(--tile-pink-fg)" }}
           >
             View calendar
           </button>
@@ -136,8 +136,8 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
                         className="ml-auto text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full shrink-0"
                         style={
                           b._group === "franchise"
-                            ? { background: "#fbe0e2", color: "#a34a5c" }
-                            : { background: "#f6eee7", color: "#8a6a4f" }
+                            ? { background: CRM.blush, color: "var(--tile-pink-fg)" }
+                            : { background: "var(--crm-page-bg)", color: CRM.sub }
                         }
                       >
                         {b._group === "franchise" ? "Franchise" : "Hiring"}

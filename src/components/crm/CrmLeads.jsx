@@ -120,7 +120,7 @@ export default function CrmLeads({ source, currentUser }) {
   // Status filter tabs: hide zero-count statuses; for franchise, insert a
   // separator between step-1 and step-2 statuses.
   const tabItems = useMemo(() => {
-    const nonEmpty = board.statuses.filter((s) => (counts[s] ?? 0) > 0);
+    const nonEmpty = board.statuses.filter((s) => (counts[s] ?? 0) > 0 || s === "shortlisted");
     if (board.stepOne) {
       const one = board.stepOne.filter((s) => nonEmpty.includes(s));
       const two = (board.stepTwo || []).filter((s) => nonEmpty.includes(s));

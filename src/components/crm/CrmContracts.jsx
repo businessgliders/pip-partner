@@ -92,7 +92,7 @@ export default function CrmContracts({ currentUser }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[320px,1fr] items-start">
-        <div className={selected ? "hidden lg:block" : ""}>
+        <div className={`min-w-0 ${selected ? "hidden lg:block" : ""}`}>
           <CrmContractLeadList
             leads={leads}
             boardKey={groupKey}
@@ -101,7 +101,7 @@ export default function CrmContracts({ currentUser }) {
             contractCounts={contractCounts}
           />
         </div>
-        <div className={!selected ? "hidden lg:block" : ""}>
+        <div className={`min-w-0 ${!selected ? "hidden lg:block" : ""}`}>
           {selected ? (
             <CrmContractPanel
               key={selected.id}

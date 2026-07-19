@@ -50,7 +50,7 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
   return (
     <div className="crm-card overflow-hidden pb-0">
       {/* Month nav */}
-      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: BORDER, background: "#fdf8f4" }}>
+      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: BORDER, background: "var(--crm-page-bg)" }}>
         <button
           type="button"
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
@@ -63,7 +63,7 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
             type="button"
             onClick={() => setCurrentMonth(new Date())}
             className="text-[11px] rounded-full px-3 py-1 font-semibold"
-            style={{ background: CRM.accentSoft, color: "#5b3038" }}
+            style={{ background: CRM.accentSoft, color: "var(--tile-rose-fg)" }}
           >
             Today
           </button>
@@ -162,7 +162,7 @@ export default function CrmBookingsCalendar({ bookings, ticketByEmail, onSelect 
       </div>
 
       {/* Legend — lead types */}
-      <div className="px-5 py-3 flex flex-wrap gap-3 justify-end" style={{ background: "#fdf8f4" }}>
+      <div className="px-5 py-3 flex flex-wrap gap-3 justify-end" style={{ background: "var(--crm-page-bg)" }}>
         {TYPE_LEGEND.map(({ key, label }) => (
           <div key={key} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: TYPE_COLORS[key] }} />

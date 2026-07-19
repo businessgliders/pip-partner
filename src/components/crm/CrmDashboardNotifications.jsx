@@ -87,7 +87,7 @@ export default function CrmDashboardNotifications({ rows, onOpenItem }) {
               type="button"
               onClick={() => setFilter(f.key)}
               className="px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-all"
-              style={filter === f.key ? { background: CRM.accentSoft, color: "#5b3038" } : { color: CRM.sub }}
+              style={filter === f.key ? { background: CRM.accentSoft, color: "var(--tile-rose-fg)" } : { color: CRM.sub }}
             >
               {f.label}
             </button>

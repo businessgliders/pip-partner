@@ -131,7 +131,7 @@ export default function CrmProjects() {
               <button
                 type="button"
                 className="sm:hidden inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-[12px] font-medium shrink-0"
-                style={{ background: CRM.blush, color: "#a34a5c" }}
+                style={{ background: CRM.blush, color: "var(--tile-pink-fg)" }}
               >
                 {FILTERS.find((f) => f.key === filter)?.label}
                 <ChevronDown className="w-3.5 h-3.5 opacity-60" />
@@ -154,7 +154,7 @@ export default function CrmProjects() {
                 className="px-3 py-1.5 rounded-full text-[12px] font-medium transition-all"
                 style={
                   filter === f.key
-                    ? { background: CRM.blush, color: "#a34a5c" }
+                    ? { background: CRM.blush, color: "var(--tile-pink-fg)" }
                     : { background: "white", color: CRM.sub, border: "1px solid rgba(182,118,81,0.12)" }
                 }
               >

@@ -319,3 +319,13 @@
 .dark .crm-root .border-gray-200 { border-color: rgba(255, 255, 255, 0.12) !important; }
 .dark .crm-root .ring-white { --tw-ring-color: rgba(255, 255, 255, 0.15); }
 .dark .crm-root .bg-gray-900 { background-color: var(--crm-accent) !important; color: #2d1218 !important; }
+/* Stray inline light backgrounds remapped in dark mode */
+.dark .crm-root [style*="#fdf8f4"],
+.dark .crm-root [style*="#f4efe8"],
+.dark .crm-root [style*="#f6eee7"],
+.dark .crm-root [style*="#fffdfb"] {
+  background-color: var(--crm-page-bg) !important;
+}
+/* Task swimlanes — neutral dark panels, colored dots keep the identity */
+.dark .crm-root .crm-lane { background: #1f191c !important; }
+.dark .crm-root .crm-lane-header { background: rgba(255, 255, 255, 0.06) !important; }

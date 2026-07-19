@@ -22,7 +22,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
       type="button"
       onClick={onOpen}
       className="group relative w-full text-left rounded-xl overflow-hidden"
-      style={{ border: "1px solid rgba(182,118,81,0.15)", background: "#fffdfb" }}
+      style={{ border: "1px solid rgba(182,118,81,0.15)", background: "var(--crm-page-bg)" }}
     >
       <div className="p-3 space-y-2 max-h-32 overflow-hidden">
         {previewMsgs.length === 0 ? (
@@ -57,13 +57,13 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
       {/* Gradient wash fading the preview out */}
       <div
         className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(255,253,251,0), #fffdfb 85%)" }}
+        style={{ background: "linear-gradient(to bottom, transparent, var(--crm-page-bg) 85%)" }}
       />
       {/* Hover overlay */}
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 backdrop-blur-[2px]">
         <span
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-semibold shadow-sm"
-          style={{ background: CRM.accentSoft, color: "#5b3038" }}
+          style={{ background: CRM.accentSoft, color: "var(--tile-rose-fg)" }}
         >
           <Mail className="w-3.5 h-3.5" /> Open email panel
         </span>
