@@ -4,23 +4,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PROJECT_COLUMNS } from "./CrmProjectColumn";
+import { displayName } from "@/components/board/boardConfig";
+import { LEAD_TYPE_LABELS } from "./CrmProjectColumn";
 import { CRM } from "./crmTheme";
 
-export default function CrmProjectDialog({ project, onSave, onDelete, onClose, saving }) {
+export default function CrmProjectDialog({ project, columns, leads, onSave, onDelete, onClose, saving }) {
   const [form, setForm] = useState({
     title: project?.title || "",
     details: project?.details || "",
-    status: project?.status || "backlog",
+    status: project?.status || columns[0]?.key || "todo",
     due_date: project?.due_date || "",
+    lead_type: project?.lead_type || "",
+    lead_id: project?.lead_id || "",
   });
+
+  const leadOptions = (leads || []).filter((t) => !form.lead_type || t._boardKey === form.lead_type);
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 crm-root pip-fade-in">
       <div className="bg-white rounded-2xl w-full max-w-md pip-pop-in">
         <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid rgba(182,118,81,0.1)" }}>
           <h2 className="text-lg font-semibold" style={{ color: CRM.ink }}>
-            {project?.id ? "Edit project" : "New project"}
+            {project?.id ? "Edit task" : "New task"}
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100" style={{ color: CRM.sub }}>
             <X className="w-5 h-5" />
@@ -29,7 +34,7 @@ export default function CrmProjectDialog({ project, onSave, onDelete, onClose, s
         <div className="p-5 space-y-4">
           <div>
             <Label className="text-xs">Title</Label>
-            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Project name" />
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Task name" />
           </div>
           <div>
             <Label className="text-xs">Details</Label>
@@ -37,11 +42,48 @@ export default function CrmProjectDialog({ project, onSave, onDelete, onClose, s
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs">Column</Label>
+              <Label className="text-xs">Lead type</Label>
+              <Select
+                value={form.lead_type || "none"}
+                onValueChange={(v) => setForm({ ...form, lead_type: v === "none" ? "" : v, lead_id: "" })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {Object.entries(LEAD_TYPE_LABELS).map(([k, label]) => (
+                    <SelectItem key={k} value={k}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Lead</Label>
+              <Select
+                value={form.lead_id || "none"}
+                onValueChange={(v) => {
+                  if (v === "none") { setForm({ ...form, lead_id: "" }); return; }
+                  const t = (leads || []).find((l) => l.id === v);
+                  setForm({ ...form, lead_id: v, lead_type: t?._boardKey || form.lead_type });
+                }}
+                disabled={!form.lead_type}
+              >
+                <SelectTrigger><SelectValue placeholder="Select lead" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {leadOptions.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{displayName(t)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">Swimlane</Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {PROJECT_COLUMNS.map((c) => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
+                  {columns.map((c) => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -55,7 +97,7 @@ export default function CrmProjectDialog({ project, onSave, onDelete, onClose, s
           {project?.id ? (
             <button
               type="button"
-              onClick={() => { if (confirm(`Delete project "${project.title}"?`)) onDelete(project.id); }}
+              onClick={() => { if (confirm(`Delete task "${project.title}"?`)) onDelete(project.id); }}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-medium text-rose-600 hover:bg-rose-50"
             >
               <Trash2 className="w-3.5 h-3.5" /> Delete

@@ -12,7 +12,7 @@ import CrmSettings from "@/components/crm/CrmSettings";
 import CrmProjects from "@/components/crm/CrmProjects";
 import CrmSplash from "@/components/crm/CrmSplash";
 
-const PLACEHOLDERS = { projects: "Projects", delivery: "Delivery", financials: "Financials" };
+const PLACEHOLDERS = { projects: "Tasks", delivery: "Delivery", financials: "Financials" };
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
 
 export default function CrmBoard() {

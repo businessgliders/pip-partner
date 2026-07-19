@@ -34,6 +34,10 @@ Deno.serve(async (req) => {
     } catch (_) {}
     const statuses = range === 'all' ? ['upcoming', 'past'] : ['upcoming'];
 
+    // Classify each booking as franchise vs hiring based on its Cal event type.
+    const FR_EVENT_ID = String(Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE') || '');
+    const HIRE_EVENT_ID = String(Deno.env.get('CAL_EVENT_TYPE_ID_HIRING') || '');
+
     // Map: email -> earliest UPCOMING booking (preserves existing consumer contract).
     // List: full booking list (both upcoming + past when range=all), used by
     // Calendar view to plot every meeting on its actual date.
@@ -83,8 +87,15 @@ Deno.serve(async (req) => {
             .map((a) => (a?.email || '').toLowerCase().trim())
             .filter(Boolean);
 
+          const evId = String(b?.eventTypeId ?? b?.eventType?.id ?? '');
+          const source = evId && evId === HIRE_EVENT_ID ? 'hiring'
+            : evId && evId === FR_EVENT_ID ? 'franchise'
+            : null;
+
           const entry = {
             start,
+            eventTypeId: evId || null,
+            source,
             end: b?.end || b?.endTime || null,
             title: b?.title || null,
             status: b?.status || null,

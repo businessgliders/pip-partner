@@ -88,7 +88,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
             ))}
           </div>
         )}
-        <NavItem icon={FileText} label="Projects" active={page === "projects"} onClick={() => onNavigate("projects")} />
+        <NavItem icon={FileText} label="Tasks" active={page === "projects"} onClick={() => onNavigate("projects")} />
       </nav>
 
       <div className="my-5 border-t" style={{ borderColor: "rgba(182,118,81,0.15)" }} />

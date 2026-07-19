@@ -54,6 +54,8 @@ export default function CrmBookings({ currentUser }) {
   // stay visible under Franchise so no meeting silently disappears.
   const calendarBookings = useMemo(() => {
     return bookings.filter((b) => {
+      // The Cal event type is the source of truth (franchise vs hiring).
+      if (b.source) return b.source === srcFilter;
       const email = (b.emails || []).find((e) => ticketByEmail[(e || "").toLowerCase()]);
       const t = email ? ticketByEmail[email.toLowerCase()] : null;
       if (!t) return srcFilter === "franchise";

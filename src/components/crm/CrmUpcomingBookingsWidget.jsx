@@ -23,7 +23,9 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
         return { ...b, _ticket: ticket };
       })
       .filter((b) => {
-        // Unmatched bookings stay visible under Franchise.
+        // The Cal event type is the source of truth (franchise vs hiring).
+        if (b.source) return b.source === src;
+        // Fall back to the matched lead's board; unmatched stay under Franchise.
         if (!b._ticket) return src === "franchise";
         return src === "franchise"
           ? b._ticket._boardKey === "franchise"
