@@ -70,7 +70,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
               PiP Partner
             </div>
             <div className="text-[9px] tracking-[0.2em] uppercase font-semibold" style={{ color: CRM.brown }}>
-              Application Board
+              Application Hub
             </div>
           </div>
         </div>
