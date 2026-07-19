@@ -62,6 +62,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
 
       <nav className="space-y-1">
         <NavItem icon={LayoutGrid} label="Dashboard" active={page === "dashboard"} onClick={() => onNavigate("dashboard")} />
+        <NavItem icon={CalendarDays} label="Bookings" active={page === "bookings"} onClick={() => onNavigate("bookings")} />
         <NavItem
           icon={Users}
           label="Leads"
@@ -87,7 +88,6 @@ export default function CrmSidebar({ page, source, onNavigate }) {
             ))}
           </div>
         )}
-        <NavItem icon={CalendarDays} label="Bookings" active={page === "bookings"} onClick={() => onNavigate("bookings")} />
         <NavItem icon={FileText} label="Projects" active={page === "projects"} placeholder onClick={() => onNavigate("projects")} />
       </nav>
 

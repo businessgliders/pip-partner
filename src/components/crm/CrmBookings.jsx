@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { Search, Video, CalendarDays, List } from "lucide-react";
-import { getStatusLabel, displayName } from "@/components/board/boardConfig";
+import { getStatusLabel, displayName, BOARD_TYPES } from "@/components/board/boardConfig";
 import CrmEmailDrawer from "./CrmEmailDrawer";
+import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
 import CrmBookingsCalendar from "./CrmBookingsCalendar";
 import { CRM, dotFor } from "./crmTheme";
 
@@ -18,7 +19,9 @@ export default function CrmBookings({ currentUser }) {
   const [view, setView] = useState("calendar");
   const [tab, setTab] = useState("upcoming");
   const [search, setSearch] = useState("");
+  const [srcFilter, setSrcFilter] = useState("all"); // all | franchise | hiring
   const [emailTarget, setEmailTarget] = useState(null); // { ticket, entity }
+  const [detailTicket, setDetailTicket] = useState(null);
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ["crm-bookings-all"],
@@ -77,6 +80,19 @@ export default function CrmBookings({ currentUser }) {
     return list.sort((a, b) => (tab === "past" ? b._ts - a._ts : a._ts - b._ts));
   }, [bookings, ticketByEmail, tab, search]);
 
+  // Calendar bookings filtered by source (Franchise / Hiring).
+  const calendarBookings = useMemo(() => {
+    if (srcFilter === "all") return bookings;
+    return bookings.filter((b) => {
+      const email = (b.emails || []).find((e) => ticketByEmail[(e || "").toLowerCase()]);
+      const t = email ? ticketByEmail[email.toLowerCase()] : null;
+      if (!t) return false;
+      return srcFilter === "franchise"
+        ? t._boardKey === "franchise"
+        : t._boardKey === "instructor" || t._boardKey === "frontadmin";
+    });
+  }, [bookings, ticketByEmail, srcFilter]);
+
   return (
     <div className="max-w-5xl mx-auto">
       {/* View toggle + tabs + search */}
@@ -101,6 +117,28 @@ export default function CrmBookings({ currentUser }) {
             </button>
           ))}
         </div>
+        {view === "calendar" && (
+          <div
+            className="inline-flex items-center gap-0.5 p-1 rounded-full self-start shrink-0 bg-white"
+            style={{ border: "1px solid rgba(182,118,81,0.15)" }}
+          >
+            {[
+              { key: "all", label: "All" },
+              { key: "franchise", label: "Franchise" },
+              { key: "hiring", label: "Hiring" },
+            ].map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setSrcFilter(f.key)}
+                className="px-3 py-1 rounded-full text-[12px] font-medium transition-all"
+                style={srcFilter === f.key ? { background: CRM.accentSoft, color: "#5b3038" } : { color: CRM.sub }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className={`flex items-center gap-4 flex-1 ${view === "calendar" ? "hidden" : ""}`}>
           {TABS.map((t) => {
             const isActive = tab === t.key;
@@ -136,9 +174,9 @@ export default function CrmBookings({ currentUser }) {
       {view === "calendar" ? (
         <div className="pb-10">
           <CrmBookingsCalendar
-            bookings={bookings}
+            bookings={calendarBookings}
             ticketByEmail={ticketByEmail}
-            onSelect={(t) => setEmailTarget({ ticket: t, entity: t._entity })}
+            onSelect={(t) => setDetailTicket(t)}
           />
         </div>
       ) : (
@@ -213,6 +251,15 @@ export default function CrmBookings({ currentUser }) {
             </div>
           )}
         </>
+      )}
+
+      {detailTicket && (
+        <CrmLeadDetailDrawer
+          ticket={detailTicket}
+          board={BOARD_TYPES.find((b) => b.key === detailTicket._boardKey)}
+          currentUser={currentUser}
+          onClose={() => setDetailTicket(null)}
+        />
       )}
 
       {emailTarget && (

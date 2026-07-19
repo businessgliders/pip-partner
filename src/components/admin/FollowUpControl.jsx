@@ -56,7 +56,7 @@ const PAUSE_LABELS = {
   stopped: { label: "Stopped manually", icon: Pause, color: "text-slate-700 bg-slate-50 border-slate-200" },
 };
 
-export default function FollowUpControl({ ticket, ticketType, iconOnly = false }) {
+export default function FollowUpControl({ ticket, ticketType, iconOnly = false, withLabel = false }) {
   const queryClient = useQueryClient();
   const fu = ticket?.follow_up || {};
   const enabled = !!fu.enabled;
@@ -130,12 +130,19 @@ export default function FollowUpControl({ ticket, ticketType, iconOnly = false }
             <button
               type="button"
               title={`Auto Follow-up Active — Step ${step}/${maxSteps}`}
-              className="relative inline-flex items-center justify-center h-7 w-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 transition-colors"
+              className={`relative inline-flex items-center justify-center gap-1.5 h-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 transition-colors ${withLabel ? "px-2.5" : "w-7"}`}
             >
               <Bot className="w-3.5 h-3.5" />
-              <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-amber-600 text-white text-[9px] font-bold flex items-center justify-center">
-                {step}/{maxSteps}
-              </span>
+              {withLabel && <span className="text-[11px] font-semibold whitespace-nowrap">AI follow-up</span>}
+              {withLabel ? (
+                <span className="min-w-[14px] h-3.5 px-1 rounded-full bg-amber-600 text-white text-[9px] font-bold flex items-center justify-center">
+                  {step}/{maxSteps}
+                </span>
+              ) : (
+                <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-amber-600 text-white text-[9px] font-bold flex items-center justify-center">
+                  {step}/{maxSteps}
+                </span>
+              )}
             </button>
           ) : (
           <button
@@ -290,13 +297,14 @@ export default function FollowUpControl({ ticket, ticketType, iconOnly = false }
           <button
             type="button"
             title={pauseInfo ? pauseInfo.label : "Start Auto Follow-up"}
-            className={`inline-flex items-center justify-center h-7 w-7 rounded-full transition-colors ${
+            className={`inline-flex items-center justify-center gap-1.5 h-7 rounded-full transition-colors ${withLabel ? "px-2.5" : "w-7"} ${
               pauseInfo
                 ? "bg-slate-100 text-slate-500 hover:bg-slate-200"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             <Bot className="w-3.5 h-3.5" />
+            {withLabel && <span className="text-[11px] font-semibold whitespace-nowrap">AI follow-up</span>}
           </button>
         ) : (
         <button

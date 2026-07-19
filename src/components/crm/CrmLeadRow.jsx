@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import FddCountdownPill from "@/components/board/FddCountdownPill";
@@ -9,58 +7,15 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { displayName, getStatusLabel } from "@/components/board/boardConfig";
+import { DetailField, detailFields } from "./crmLeadFields";
+import CrmEmailPreview from "./CrmEmailPreview";
 import { CRM, dotFor } from "./crmTheme";
-
-function DetailField({ label, value }) {
-  if (!value) return null;
-  return (
-    <div>
-      <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-0.5" style={{ color: CRM.sub }}>
-        {label}
-      </div>
-      <div className="text-[13px]" style={{ color: CRM.ink }}>{value}</div>
-    </div>
-  );
-}
-
-// Extra detail fields shown in the expanded panel, per board type.
-function detailFields(t, boardKey) {
-  if (boardKey === "franchise") {
-    return [
-      ["Phone", [t.phone_country, t.phone].filter(Boolean).join(" ")],
-      ["Available Capital", t.available_capital || t.investment_readiness],
-      ["Operation Style", t.operation_style],
-      ["Ready to Sign NDA", t.ready_to_sign_nda],
-      ["Why Pilates in Pink", t.why_pilates_in_pink],
-      ["Business Experience", t.business_experience],
-      ["Discovery Call", t.scheduled_call_time],
-    ];
-  }
-  return [
-    ["Preferred Studio", t.preferred_studio],
-    ["Postal Code", t.postal_code],
-    ["Province", t.province],
-    ["Qualifications", Array.isArray(t.qualifications) ? t.qualifications.join(", ") : null],
-    ["Message", t.message],
-  ];
-}
 
 export default function CrmLeadRow({
   ticket, board, columns, gridTemplate, expanded, onToggle, onEmail, onUpdate,
 }) {
   const [notes, setNotes] = useState(ticket.notes || "");
   const [copied, setCopied] = useState(false);
-  // Recent messages for the inline email preview (only fetched when expanded).
-  const { data: previewMsgs = [] } = useQuery({
-    queryKey: ["crm-lead-preview", ticket.id],
-    queryFn: () =>
-      base44.entities.EmailMessage.filter(
-        { ticket_id: ticket.id, ticket_type: board.entity },
-        "-created_date",
-        4
-      ),
-    enabled: expanded,
-  });
   const [statusOpen, setStatusOpen] = useState(false);
   const name = displayName(ticket);
   const inquiryDate = ticket.created_date ? format(new Date(ticket.created_date), "MMM d, yyyy") : "—";
@@ -209,79 +164,29 @@ export default function CrmLeadRow({
                   )}
                 </div>
 
-                {/* Notes */}
+                {/* Emails — preview of the thread, click to open the panel */}
                 <div>
                   <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-                    Notes
+                    Emails
                   </div>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    onBlur={saveNotes}
-                    placeholder="Type here…"
-                    rows={5}
-                    className="w-full rounded-xl p-3 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
-                    style={{ border: "1px solid rgba(182,118,81,0.18)", color: CRM.ink, background: "#fffdfb" }}
-                  />
+                  <CrmEmailPreview ticket={ticket} entity={board.entity} onOpen={onEmail} />
                 </div>
               </div>
 
-              {/* Email thread preview — click to open the full email panel */}
+              {/* Notes — moved below the details/emails grid */}
               <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(182,118,81,0.08)" }}>
                 <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-                  Emails
+                  Notes
                 </div>
-                <button
-                  type="button"
-                  onClick={onEmail}
-                  className="group relative w-full text-left rounded-xl overflow-hidden"
-                  style={{ border: "1px solid rgba(182,118,81,0.15)", background: "#fffdfb" }}
-                >
-                  <div className="p-3 space-y-2 max-h-32 overflow-hidden">
-                    {previewMsgs.length === 0 ? (
-                      <div className="text-[12px]" style={{ color: CRM.sub }}>
-                        Welcome email sent — open to view the full thread and reply.
-                      </div>
-                    ) : (
-                      previewMsgs.map((m) => (
-                        <div key={m.id} className="flex items-start gap-2">
-                          <span
-                            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 mt-0.5"
-                            style={
-                              m.direction === "inbound"
-                                ? { background: CRM.blush, color: "#a34a5c" }
-                                : { background: "rgba(182,118,81,0.10)", color: CRM.brown }
-                            }
-                          >
-                            {m.direction === "inbound" ? "Them" : "You"}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-[12px] font-medium truncate" style={{ color: CRM.ink }}>
-                              {m.subject || "(no subject)"}
-                            </span>
-                            <span className="block text-[11px] truncate" style={{ color: CRM.sub }}>
-                              {m.snippet || (m.body_text || "").slice(0, 120)}
-                            </span>
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                  {/* Gradient wash fading the preview out */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-                    style={{ background: "linear-gradient(to bottom, rgba(255,253,251,0), #fffdfb 85%)" }}
-                  />
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 backdrop-blur-[2px]">
-                    <span
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-semibold shadow-sm"
-                      style={{ background: CRM.accentSoft, color: "#5b3038" }}
-                    >
-                      <Mail className="w-3.5 h-3.5" /> Open email panel
-                    </span>
-                  </div>
-                </button>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  onBlur={saveNotes}
+                  placeholder="Type here…"
+                  rows={4}
+                  className="w-full rounded-xl p-3 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
+                  style={{ border: "1px solid rgba(182,118,81,0.18)", color: CRM.ink, background: "#fffdfb" }}
+                />
               </div>
             </div>
           </motion.div>

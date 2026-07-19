@@ -28,7 +28,7 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/30 pip-fade-in" onClick={() => setMobileNavOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 pip-slide-in-right" style={{ animationDirection: "reverse" }}>
+          <div className="absolute left-0 top-0 bottom-0 h-full pip-slide-in-left">
             <CrmSidebar page={page} source={source} onNavigate={navigate} />
           </div>
           <button
