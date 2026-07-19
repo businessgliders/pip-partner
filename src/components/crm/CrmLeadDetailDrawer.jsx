@@ -8,6 +8,9 @@ import { displayName, getStatusLabel } from "@/components/board/boardConfig";
 import { DetailField, detailFields } from "./crmLeadFields";
 import CrmEmailPreview from "./CrmEmailPreview";
 import CrmEmailDrawer from "./CrmEmailDrawer";
+import CrmLeadActions from "./CrmLeadActions";
+import CrmLeadNotes from "./CrmLeadNotes";
+import CrmLeadContracts from "./CrmLeadContracts";
 import { CRM, dotFor } from "./crmTheme";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
@@ -15,7 +18,6 @@ import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 // the same content as an expanded lead row (details, notes, email preview).
 export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClose }) {
   const queryClient = useQueryClient();
-  const [notes, setNotes] = useState(ticket?.notes || "");
   const [copied, setCopied] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   useLockBodyScroll();
@@ -28,11 +30,11 @@ export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClos
     setTimeout(() => setCopied(false), 1200);
   };
 
-  const saveNotes = async () => {
-    if (notes === (ticket.notes || "")) return;
-    await base44.entities[board.entity].update(ticket.id, { notes });
+  const handleUpdate = async (id, data) => {
+    await base44.entities[board.entity].update(id, data);
     queryClient.invalidateQueries({ queryKey: ["crm-leads", board.entity] });
     queryClient.invalidateQueries({ queryKey: ["crm-bookings-tickets"] });
+    queryClient.invalidateQueries({ queryKey: ["crm-territories-franchise"] });
   };
 
   return createPortal(
@@ -82,6 +84,9 @@ export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClos
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 opacity-60" />}
           </button>
 
+          {/* Lead functions — FDD timer, meeting, AI follow-up */}
+          <CrmLeadActions ticket={ticket} board={board} />
+
           {/* Details */}
           <div className="space-y-3">
             {detailFields(ticket, board.key).map(([label, value]) => (
@@ -113,21 +118,11 @@ export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClos
             <CrmEmailPreview ticket={ticket} entity={board.entity} onOpen={() => setEmailOpen(true)} />
           </div>
 
-          {/* Notes */}
-          <div>
-            <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-              Notes
-            </div>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={saveNotes}
-              placeholder="Type here…"
-              rows={5}
-              className="w-full rounded-xl p-3 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
-              style={{ border: "1px solid rgba(182,118,81,0.18)", color: CRM.ink, background: "#fffdfb" }}
-            />
-          </div>
+          {/* Notes — attributed thread, same as the expanded lead row */}
+          <CrmLeadNotes ticket={ticket} currentUser={currentUser} onUpdate={handleUpdate} />
+
+          {/* Contracts linked to this lead */}
+          <CrmLeadContracts ticket={ticket} />
         </div>
       </div>
 
