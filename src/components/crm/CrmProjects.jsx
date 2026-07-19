@@ -139,14 +139,14 @@ export default function CrmProjects() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
+          <div className="flex items-center gap-2 flex-1 sm:flex-none min-w-0">
+            <div className="relative flex-1 sm:flex-none min-w-0">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: CRM.sub }} />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="h-9 w-40 sm:w-52 pl-8 pr-3 rounded-full text-[12px] focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="h-9 w-full sm:w-52 pl-8 pr-3 rounded-full text-[12px] focus:outline-none focus:ring-2 focus:ring-pink-200"
                 style={{ border: "1px solid rgba(182,118,81,0.15)", color: CRM.ink }}
               />
             </div>
@@ -156,7 +156,7 @@ export default function CrmProjects() {
               className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-[12px] font-medium bg-white shrink-0 hover:bg-[#faf1ea] transition-all"
               style={{ border: "1px solid rgba(182,118,81,0.15)", color: CRM.ink }}
             >
-              <Columns3 className="w-3.5 h-3.5" /> Swimlanes
+              <Columns3 className="w-3.5 h-3.5" /><span className="hidden sm:inline">Swimlanes</span>
             </button>
             <button
               type="button"
@@ -164,7 +164,7 @@ export default function CrmProjects() {
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[12px] font-semibold shrink-0 hover:brightness-95 transition-all"
               style={{ background: "#f6d75e", color: "#4a3a10" }}
             >
-              <Plus className="w-3.5 h-3.5" /> Add Task
+              <Plus className="w-3.5 h-3.5" /><span className="hidden sm:inline">Add Task</span>
             </button>
           </div>
         </div>

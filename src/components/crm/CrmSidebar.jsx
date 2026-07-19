@@ -45,7 +45,7 @@ function NavItem({ icon: Icon, label, active, onClick, chevron, open, placeholde
 }
 
 export default function CrmSidebar({ page, source, onNavigate }) {
-  const leadsOpen = page === "leads";
+  const leadsOpen = true; // Leads sub-list is always expanded
   const { unreadBySource } = useReplyNotifications();
   const leadsTotal = LEAD_SUBS.reduce((sum, s) => sum + (unreadBySource[s.key] || 0), 0);
   return (

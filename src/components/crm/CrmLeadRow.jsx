@@ -163,9 +163,9 @@ export default function CrmLeadRow({
                 </DropdownMenu>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 min-w-0">
                 {/* Left: emails + notes */}
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0">
                   {/* Emails — preview of the thread, click to open the panel */}
                   <div>
                     <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
@@ -179,7 +179,7 @@ export default function CrmLeadRow({
                 </div>
 
                 {/* Right: details */}
-                <div className="space-y-3">
+                <div className="space-y-3 min-w-0">
                   <div>
                     <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-0.5" style={{ color: CRM.sub }}>
                       Email

@@ -31,7 +31,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
           </div>
         ) : (
           previewMsgs.map((m) => (
-            <div key={m.id} className="flex items-start gap-2">
+            <div key={m.id} className="flex items-start gap-2 min-w-0">
               <span
                 className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 mt-0.5"
                 style={
@@ -42,7 +42,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
               >
                 {m.direction === "inbound" ? "Them" : "You"}
               </span>
-              <span className="min-w-0">
+              <span className="flex-1 min-w-0 overflow-hidden">
                 <span className="block text-[12px] font-medium truncate" style={{ color: CRM.ink }}>
                   {m.subject || "(no subject)"}
                 </span>

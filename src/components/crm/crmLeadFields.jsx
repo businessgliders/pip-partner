@@ -1,14 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { CRM } from "./crmTheme";
 
+const CUTOFF = 160;
+
 export function DetailField({ label, value }) {
+  const [open, setOpen] = useState(false);
   if (!value) return null;
+  const text = String(value);
+  const long = text.length > CUTOFF;
   return (
-    <div>
+    <div className="min-w-0">
       <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-0.5" style={{ color: CRM.sub }}>
         {label}
       </div>
-      <div className="text-[13px]" style={{ color: CRM.ink }}>{value}</div>
+      <div className="text-[13px] break-words" style={{ color: CRM.ink }}>
+        {long && !open ? `${text.slice(0, CUTOFF).trimEnd()}…` : text}
+      </div>
+      {long && (
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="text-[11px] font-semibold underline mt-0.5"
+          style={{ color: CRM.brown }}
+        >
+          {open ? "Show less" : "Read more"}
+        </button>
+      )}
     </div>
   );
 }

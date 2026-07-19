@@ -52,7 +52,7 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
         <header
           className="flex items-center justify-between px-5 lg:px-8 shrink-0"
           style={{
-            height: 64,
+            height: "calc(64px + env(safe-area-inset-top, 0px))",
             paddingTop: "env(safe-area-inset-top, 0px)",
             borderBottom: "1px solid rgba(182,118,81,0.10)",
           }}
@@ -88,18 +88,18 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-5 lg:px-8 py-6 pip-view-in">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 lg:px-8 py-6 pip-view-in">
           {children}
         </main>
 
         <footer
-          className="flex items-center justify-end gap-3 px-5 lg:px-8 py-1.5 shrink-0 text-[10px]"
-          style={{ color: CRM.sub, borderTop: "1px solid rgba(182,118,81,0.08)" }}
+          className="flex items-center justify-center lg:justify-end gap-3 px-5 lg:px-8 py-1.5 shrink-0 text-[10px]"
+          style={{ color: CRM.sub, borderTop: "1px solid rgba(182,118,81,0.08)", paddingBottom: "calc(0.375rem + env(safe-area-inset-bottom, 0px))" }}
         >
           <a href="/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70">
             Public View
           </a>
-          <span>© Pilates in Pink™ Studio Inc. All rights reserved.</span>
+          <span>© Pilates in Pink™ Studio Inc.</span>
         </footer>
       </div>
     </div>
