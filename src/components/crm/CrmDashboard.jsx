@@ -49,6 +49,26 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
     return map;
   }, [all]);
 
+  const ticketByEmail = useMemo(() => {
+    const map = {};
+    all.forEach((t) => {
+      const key = (t.email || "").toLowerCase().trim();
+      if (key && !map[key]) map[key] = t;
+    });
+    return map;
+  }, [all]);
+
+  // Meetings in the next 7 days.
+  const meetingsThisWeek = useMemo(() => {
+    const now = Date.now();
+    const weekEnd = now + 7 * 24 * 3600 * 1000;
+    return bookings.filter((b) => {
+      if (!b?.start) return false;
+      const ts = new Date(b.start).getTime();
+      return ts >= now && ts <= weekEnd;
+    }).length;
+  }, [bookings]);
+
   const signed = fr.filter((t) =>
     ["signed", "site_selection", "lease", "build_out", "training"].includes(t.status)
   ).length;
@@ -103,54 +123,76 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CrmDashboardNotifications rows={notifRows} onOpenItem={(t) => setDetailTicket(t)} />
 
-        {/* Big pink tile — total leads */}
-        <button
-          type="button"
-          onClick={() => goToLeads("franchise")}
-          className="rounded-2xl p-5 text-left flex flex-col"
-          style={{ background: CRM.accentSoft, boxShadow: CRM.cardShadow }}
-        >
-          <span className="text-[12px] font-semibold" style={{ color: "#5b3038" }}>
-            Total leads <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/50 ml-1 align-middle">ALL TIME</span>
-          </span>
-          <span className="text-4xl font-bold mt-2" style={{ color: "#3d1f26" }}>{all.length}</span>
-          <div className="mt-4 space-y-1.5 text-[12px]" style={{ color: "#5b3038" }}>
-            <div className="flex justify-between"><span>Franchising</span><strong>{fr.length}</strong></div>
-            <div className="flex justify-between"><span>Instructor</span><strong>{ins.length}</strong></div>
-            <div className="flex justify-between"><span>Front Desk</span><strong>{fa.length}</strong></div>
-          </div>
-          <div className="mt-auto pt-5">
-            <div className="text-[10px] tracking-[0.15em] uppercase font-semibold opacity-70" style={{ color: "#5b3038" }}>
-              Signed franchises
+        {/* Column 2: total leads + follow-ups tile */}
+        <div className="flex flex-col gap-4">
+          <button
+            type="button"
+            onClick={() => goToLeads("franchise")}
+            className="rounded-2xl p-5 text-left flex flex-col flex-1"
+            style={{ background: CRM.accentSoft, boxShadow: CRM.cardShadow }}
+          >
+            <span className="text-[12px] font-semibold" style={{ color: "#5b3038" }}>
+              Total leads <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/50 ml-1 align-middle">ALL TIME</span>
+            </span>
+            <span className="text-4xl font-bold mt-2" style={{ color: "#3d1f26" }}>{all.length}</span>
+            <div className="mt-4 space-y-1.5 text-[12px]" style={{ color: "#5b3038" }}>
+              <div className="flex justify-between"><span>Franchising</span><strong>{fr.length}</strong></div>
+              <div className="flex justify-between"><span>Instructor</span><strong>{ins.length}</strong></div>
+              <div className="flex justify-between"><span>Front Desk</span><strong>{fa.length}</strong></div>
             </div>
-            <div className="text-xl font-bold" style={{ color: "#3d1f26" }}>{signed}</div>
-          </div>
-        </button>
+            <div className="mt-auto pt-5">
+              <div className="text-[10px] tracking-[0.15em] uppercase font-semibold opacity-70" style={{ color: "#5b3038" }}>
+                Signed franchises
+              </div>
+              <div className="text-xl font-bold" style={{ color: "#3d1f26" }}>{signed}</div>
+            </div>
+          </button>
 
-        {/* Inquiries received sparkline */}
-        <div className="rounded-2xl p-5 flex flex-col" style={{ background: "#fbe9dc", boxShadow: CRM.cardShadow }}>
-          <div className="text-[13px] font-semibold leading-tight" style={{ color: "#7a4a30" }}>
-            Inquiries received
+          {/* Active AI follow-ups tile */}
+          <div className="rounded-2xl p-5" style={{ background: "#e8e4d8", boxShadow: CRM.cardShadow }}>
+            <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#6b6353" }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
+              Active AI follow-ups
+            </div>
+            <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{activeFollowUps.length}</div>
           </div>
-          <div className="text-[10px] tracking-wider uppercase font-semibold mt-0.5" style={{ color: "#b08668" }}>
-            Last 8 months
+        </div>
+
+        {/* Column 3: inquiries sparkline + meetings tile */}
+        <div className="flex flex-col gap-4">
+          <div className="rounded-2xl p-5 flex flex-col flex-1" style={{ background: "#fbe9dc", boxShadow: CRM.cardShadow }}>
+            <div className="text-[13px] font-semibold leading-tight" style={{ color: "#7a4a30" }}>
+              Inquiries received
+            </div>
+            <div className="text-[10px] tracking-wider uppercase font-semibold mt-0.5" style={{ color: "#b08668" }}>
+              Last 8 months
+            </div>
+            <div className="flex-1 min-h-[80px] mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={sparkData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+                  <Area type="monotone" dataKey="count" stroke="#d97a4a" strokeWidth={1.5} fill="rgba(217,122,74,0.18)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex items-end justify-between mt-2 text-[9px] font-semibold" style={{ color: "#b08668" }}>
+              <span>{sparkData[0]?.label}</span>
+              <span>{sparkData[sparkData.length - 1]?.label}</span>
+            </div>
           </div>
-          <div className="flex-1 min-h-[80px] mt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={sparkData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
-                <Area type="monotone" dataKey="count" stroke="#d97a4a" strokeWidth={1.5} fill="rgba(217,122,74,0.18)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex items-end justify-between mt-2 text-[9px] font-semibold" style={{ color: "#b08668" }}>
-            <span>{sparkData[0]?.label}</span>
-            <span>{sparkData[sparkData.length - 1]?.label}</span>
+
+          {/* Meetings this week tile */}
+          <div className="rounded-2xl p-5" style={{ background: "#fbe0e2", boxShadow: CRM.cardShadow }}>
+            <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#a34a5c" }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
+              Meetings this week
+            </div>
+            <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{meetingsThisWeek}</div>
           </div>
         </div>
       </div>
 
-      {/* Row 2: upcoming bookings — calendar-style widget */}
-      <CrmUpcomingBookingsWidget bookings={bookings} onNavigate={onNavigate} />
+      {/* Row 2: upcoming bookings — calendar schedule view */}
+      <CrmUpcomingBookingsWidget bookings={bookings} ticketByEmail={ticketByEmail} onNavigate={onNavigate} />
 
       {detailTicket && detailBoard && (
         <CrmLeadDetailDrawer

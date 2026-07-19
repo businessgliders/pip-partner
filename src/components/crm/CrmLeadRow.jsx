@@ -9,6 +9,7 @@ import {
 import { displayName, getStatusLabel } from "@/components/board/boardConfig";
 import { DetailField, detailFields } from "./crmLeadFields";
 import CrmEmailPreview from "./CrmEmailPreview";
+import CrmLeadActions from "./CrmLeadActions";
 import { CRM, dotFor } from "./crmTheme";
 
 export default function CrmLeadRow({
@@ -141,7 +142,37 @@ export default function CrmLeadRow({
               </div>
 
               <div className="grid sm:grid-cols-2 gap-5">
-                {/* Details */}
+                {/* Left: functions + emails + notes */}
+                <div className="space-y-4">
+                  {/* Lead functions — FDD, Cal.com, AI follow-up */}
+                  <CrmLeadActions ticket={ticket} board={board} />
+
+                  {/* Emails — preview of the thread, click to open the panel */}
+                  <div>
+                    <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
+                      Emails
+                    </div>
+                    <CrmEmailPreview ticket={ticket} entity={board.entity} onOpen={onEmail} />
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
+                      Notes
+                    </div>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      onBlur={saveNotes}
+                      placeholder="Type here…"
+                      rows={4}
+                      className="w-full rounded-xl p-3 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
+                      style={{ border: "1px solid rgba(182,118,81,0.18)", color: CRM.ink, background: "#fffdfb" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Right: details */}
                 <div className="space-y-3">
                   {detailFields(ticket, board.key).map(([label, value]) => (
                     <DetailField key={label} label={label} value={value} />
@@ -163,30 +194,6 @@ export default function CrmLeadRow({
                     </div>
                   )}
                 </div>
-
-                {/* Emails — preview of the thread, click to open the panel */}
-                <div>
-                  <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-                    Emails
-                  </div>
-                  <CrmEmailPreview ticket={ticket} entity={board.entity} onOpen={onEmail} />
-                </div>
-              </div>
-
-              {/* Notes — moved below the details/emails grid */}
-              <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(182,118,81,0.08)" }}>
-                <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-                  Notes
-                </div>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  onBlur={saveNotes}
-                  placeholder="Type here…"
-                  rows={4}
-                  className="w-full rounded-xl p-3 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
-                  style={{ border: "1px solid rgba(182,118,81,0.18)", color: CRM.ink, background: "#fffdfb" }}
-                />
               </div>
             </div>
           </motion.div>

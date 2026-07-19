@@ -3,7 +3,6 @@ import { Bell, ChevronDown } from "lucide-react";
 import { CRM } from "./crmTheme";
 
 const FILTERS = [
-  { key: "all", label: "All" },
   { key: "franchise", label: "Franchise" },
   { key: "hiring", label: "Hiring" },
 ];
@@ -64,10 +63,10 @@ function NotifRow({ label, items, defaultOpen, onOpenItem }) {
 }
 
 export default function CrmDashboardNotifications({ rows, onOpenItem }) {
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("franchise");
   const filtered = rows.map((r) => ({
     ...r,
-    items: filter === "all" ? r.items : r.items.filter((it) => it.group === filter),
+    items: r.items.filter((it) => it.group === filter),
   }));
   const firstWithItems = filtered.findIndex((r) => r.items.length > 0);
 
