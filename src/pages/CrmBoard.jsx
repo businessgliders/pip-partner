@@ -9,7 +9,8 @@ import CrmLeads from "@/components/crm/CrmLeads";
 import CrmBookings from "@/components/crm/CrmBookings";
 import CrmTemplates from "@/components/crm/CrmTemplates";
 import CrmSettings from "@/components/crm/CrmSettings";
-import CrmPlaceholder from "@/components/crm/CrmPlaceholder";
+import CrmProjects from "@/components/crm/CrmProjects";
+import CrmSplash from "@/components/crm/CrmSplash";
 
 const PLACEHOLDERS = { projects: "Projects", delivery: "Delivery", financials: "Financials" };
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
@@ -34,7 +35,7 @@ export default function CrmBoard() {
   const firstName = (user?.full_name || "").split(" ")[0] || "there";
   const title =
     page === "dashboard" ? `Hello, ${firstName}` :
-    page === "leads" ? `Leads — ${SOURCE_LABELS[source] || "Franchising"}` :
+    page === "leads" ? `Leads · ${SOURCE_LABELS[source] || "Franchising"}` :
     page === "bookings" ? "Bookings" :
     page === "templates" ? "Templates" :
     page === "settings" ? "Settings" :
@@ -49,7 +50,9 @@ export default function CrmBoard() {
         {page === "bookings" && <CrmBookings currentUser={user} />}
         {page === "templates" && <CrmTemplates />}
         {page === "settings" && <CrmSettings onNavigate={onNavigate} />}
-        {PLACEHOLDERS[page] && <CrmPlaceholder label={PLACEHOLDERS[page]} />}
+        {page === "projects" && <CrmProjects />}
+        {page === "delivery" && <CrmSplash label="Delivery" />}
+        {page === "financials" && <CrmSplash label="Financials" />}
       </CrmShell>
     </>
   );

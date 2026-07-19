@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Plus, X, Save, Trash2 } from "lucide-react";
+import { Plus, X, Save, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import CrmEmailShellPreview from "./CrmEmailShellPreview";
 import { CRM } from "./crmTheme";
 
 const CATEGORIES = ["General", "Franchise", "Influencer", "Hiring", "Follow-up", "Other"];
@@ -16,12 +17,19 @@ const EMPTY = { name: "", category: "General", subject: "", body_html: "", is_ac
 
 export default function CrmTemplates() {
   const queryClient = useQueryClient();
-  const [category, setCategory] = useState("All");
+  const [openCategory, setOpenCategory] = useState(null); // null = auto (first non-empty)
   const [editing, setEditing] = useState(null);
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ["crm-templates"],
     queryFn: () => base44.entities.EmailTemplate.list("-updated_date", 200),
+  });
+
+  // Current user's signature so the preview mirrors the sent email.
+  const { data: me } = useQuery({
+    queryKey: ["crm-current-user"],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const saveMutation = useMutation({
@@ -42,89 +50,99 @@ export default function CrmTemplates() {
     },
   });
 
-  const visible = useMemo(
-    () => (category === "All" ? templates : templates.filter((t) => t.category === category)),
-    [templates, category]
+  const grouped = useMemo(
+    () => CATEGORIES.map((c) => ({ category: c, items: templates.filter((t) => t.category === c) })),
+    [templates]
   );
+
+  const firstNonEmpty = grouped.find((g) => g.items.length > 0)?.category || CATEGORIES[0];
+  const effectiveOpen = openCategory === null ? firstNonEmpty : openCategory;
 
   const strip = (html) => (html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-1 flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 mb-1">
         <h2 className="text-lg font-semibold" style={{ color: CRM.ink }}>Collections</h2>
-      </div>
-      <p className="text-[13px] mb-5" style={{ color: CRM.sub }}>
-        Reusable email templates for your different pipelines.
-      </p>
-
-      {/* Category card-view selector */}
-      <div className="flex items-center gap-2 mb-6 overflow-x-auto hide-scrollbar">
-        {["All", ...CATEGORIES].map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => setCategory(c)}
-            className="px-3.5 py-1.5 rounded-full text-[12px] font-medium shrink-0 transition-all"
-            style={
-              category === c
-                ? { background: CRM.ink, color: "white" }
-                : { background: "white", color: CRM.sub, border: "1px solid rgba(182,118,81,0.15)" }
-            }
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">
-        {/* Create card */}
         <button
           type="button"
-          onClick={() => setEditing({ ...EMPTY, category: category === "All" ? "General" : category })}
-          className="rounded-2xl p-8 flex flex-col items-center justify-center gap-3 min-h-[170px] transition-shadow hover:shadow-md"
-          style={{
-            background: "linear-gradient(135deg, #fff9f4 0%, #fbe0e2 100%)",
-            border: "1px dashed rgba(182,118,81,0.3)",
-          }}
+          onClick={() => setEditing({ ...EMPTY, category: effectiveOpen })}
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[12px] font-semibold"
+          style={{ background: CRM.accentSoft, color: "#5b3038" }}
         >
-          <span className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center">
-            <Plus className="w-5 h-5" style={{ color: CRM.brown }} />
-          </span>
-          <span className="text-[13px] font-medium" style={{ color: CRM.ink }}>Create a template</span>
+          <Plus className="w-3.5 h-3.5" /> New template
         </button>
+      </div>
+      <p className="text-[13px] mb-5" style={{ color: CRM.sub }}>
+        Reusable email templates for your different pipelines, grouped by category.
+      </p>
 
-        {isLoading ? null : visible.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setEditing(t)}
-            className="crm-card p-5 text-left flex flex-col min-h-[170px] hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <span className="text-[14px] font-semibold leading-snug" style={{ color: CRM.ink }}>
-                {t.name}
-              </span>
-              {!t.is_active && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ background: "#fef3c7", color: "#b45309" }}>
-                  Inactive
+      {/* Category accordion */}
+      <div className="space-y-3 pb-10">
+        {grouped.map(({ category, items }) => {
+          const open = effectiveOpen === category;
+          return (
+            <div key={category} className="crm-card overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setOpenCategory(open ? "" : category)}
+                className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#fdf8f4] transition-colors"
+              >
+                <span className="flex items-center gap-2.5">
+                  {open
+                    ? <ChevronDown className="w-4 h-4" style={{ color: CRM.brown }} />
+                    : <ChevronRight className="w-4 h-4" style={{ color: CRM.brown }} />}
+                  <span className="text-[14px] font-semibold" style={{ color: CRM.ink }}>{category}</span>
                 </span>
+                <span
+                  className="text-[10px] font-bold min-w-[22px] h-5 px-1.5 rounded-full flex items-center justify-center"
+                  style={{ background: CRM.blush, color: CRM.brown }}
+                >
+                  {items.length}
+                </span>
+              </button>
+
+              {open && (
+                <div className="px-5 pb-5 pt-1">
+                  {isLoading ? null : items.length === 0 ? (
+                    <p className="text-[12px] py-2" style={{ color: CRM.sub }}>
+                      No templates in this category yet.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {items.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setEditing(t)}
+                          className="rounded-2xl p-4 text-left flex flex-col min-h-[140px] hover:shadow-md transition-shadow"
+                          style={{ border: "1px solid rgba(182,118,81,0.15)", background: "#fffdfb" }}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <span className="text-[13px] font-semibold leading-snug" style={{ color: CRM.ink }}>
+                              {t.name}
+                            </span>
+                            {!t.is_active && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ background: "#fef3c7", color: "#b45309" }}>
+                                Inactive
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[12px] font-medium mb-1 truncate" style={{ color: CRM.brown }}>
+                            {t.subject}
+                          </div>
+                          <p className="text-[11px] leading-relaxed line-clamp-3 flex-1" style={{ color: CRM.sub }}>
+                            {strip(t.body_html) || "No content yet"}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-            <div className="text-[12px] font-medium mb-1.5 truncate" style={{ color: CRM.brown }}>
-              {t.subject}
-            </div>
-            <p className="text-[12px] leading-relaxed line-clamp-3 flex-1" style={{ color: CRM.sub }}>
-              {strip(t.body_html) || "—"}
-            </p>
-            <span
-              className="mt-3 self-start text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: CRM.blush, color: CRM.brown }}
-            >
-              {t.category}
-            </span>
-          </button>
-        ))}
+          );
+        })}
       </div>
 
       {/* Editor modal */}
@@ -180,6 +198,17 @@ export default function CrmTemplates() {
                   onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })}
                 />
                 <Label htmlFor="crm-tpl-active" className="text-sm">Active</Label>
+              </div>
+              <div>
+                <Label className="text-xs">Preview (how it will be sent)</Label>
+                <p className="text-[11px] mb-1" style={{ color: CRM.sub }}>
+                  Sample values fill the placeholders and your signature is appended, just like the real email.
+                </p>
+                <CrmEmailShellPreview
+                  bodyHtml={editing.body_html}
+                  signatureHtml={me?.signature_html || ""}
+                  height={400}
+                />
               </div>
             </div>
             <div className="flex items-center justify-between gap-2 p-5" style={{ borderTop: "1px solid rgba(182,118,81,0.1)", background: "#fdf8f4" }}>
