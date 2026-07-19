@@ -11,6 +11,7 @@ import CrmTemplates from "@/components/crm/CrmTemplates";
 import CrmSettings from "@/components/crm/CrmSettings";
 import CrmProjects from "@/components/crm/CrmProjects";
 import CrmSplash from "@/components/crm/CrmSplash";
+import CrmWelcomeSplash from "@/components/crm/CrmWelcomeSplash";
 
 const PLACEHOLDERS = { projects: "Tasks", delivery: "Delivery", financials: "Financials" };
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
@@ -44,6 +45,7 @@ export default function CrmBoard() {
   return (
     <>
       <AdminFavicon title="PiP Partner — Application Board" />
+      {user && <CrmWelcomeSplash user={user} />}
       <CrmShell page={page} source={source} onNavigate={onNavigate} title={title} user={user}>
         {page === "dashboard" && <CrmDashboard onNavigate={onNavigate} currentUser={user} />}
         {page === "leads" && <CrmLeads key={source} source={source} currentUser={user} />}

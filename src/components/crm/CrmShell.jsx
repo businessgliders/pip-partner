@@ -70,6 +70,16 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
         <main className="flex-1 overflow-y-auto px-5 lg:px-8 py-6 pip-view-in">
           {children}
         </main>
+
+        <footer
+          className="flex items-center justify-end gap-3 px-5 lg:px-8 py-1.5 shrink-0 text-[10px]"
+          style={{ color: CRM.sub, borderTop: "1px solid rgba(182,118,81,0.08)" }}
+        >
+          <a href="/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70">
+            Public View
+          </a>
+          <span>© Pilates in Pink™ Studio Inc. All rights reserved.</span>
+        </footer>
       </div>
     </div>
   );

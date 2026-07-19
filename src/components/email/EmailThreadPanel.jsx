@@ -140,7 +140,7 @@ function buildIntakeSummary(ticket, ticketType) {
     .join("");
 }
 
-function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessageId, markAsRead, headerContent }, ref) {
+function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessageId, markAsRead, headerContent, hideHeader }, ref) {
   const containerRef = useRef(null);
   const panelRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
@@ -395,8 +395,8 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
 
   return (
     <>
-      <div ref={panelRef} className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {headerContent ? (
+      <div ref={panelRef} className={`flex flex-col h-full bg-white overflow-hidden ${hideHeader ? "" : "rounded-xl border border-gray-200"}`}>
+        {hideHeader ? null : headerContent ? (
           <div className="px-4 py-2.5 border-b bg-gradient-to-r from-amber-50 to-pink-50">
             {headerContent}
           </div>

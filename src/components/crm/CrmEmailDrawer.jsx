@@ -78,8 +78,8 @@ export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClos
             </button>
           </div>
         </div>
-        <div className="flex-1 min-h-0 p-3">
-          <EmailThreadPanel ticket={ticket} ticketType={ticketType} currentUser={currentUser} />
+        <div className="flex-1 min-h-0">
+          <EmailThreadPanel ticket={ticket} ticketType={ticketType} currentUser={currentUser} hideHeader />
         </div>
       </div>
     </div>,
