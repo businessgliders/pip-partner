@@ -42,7 +42,7 @@ export default function CrmBoard() {
 
   return (
     <>
-      <AdminFavicon title="Pilates in Pink™ — HQ" />
+      <AdminFavicon title="PiP Partner — Application Board" />
       <CrmShell page={page} source={source} onNavigate={onNavigate} title={title} user={user}>
         {page === "dashboard" && <CrmDashboard onNavigate={onNavigate} />}
         {page === "leads" && <CrmLeads key={source} source={source} currentUser={user} />}

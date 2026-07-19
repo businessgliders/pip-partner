@@ -43,11 +43,20 @@ export default function CrmSidebar({ page, source, onNavigate }) {
         onClick={() => onNavigate("dashboard")}
         className="px-3 mb-8 text-left"
       >
-        <div className="text-lg font-bold leading-tight tracking-tight" style={{ color: CRM.ink }}>
-          Pilates in Pink<span className="text-[10px] align-super">™</span>
-        </div>
-        <div className="text-[10px] tracking-[0.25em] uppercase font-semibold" style={{ color: CRM.brown }}>
-          HQ
+        <div className="flex items-center gap-2">
+          <img
+            src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/35f492e1c_Pilatesinpinklogojusticon1.png"
+            alt="PiP Partner"
+            className="w-8 h-8 object-contain shrink-0"
+          />
+          <div>
+            <div className="text-lg font-bold leading-tight tracking-tight" style={{ color: CRM.ink }}>
+              PiP Partner
+            </div>
+            <div className="text-[9px] tracking-[0.2em] uppercase font-semibold" style={{ color: CRM.brown }}>
+              Application Board
+            </div>
+          </div>
         </div>
       </button>
 
@@ -93,12 +102,11 @@ export default function CrmSidebar({ page, source, onNavigate }) {
 
       {/* Decorative watermark */}
       <div className="mt-auto pt-10 select-none pointer-events-none">
-        <div
-          className="text-[110px] leading-none font-bold opacity-[0.07] -ml-4"
-          style={{ color: CRM.brown }}
-        >
-          p
-        </div>
+        <img
+          src="https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/35f492e1c_Pilatesinpinklogojusticon1.png"
+          alt=""
+          className="w-44 -ml-8 -mb-8 opacity-[0.14]"
+        />
       </div>
     </div>
   );

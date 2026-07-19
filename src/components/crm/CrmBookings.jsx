@@ -2,9 +2,10 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
-import { Search, Video } from "lucide-react";
+import { Search, Video, CalendarDays, List } from "lucide-react";
 import { getStatusLabel, displayName } from "@/components/board/boardConfig";
 import CrmEmailDrawer from "./CrmEmailDrawer";
+import CrmBookingsCalendar from "./CrmBookingsCalendar";
 import { CRM, dotFor } from "./crmTheme";
 
 const TABS = [
@@ -14,6 +15,7 @@ const TABS = [
 ];
 
 export default function CrmBookings({ currentUser }) {
+  const [view, setView] = useState("calendar");
   const [tab, setTab] = useState("upcoming");
   const [search, setSearch] = useState("");
   const [emailTarget, setEmailTarget] = useState(null); // { ticket, entity }
@@ -77,9 +79,29 @@ export default function CrmBookings({ currentUser }) {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Tabs + search */}
+      {/* View toggle + tabs + search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-        <div className="flex items-center gap-4 flex-1">
+        <div
+          className="inline-flex items-center gap-1 p-1 rounded-full self-start shrink-0 bg-white"
+          style={{ border: "1px solid rgba(182,118,81,0.15)" }}
+        >
+          {[
+            { key: "calendar", label: "Calendar", Icon: CalendarDays },
+            { key: "list", label: "List", Icon: List },
+          ].map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setView(key)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-all"
+              style={view === key ? { background: CRM.accentSoft, color: "#5b3038" } : { color: CRM.sub }}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className={`flex items-center gap-4 flex-1 ${view === "calendar" ? "hidden" : ""}`}>
           {TABS.map((t) => {
             const isActive = tab === t.key;
             return (
@@ -99,7 +121,7 @@ export default function CrmBookings({ currentUser }) {
             );
           })}
         </div>
-        <div className="relative shrink-0 sm:w-56">
+        <div className={`relative shrink-0 sm:w-56 ${view === "calendar" ? "hidden" : ""}`}>
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: CRM.sub }} />
           <input
             value={search}
@@ -111,74 +133,86 @@ export default function CrmBookings({ currentUser }) {
         </div>
       </div>
 
-      {/* Column headers */}
-      <div
-        className="hidden md:grid items-center gap-3 px-5 pb-2 text-[11px] font-medium"
-        style={{ gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", color: CRM.sub }}
-      >
-        <span>Lead</span>
-        <span>Meeting date</span>
-        <span>Time</span>
-        <span className="text-right pr-2">Status</span>
-      </div>
-
-      {isLoading ? (
-        <div className="crm-card p-10 text-center text-sm" style={{ color: CRM.sub }}>Loading…</div>
-      ) : rows.length === 0 ? (
-        <div className="crm-card p-10 text-center text-sm" style={{ color: CRM.sub }}>
-          No {tab === "all" ? "" : tab + " "}bookings found.
+      {view === "calendar" ? (
+        <div className="pb-10">
+          <CrmBookingsCalendar
+            bookings={bookings}
+            ticketByEmail={ticketByEmail}
+            onSelect={(t) => setEmailTarget({ ticket: t, entity: t._entity })}
+          />
         </div>
       ) : (
-        <div className="space-y-2.5 pb-10">
-          {rows.map((b, i) => {
-            const t = b._ticket;
-            const d = new Date(b.start);
-            return (
-              <button
-                key={`${b.bookingId || b.uid || i}`}
-                type="button"
-                onClick={() => t && setEmailTarget({ ticket: t, entity: t._entity })}
-                className="w-full grid items-center gap-3 px-5 py-4 bg-white rounded-2xl text-left hover:bg-[#fdf8f4] transition-colors"
-                style={{
-                  gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
-                  boxShadow: CRM.cardShadow,
-                  border: CRM.cardBorder,
-                }}
-              >
-                <span className="min-w-0">
-                  <span className="flex items-center gap-2">
-                    <Video className="w-3.5 h-3.5 shrink-0" style={{ color: CRM.accent }} />
-                    <span className="text-[13px] font-semibold truncate" style={{ color: CRM.ink }}>
-                      {t ? displayName(t) : b.title || "Meeting"}
+        <>
+          {/* Column headers */}
+          <div
+            className="hidden md:grid items-center gap-3 px-5 pb-2 text-[11px] font-medium"
+            style={{ gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", color: CRM.sub }}
+          >
+            <span>Lead</span>
+            <span>Meeting date</span>
+            <span>Time</span>
+            <span className="text-right pr-2">Status</span>
+          </div>
+
+          {isLoading ? (
+            <div className="crm-card p-10 text-center text-sm" style={{ color: CRM.sub }}>Loading…</div>
+          ) : rows.length === 0 ? (
+            <div className="crm-card p-10 text-center text-sm" style={{ color: CRM.sub }}>
+              No {tab === "all" ? "" : tab + " "}bookings found.
+            </div>
+          ) : (
+            <div className="space-y-2.5 pb-10">
+              {rows.map((b, i) => {
+                const t = b._ticket;
+                const d = new Date(b.start);
+                return (
+                  <button
+                    key={`${b.bookingId || b.uid || i}`}
+                    type="button"
+                    onClick={() => t && setEmailTarget({ ticket: t, entity: t._entity })}
+                    className="w-full grid items-center gap-3 px-5 py-4 bg-white rounded-2xl text-left hover:bg-[#fdf8f4] transition-colors"
+                    style={{
+                      gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                      boxShadow: CRM.cardShadow,
+                      border: CRM.cardBorder,
+                    }}
+                  >
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2">
+                        <Video className="w-3.5 h-3.5 shrink-0" style={{ color: CRM.accent }} />
+                        <span className="text-[13px] font-semibold truncate" style={{ color: CRM.ink }}>
+                          {t ? displayName(t) : b.title || "Meeting"}
+                        </span>
+                      </span>
+                      <span className="block text-[11px] truncate pl-5" style={{ color: CRM.sub }}>
+                        {b._email}
+                      </span>
                     </span>
-                  </span>
-                  <span className="block text-[11px] truncate pl-5" style={{ color: CRM.sub }}>
-                    {b._email}
-                  </span>
-                </span>
-                <span className="text-[13px]" style={{ color: "#5c4a3f" }}>
-                  {format(d, "EEE, MMM d, yyyy")}
-                </span>
-                <span className="text-[13px]" style={{ color: "#5c4a3f" }}>
-                  {format(d, "h:mm a")}
-                </span>
-                <span className="flex justify-end">
-                  {t ? (
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
-                      style={{ color: CRM.ink, border: "1px solid rgba(182,118,81,0.15)" }}
-                    >
-                      <span className="w-2 h-2 rounded-full" style={{ background: dotFor(t.status) }} />
-                      {getStatusLabel(t._boardKey, t.status)}
+                    <span className="text-[13px]" style={{ color: "#5c4a3f" }}>
+                      {format(d, "EEE, MMM d, yyyy")}
                     </span>
-                  ) : (
-                    <span className="text-[11px]" style={{ color: CRM.sub }}>—</span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                    <span className="text-[13px]" style={{ color: "#5c4a3f" }}>
+                      {format(d, "h:mm a")}
+                    </span>
+                    <span className="flex justify-end">
+                      {t ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
+                          style={{ color: CRM.ink, border: "1px solid rgba(182,118,81,0.15)" }}
+                        >
+                          <span className="w-2 h-2 rounded-full" style={{ background: dotFor(t.status) }} />
+                          {getStatusLabel(t._boardKey, t.status)}
+                        </span>
+                      ) : (
+                        <span className="text-[11px]" style={{ color: CRM.sub }}>—</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
 
       {emailTarget && (

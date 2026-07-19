@@ -33,7 +33,7 @@ export default function CrmLeads({ source, currentUser }) {
 
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
-  const [sortDir, setSortDir] = useState("desc");
+  const [sort, setSort] = useState({ key: "created", dir: "desc" });
   const [expandedId, setExpandedId] = useState(null);
   const [emailTicket, setEmailTicket] = useState(null);
 
@@ -68,18 +68,50 @@ export default function CrmLeads({ source, currentUser }) {
       );
     }
     return [...list].sort((a, b) => {
-      const da = new Date(a.created_date || 0).getTime();
-      const db = new Date(b.created_date || 0).getTime();
-      return sortDir === "desc" ? db - da : da - db;
+      let cmp;
+      if (sort.key === "name") {
+        cmp = displayName(a).localeCompare(displayName(b));
+      } else {
+        cmp = new Date(a.created_date || 0).getTime() - new Date(b.created_date || 0).getTime();
+      }
+      return sort.dir === "desc" ? -cmp : cmp;
     });
-  }, [active, tab, search, sortDir]);
+  }, [active, tab, search, sort]);
+
+  const toggleSort = (key) =>
+    setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: key === "name" ? "asc" : "desc" }));
+
+  // Status filter tabs: hide zero-count statuses; for franchise, insert a
+  // separator between step-1 and step-2 statuses.
+  const tabItems = useMemo(() => {
+    const nonEmpty = board.statuses.filter((s) => (counts[s] ?? 0) > 0);
+    if (board.stepOne) {
+      const one = board.stepOne.filter((s) => nonEmpty.includes(s));
+      const two = (board.stepTwo || []).filter((s) => nonEmpty.includes(s));
+      const rest = nonEmpty.filter((s) => !one.includes(s) && !two.includes(s));
+      const items = ["all", ...one];
+      if (two.length) items.push("__sep__", ...two);
+      if (rest.length) items.push("__sep__", ...rest);
+      return items;
+    }
+    return ["all", ...nonEmpty];
+  }, [board, counts]);
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Tabs + search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
         <div className="flex items-center gap-4 overflow-x-auto hide-scrollbar flex-1 min-w-0">
-          {["all", ...board.statuses].map((s) => {
+          {tabItems.map((s, idx) => {
+            if (s === "__sep__") {
+              return (
+                <span
+                  key={`sep-${idx}`}
+                  className="h-4 w-px shrink-0 self-center"
+                  style={{ background: "rgba(182,118,81,0.3)" }}
+                />
+              );
+            }
             const isActive = tab === s;
             return (
               <button
@@ -121,13 +153,20 @@ export default function CrmLeads({ source, currentUser }) {
         className="hidden md:grid items-center gap-3 px-5 pb-2 text-[11px] font-medium"
         style={{ gridTemplateColumns: gridTemplate, color: CRM.sub }}
       >
-        <span>Name</span>
+        <button
+          type="button"
+          onClick={() => toggleSort("name")}
+          className="flex items-center gap-1 text-left"
+          style={{ color: sort.key === "name" ? CRM.ink : CRM.sub, fontWeight: sort.key === "name" ? 600 : 500 }}
+        >
+          Name <ArrowUpDown className="w-3 h-3" />
+        </button>
         {columns.map((c) => <span key={c.key}>{c.label}</span>)}
         <button
           type="button"
-          onClick={() => setSortDir((d) => (d === "desc" ? "asc" : "desc"))}
-          className="flex items-center gap-1 font-semibold"
-          style={{ color: CRM.ink }}
+          onClick={() => toggleSort("created")}
+          className="flex items-center gap-1"
+          style={{ color: sort.key === "created" ? CRM.ink : CRM.sub, fontWeight: sort.key === "created" ? 600 : 500 }}
         >
           Inquiry date <ArrowUpDown className="w-3 h-3" />
         </button>

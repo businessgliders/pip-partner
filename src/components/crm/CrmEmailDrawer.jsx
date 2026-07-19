@@ -2,6 +2,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
+import FollowUpControl from "@/components/admin/FollowUpControl";
 import { displayName } from "@/components/board/boardConfig";
 import { CRM } from "./crmTheme";
 
@@ -27,9 +28,12 @@ export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClos
               {ticket.email}
             </div>
           </div>
-          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-white/60">
-            <X className="w-5 h-5" style={{ color: CRM.ink }} />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <FollowUpControl ticket={ticket} ticketType={ticketType} iconOnly />
+            <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-white/60">
+              <X className="w-5 h-5" style={{ color: CRM.ink }} />
+            </button>
+          </div>
         </div>
         <div className="flex-1 min-h-0 p-3">
           <EmailThreadPanel ticket={ticket} ticketType={ticketType} currentUser={currentUser} />

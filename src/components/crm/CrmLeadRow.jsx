@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
+import FddCountdownPill from "@/components/board/FddCountdownPill";
 import { ChevronDown, Copy, Mail, MoreHorizontal, Archive, Check } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -47,6 +50,17 @@ export default function CrmLeadRow({
 }) {
   const [notes, setNotes] = useState(ticket.notes || "");
   const [copied, setCopied] = useState(false);
+  // Recent messages for the inline email preview (only fetched when expanded).
+  const { data: previewMsgs = [] } = useQuery({
+    queryKey: ["crm-lead-preview", ticket.id],
+    queryFn: () =>
+      base44.entities.EmailMessage.filter(
+        { ticket_id: ticket.id, ticket_type: board.entity },
+        "-created_date",
+        4
+      ),
+    enabled: expanded,
+  });
   const [statusOpen, setStatusOpen] = useState(false);
   const name = displayName(ticket);
   const inquiryDate = ticket.created_date ? format(new Date(ticket.created_date), "MMM d, yyyy") : "—";
@@ -77,7 +91,12 @@ export default function CrmLeadRow({
         className="w-full grid items-center gap-3 px-5 py-4 text-left hover:bg-[#fdf8f4] transition-colors"
         style={{ gridTemplateColumns: gridTemplate }}
       >
-        <span className="text-[13px] font-semibold truncate" style={{ color: CRM.ink }}>{name}</span>
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="text-[13px] font-semibold truncate" style={{ color: CRM.ink }}>{name}</span>
+          {board.key === "franchise" && (ticket.status === "fdd" || ticket.fdd_countdown_started_at) && (
+            <FddCountdownPill ticket={ticket} />
+          )}
+        </span>
         {columns.map((c) => (
           <span key={c.key} className="hidden md:block text-[13px] truncate" style={{ color: "#5c4a3f" }}>
             {c.get(ticket) || "—"}
@@ -207,21 +226,62 @@ export default function CrmLeadRow({
                 </div>
               </div>
 
-              {/* Footer actions */}
-              <div className="mt-4 pt-4 flex flex-wrap items-center gap-3" style={{ borderTop: "1px solid rgba(182,118,81,0.08)" }}>
-                <div>
-                  <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-                    Say hello
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onEmail}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-semibold shadow-sm hover:opacity-90 transition-opacity"
-                    style={{ background: CRM.accentSoft, color: "#5b3038" }}
-                  >
-                    <Mail className="w-3.5 h-3.5" /> Email
-                  </button>
+              {/* Email thread preview — click to open the full email panel */}
+              <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(182,118,81,0.08)" }}>
+                <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
+                  Emails
                 </div>
+                <button
+                  type="button"
+                  onClick={onEmail}
+                  className="group relative w-full text-left rounded-xl overflow-hidden"
+                  style={{ border: "1px solid rgba(182,118,81,0.15)", background: "#fffdfb" }}
+                >
+                  <div className="p-3 space-y-2 max-h-32 overflow-hidden">
+                    {previewMsgs.length === 0 ? (
+                      <div className="text-[12px]" style={{ color: CRM.sub }}>
+                        Welcome email sent — open to view the full thread and reply.
+                      </div>
+                    ) : (
+                      previewMsgs.map((m) => (
+                        <div key={m.id} className="flex items-start gap-2">
+                          <span
+                            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 mt-0.5"
+                            style={
+                              m.direction === "inbound"
+                                ? { background: CRM.blush, color: "#a34a5c" }
+                                : { background: "rgba(182,118,81,0.10)", color: CRM.brown }
+                            }
+                          >
+                            {m.direction === "inbound" ? "Them" : "You"}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-[12px] font-medium truncate" style={{ color: CRM.ink }}>
+                              {m.subject || "(no subject)"}
+                            </span>
+                            <span className="block text-[11px] truncate" style={{ color: CRM.sub }}>
+                              {m.snippet || (m.body_text || "").slice(0, 120)}
+                            </span>
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {/* Gradient wash fading the preview out */}
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,253,251,0), #fffdfb 85%)" }}
+                  />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 backdrop-blur-[2px]">
+                    <span
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-semibold shadow-sm"
+                      style={{ background: CRM.accentSoft, color: "#5b3038" }}
+                    >
+                      <Mail className="w-3.5 h-3.5" /> Open email panel
+                    </span>
+                  </div>
+                </button>
               </div>
             </div>
           </motion.div>
