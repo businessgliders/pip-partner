@@ -71,6 +71,8 @@ export default function CrmLeads({ source, currentUser }) {
       let cmp;
       if (sort.key === "name") {
         cmp = displayName(a).localeCompare(displayName(b));
+      } else if (sort.key === "status") {
+        cmp = getStatusLabel(board.key, a.status || "").localeCompare(getStatusLabel(board.key, b.status || ""));
       } else {
         cmp = new Date(a.created_date || 0).getTime() - new Date(b.created_date || 0).getTime();
       }
@@ -79,7 +81,7 @@ export default function CrmLeads({ source, currentUser }) {
   }, [active, tab, search, sort]);
 
   const toggleSort = (key) =>
-    setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: key === "name" ? "asc" : "desc" }));
+    setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: key === "created" ? "desc" : "asc" }));
 
   // Status filter tabs: hide zero-count statuses; for franchise, insert a
   // separator between step-1 and step-2 statuses.
@@ -170,7 +172,14 @@ export default function CrmLeads({ source, currentUser }) {
         >
           Inquiry date <ArrowUpDown className="w-3 h-3" />
         </button>
-        <span className="text-right pr-6">Status</span>
+        <button
+          type="button"
+          onClick={() => toggleSort("status")}
+          className="flex items-center justify-end gap-1 text-right pr-6"
+          style={{ color: sort.key === "status" ? CRM.ink : CRM.sub, fontWeight: sort.key === "status" ? 600 : 500 }}
+        >
+          Status <ArrowUpDown className="w-3 h-3" />
+        </button>
       </div>
 
       {/* Rows */}
@@ -193,6 +202,7 @@ export default function CrmLeads({ source, currentUser }) {
               onToggle={() => setExpandedId(expandedId === t.id ? null : t.id)}
               onEmail={() => setEmailTicket(t)}
               onUpdate={handleUpdate}
+              currentUser={currentUser}
             />
           ))}
         </div>

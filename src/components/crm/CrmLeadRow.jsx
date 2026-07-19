@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import FddCountdownPill from "@/components/board/FddCountdownPill";
-import { ChevronDown, Copy, Mail, MoreHorizontal, Archive, Check } from "lucide-react";
+import { ChevronDown, Copy, Mail, MoreHorizontal, Archive, Check, Bot } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -10,12 +10,12 @@ import { displayName, getStatusLabel } from "@/components/board/boardConfig";
 import { DetailField, detailFields } from "./crmLeadFields";
 import CrmEmailPreview from "./CrmEmailPreview";
 import CrmLeadActions from "./CrmLeadActions";
+import CrmLeadNotes from "./CrmLeadNotes";
 import { CRM, dotFor } from "./crmTheme";
 
 export default function CrmLeadRow({
-  ticket, board, columns, gridTemplate, expanded, onToggle, onEmail, onUpdate,
+  ticket, board, columns, gridTemplate, expanded, onToggle, onEmail, onUpdate, currentUser,
 }) {
-  const [notes, setNotes] = useState(ticket.notes || "");
   const [copied, setCopied] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const name = displayName(ticket);
@@ -26,10 +26,6 @@ export default function CrmLeadRow({
     navigator.clipboard?.writeText(ticket.email || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
-  };
-
-  const saveNotes = () => {
-    if (notes !== (ticket.notes || "")) onUpdate(ticket.id, { notes });
   };
 
   return (
@@ -51,6 +47,16 @@ export default function CrmLeadRow({
           <span className="text-[13px] font-semibold truncate" style={{ color: CRM.ink }}>{name}</span>
           {board.key === "franchise" && (ticket.status === "fdd" || ticket.fdd_countdown_started_at) && (
             <FddCountdownPill ticket={ticket} />
+          )}
+          {ticket.follow_up?.enabled && (
+            <span
+              className="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-semibold shrink-0"
+              style={{ background: "#fef3c7", color: "#b45309" }}
+              title={`Auto follow-up active, step ${ticket.follow_up.step || 0}/${ticket.follow_up.max_steps || 5}`}
+            >
+              <Bot className="w-3 h-3" />
+              AI {ticket.follow_up.step || 0}/{ticket.follow_up.max_steps || 5}
+            </span>
           )}
         </span>
         {columns.map((c) => (
@@ -109,17 +115,8 @@ export default function CrmLeadRow({
             className="overflow-hidden"
           >
             <div className="px-5 pb-5 pt-1" style={{ borderTop: "1px solid rgba(182,118,81,0.08)" }}>
-              {/* Email + actions row */}
-              <div className="flex items-center justify-between pt-3 mb-4">
-                <button
-                  type="button"
-                  onClick={copyEmail}
-                  className="inline-flex items-center gap-1.5 text-[13px] font-medium hover:opacity-70"
-                  style={{ color: CRM.brown }}
-                >
-                  {ticket.email}
-                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 opacity-60" />}
-                </button>
+              {/* Actions row */}
+              <div className="flex items-center justify-end pt-3 mb-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -156,24 +153,25 @@ export default function CrmLeadRow({
                   </div>
 
                   {/* Notes */}
-                  <div>
-                    <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
-                      Notes
-                    </div>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      onBlur={saveNotes}
-                      placeholder="Type here…"
-                      rows={4}
-                      className="w-full rounded-xl p-3 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
-                      style={{ border: "1px solid rgba(182,118,81,0.18)", color: CRM.ink, background: "#fffdfb" }}
-                    />
-                  </div>
+                  <CrmLeadNotes ticket={ticket} currentUser={currentUser} onUpdate={onUpdate} />
                 </div>
 
                 {/* Right: details */}
                 <div className="space-y-3">
+                  <div>
+                    <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-0.5" style={{ color: CRM.sub }}>
+                      Email
+                    </div>
+                    <button
+                      type="button"
+                      onClick={copyEmail}
+                      className="inline-flex items-center gap-1.5 text-[13px] font-medium hover:opacity-70 break-all text-left"
+                      style={{ color: CRM.brown }}
+                    >
+                      {ticket.email}
+                      {copied ? <Check className="w-3.5 h-3.5 shrink-0" /> : <Copy className="w-3.5 h-3.5 opacity-60 shrink-0" />}
+                    </button>
+                  </div>
                   {detailFields(ticket, board.key).map(([label, value]) => (
                     <DetailField key={label} label={label} value={value} />
                   ))}
