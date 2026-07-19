@@ -112,9 +112,9 @@ export default function CrmSidebar({ page, source, onNavigate }) {
       <div className="my-5 border-t" style={{ borderColor: "rgba(182,118,81,0.15)" }} />
 
       <nav className="space-y-1">
-        <NavItem icon={Truck} label="Build Out" active={page === "delivery"} placeholder onClick={() => onNavigate("delivery")} />
+        <NavItem icon={FileSignature} label="Contracts" active={page === "financials"} onClick={() => onNavigate("financials")} />
         <NavItem icon={LayoutTemplate} label="Templates" active={page === "templates"} onClick={() => onNavigate("templates")} />
-        <NavItem icon={FileSignature} label="Contracts" active={page === "financials"} placeholder onClick={() => onNavigate("financials")} />
+        <NavItem icon={Truck} label="Build Out" active={page === "delivery"} placeholder onClick={() => onNavigate("delivery")} />
         <NavItem icon={Settings} label="Settings" active={page === "settings"} onClick={() => onNavigate("settings")} />
       </nav>
 
