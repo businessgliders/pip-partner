@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { format, isSameDay } from "date-fns";
-import { CalendarDays, Video } from "lucide-react";
+import { CalendarDays, Video, ExternalLink } from "lucide-react";
 import { displayName } from "@/components/board/boardConfig";
 import { CRM, dotFor } from "./crmTheme";
 
@@ -131,18 +131,34 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
                         {b._ticket ? displayName(b._ticket) : b.title || (b.emails || [])[0] || "Meeting"}
                       </span>
                     </span>
-                    {src === "all" && (
-                      <span
-                        className="ml-auto text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full shrink-0"
-                        style={
-                          b._group === "franchise"
-                            ? { background: CRM.blush, color: "var(--tile-pink-fg)" }
-                            : { background: "var(--crm-page-bg)", color: CRM.sub }
-                        }
-                      >
-                        {b._group === "franchise" ? "Franchise" : "Hiring"}
-                      </span>
-                    )}
+                    <span className="ml-auto flex items-center gap-1.5 shrink-0">
+                      {src === "all" && (
+                        <span
+                          className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
+                          style={
+                            b._group === "franchise"
+                              ? { background: CRM.blush, color: "var(--tile-pink-fg)" }
+                              : { background: "var(--crm-page-bg)", color: CRM.sub }
+                          }
+                        >
+                          {b._group === "franchise" ? "Franchise" : "Hiring"}
+                        </span>
+                      )}
+                      {(b.uid || b.meetingUrl) && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          title="Open in Cal.com"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(b.uid ? `https://app.cal.com/booking/${b.uid}` : b.meetingUrl, "_blank", "noopener");
+                          }}
+                          className="p-1 rounded-md hover:bg-white transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" style={{ color: CRM.brown }} />
+                        </span>
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>

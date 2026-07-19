@@ -72,7 +72,7 @@ export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClos
         </div>
 
         {/* Body */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-4">
           {/* Email address */}
           <button
             type="button"
@@ -118,11 +118,11 @@ export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClos
             <CrmEmailPreview ticket={ticket} entity={board.entity} onOpen={() => setEmailOpen(true)} />
           </div>
 
-          {/* Notes — attributed thread, same as the expanded lead row */}
-          <CrmLeadNotes ticket={ticket} currentUser={currentUser} onUpdate={handleUpdate} />
-
           {/* Contracts linked to this lead */}
           <CrmLeadContracts ticket={ticket} />
+
+          {/* Notes — attributed thread, same as the expanded lead row */}
+          <CrmLeadNotes ticket={ticket} currentUser={currentUser} onUpdate={handleUpdate} />
         </div>
       </div>
 

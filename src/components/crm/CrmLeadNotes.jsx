@@ -30,15 +30,15 @@ export default function CrmLeadNotes({ ticket, currentUser, onUpdate }) {
       <div className="text-[10px] tracking-[0.15em] uppercase font-semibold mb-1.5" style={{ color: CRM.sub }}>
         Notes
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {ticket.notes && (
-          <div className="rounded-xl p-3" style={{ border: "1px solid rgba(182,118,81,0.12)", background: "#fffdfb" }}>
+          <div className="rounded-xl p-2.5" style={{ border: "1px solid rgba(182,118,81,0.12)", background: "#fffdfb" }}>
             <div className="text-[10px] font-semibold mb-0.5" style={{ color: CRM.sub }}>Earlier note</div>
             <p className="text-[12px] whitespace-pre-wrap" style={{ color: CRM.ink }}>{ticket.notes}</p>
           </div>
         )}
         {notes.map((n, i) => (
-          <div key={i} className="rounded-xl p-3" style={{ border: "1px solid rgba(182,118,81,0.12)", background: "#fffdfb" }}>
+          <div key={i} className="rounded-xl p-2.5" style={{ border: "1px solid rgba(182,118,81,0.12)", background: "#fffdfb" }}>
             <div className="flex items-center justify-between gap-2 mb-0.5">
               <span className="text-[11px] font-semibold truncate" style={{ color: CRM.brown }}>
                 {n.user_name || n.user_email || "Staff"}
