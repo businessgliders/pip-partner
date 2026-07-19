@@ -29,6 +29,7 @@ export const STATUS_DOT = {
   ghosted: "#5b21b6",
   pending: "#ec4899",
   reviewed: "#f59e0b",
+  shortlisted: "#6366f1",
   invited: "#10b981",
   declined: "#f43f5e",
   approved: "#10b981",

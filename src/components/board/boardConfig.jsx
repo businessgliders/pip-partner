@@ -19,9 +19,11 @@ export const STATUS_META = {
     ghosted: { label: "Ghosted", description: "No reply after multiple follow-ups" },
   },
   instructor: {
+    shortlisted: { label: "Shortlisted", description: "Selected for the next step — contract stage" },
     declined: { label: "Not Interested", description: "Lead opted out or was disqualified" },
   },
   frontadmin: {
+    shortlisted: { label: "Shortlisted", description: "Selected for the next step — contract stage" },
     declined: { label: "Not Interested", description: "Lead opted out or was disqualified" },
   },
   influencer: {
@@ -55,7 +57,7 @@ export const BOARD_TYPES = [
     label: "Instructor",
     entity: "InstructorApplication",
     tabKey: "instructor",
-    statuses: ["pending", "reviewed", "ghosted", "invited", "declined"],
+    statuses: ["pending", "reviewed", "shortlisted", "ghosted", "invited", "declined"],
     categoryField: "province",
     color: "#c4896b",
     bg: "#f6eee7",
@@ -65,7 +67,7 @@ export const BOARD_TYPES = [
     label: "Front Desk",
     entity: "FrontAdminApplication",
     tabKey: "frontadmin",
-    statuses: ["pending", "reviewed", "ghosted", "invited", "declined"],
+    statuses: ["pending", "reviewed", "shortlisted", "ghosted", "invited", "declined"],
     categoryField: "province",
     color: "#d4a088",
     bg: "#faf3ec",

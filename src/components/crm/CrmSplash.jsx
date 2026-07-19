@@ -16,6 +16,9 @@ export default function CrmSplash({ label }) {
       <h2 className="text-xl font-semibold relative" style={{ color: CRM.ink }}>
         {label}
       </h2>
+      <p className="mt-2 text-[13px] relative" style={{ color: CRM.sub }}>
+        Coming soon, Ideas welcome
+      </p>
     </div>
   );
 }

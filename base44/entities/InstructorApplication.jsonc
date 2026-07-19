@@ -73,6 +73,7 @@
       "enum": [
         "pending",
         "reviewed",
+        "shortlisted",
         "invited",
         "declined",
         "ghosted"
