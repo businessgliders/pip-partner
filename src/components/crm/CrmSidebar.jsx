@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  LayoutGrid, Users, CalendarDays, FileText, Truck,
+  LayoutGrid, Users, CalendarDays, FileText, Truck, Map,
   LayoutTemplate, FileSignature, Settings, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { CRM } from "./crmTheme";
@@ -106,6 +106,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
             ))}
           </div>
         )}
+        <NavItem icon={Map} label="Territories" active={page === "territories"} onClick={() => onNavigate("territories")} />
         <NavItem icon={FileText} label="Tasks" active={page === "projects"} onClick={() => onNavigate("projects")} />
       </nav>
 

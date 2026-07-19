@@ -326,6 +326,22 @@
 .dark .crm-root [style*="#fffdfb"] {
   background-color: var(--crm-page-bg) !important;
 }
+/* Slate utility classes (legacy map view) remapped in dark mode */
+.dark .crm-root .text-slate-900,
+.dark .crm-root .text-slate-800,
+.dark .crm-root .text-slate-700 { color: var(--crm-ink) !important; }
+.dark .crm-root .text-slate-600,
+.dark .crm-root .text-slate-500,
+.dark .crm-root .text-slate-400 { color: var(--crm-sub) !important; }
+.dark .crm-root .bg-slate-50,
+.dark .crm-root .bg-slate-100 { background-color: rgba(255, 255, 255, 0.06) !important; }
+.dark .crm-root .hover\:bg-slate-50:hover,
+.dark .crm-root .hover\:bg-slate-100:hover,
+.dark .crm-root .hover\:bg-slate-200:hover { background-color: rgba(255, 255, 255, 0.08) !important; }
+.dark .crm-root .border-slate-200,
+.dark .crm-root .border-slate-100,
+.dark .crm-root .divide-slate-100 > * { border-color: rgba(255, 255, 255, 0.10) !important; }
+
 /* Task swimlanes — neutral dark panels, colored dots keep the identity */
 .dark .crm-root .crm-lane { background: #1f191c !important; }
 .dark .crm-root .crm-lane-header { background: rgba(255, 255, 255, 0.06) !important; }

@@ -11,6 +11,7 @@ import CrmTemplates from "@/components/crm/CrmTemplates";
 import CrmSettings from "@/components/crm/CrmSettings";
 import CrmProjects from "@/components/crm/CrmProjects";
 import CrmContracts from "@/components/crm/CrmContracts";
+import CrmTerritories from "@/components/crm/CrmTerritories";
 import CrmSplash from "@/components/crm/CrmSplash";
 import CrmWelcomeSplash from "@/components/crm/CrmWelcomeSplash";
 
@@ -40,6 +41,7 @@ export default function CrmBoard() {
     page === "dashboard" ? `Hello, ${firstName}` :
     page === "leads" ? `Leads · ${SOURCE_LABELS[source] || "Franchising"}` :
     page === "bookings" ? "Meetings" :
+    page === "territories" ? "Territories" :
     page === "templates" ? "Templates" :
     page === "settings" ? "Settings" :
     PLACEHOLDERS[page] || "Dashboard";
@@ -54,6 +56,7 @@ export default function CrmBoard() {
         {page === "bookings" && <CrmBookings currentUser={user} />}
         {page === "templates" && <CrmTemplates />}
         {page === "settings" && <CrmSettings onNavigate={onNavigate} />}
+        {page === "territories" && <CrmTerritories currentUser={user} />}
         {page === "projects" && <CrmProjects />}
         {page === "delivery" && <CrmSplash label="Build Out" />}
         {page === "financials" && <CrmContracts currentUser={user} />}
