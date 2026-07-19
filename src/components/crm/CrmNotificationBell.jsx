@@ -10,7 +10,6 @@ const COLUMNS = [
   { key: "franchise", label: "Franchising" },
   { key: "instructor", label: "Instructor" },
   { key: "frontadmin", label: "Front Desk" },
-  { key: "influencer", label: "Influencer" },
 ];
 
 function timeAgo(ts) {
@@ -28,7 +27,7 @@ export default function CrmNotificationBell({ currentUser }) {
 
   const cols = COLUMNS.map((c) => ({
     ...c,
-    items: notifications.filter((n) => n.boardKey === c.key).slice(0, 15),
+    items: notifications.filter((n) => n.boardKey === c.key).slice(0, 30),
     unread: notifications.filter((n) => n.boardKey === c.key && n.unread).length,
   })).filter((c) => c.items.length > 0);
 
@@ -78,16 +77,16 @@ export default function CrmNotificationBell({ currentUser }) {
             </div>
           ) : (
             <div
-              className="grid divide-x max-h-[440px] overflow-y-auto"
+              className="grid divide-x"
               style={{
                 gridTemplateColumns: `repeat(${cols.length}, minmax(0, 1fr))`,
                 borderColor: "rgba(182,118,81,0.12)",
               }}
             >
               {cols.map((c) => (
-                <div key={c.key} className="min-w-0">
+                <div key={c.key} className="min-w-0 flex flex-col max-h-[420px]">
                   <div
-                    className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-white border-b"
+                    className="shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b"
                     style={{ borderColor: "rgba(182,118,81,0.12)" }}
                   >
                     <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-[0.1em] uppercase" style={{ color: CRM.sub }}>
@@ -97,9 +96,8 @@ export default function CrmNotificationBell({ currentUser }) {
                       {c.unread}
                     </span>
                   </div>
-                  <div className="p-1.5 space-y-1">
+                  <div className="p-1.5 space-y-1 flex-1 overflow-y-auto">
                     {c.items.map((n) => {
-                      const num = n.ticket.display_ticket_number || n.ticket.app_number;
                       return (
                         <button
                           key={n.message.id}
@@ -110,7 +108,7 @@ export default function CrmNotificationBell({ currentUser }) {
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="flex-1 text-[11px] font-semibold truncate" style={{ color: CRM.ink }}>
-                              New reply from {displayName(n.ticket)}
+                              {displayName(n.ticket)}
                             </span>
                             {n.unread && (
                               <span
@@ -125,7 +123,7 @@ export default function CrmNotificationBell({ currentUser }) {
                             )}
                           </div>
                           <div className="text-[10px] truncate mt-0.5" style={{ color: CRM.sub }}>
-                            {num ? `#${num} ` : ""}{n.message.snippet || n.message.subject || ""} · {timeAgo(n.ts)}
+                            {n.message.snippet || n.message.subject || ""} · {timeAgo(n.ts)}
                           </div>
                         </button>
                       );

@@ -12,7 +12,7 @@ import {
 import CrmEmailShellPreview from "./CrmEmailShellPreview";
 import { CRM } from "./crmTheme";
 
-const CATEGORIES = ["General", "Franchise", "Influencer", "Hiring", "Follow-up", "Other"];
+const CATEGORIES = ["General", "Franchise", "Hiring", "Follow-up", "Other"];
 const EMPTY = { name: "", category: "General", subject: "", body_html: "", is_active: true };
 
 export default function CrmTemplates() {

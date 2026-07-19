@@ -5,6 +5,9 @@ import { BOARD_TYPES } from "@/components/board/boardConfig";
 
 const RECENT_MS = 48 * 60 * 60 * 1000; // "recently replied" window
 
+// Influencer leads are no longer tracked in the CRM dashboard.
+const CRM_BOARDS = BOARD_TYPES.filter((b) => b.key !== "influencer");
+
 /**
  * useReplyNotifications — central source for inbound-reply notifications.
  * Returns the notification feed (inbound emails resolved to their lead),
@@ -30,7 +33,7 @@ export default function useReplyNotifications() {
 
   // Shares the cache with CrmLeads (same queryKey).
   const ticketResults = useQueries({
-    queries: BOARD_TYPES.map((b) => ({
+    queries: CRM_BOARDS.map((b) => ({
       queryKey: ["crm-leads", b.entity],
       queryFn: () => base44.entities[b.entity].list("-created_date", 500),
       staleTime: 60000,
@@ -41,7 +44,7 @@ export default function useReplyNotifications() {
 
   const derived = useMemo(() => {
     const ticketMap = {};
-    BOARD_TYPES.forEach((b, i) => {
+    CRM_BOARDS.forEach((b, i) => {
       (ticketData[i] || []).forEach((t) => {
         ticketMap[t.id] = { ticket: t, boardKey: b.key, entity: b.entity };
       });

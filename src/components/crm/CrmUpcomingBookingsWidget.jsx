@@ -5,13 +5,14 @@ import { displayName } from "@/components/board/boardConfig";
 import { CRM, dotFor } from "./crmTheme";
 
 const FILTERS = [
+  { key: "all", label: "All" },
   { key: "franchise", label: "Franchise" },
   { key: "hiring", label: "Hiring" },
 ];
 
 // Calendar-schedule (agenda) view of upcoming Cal.com bookings on the dashboard.
 export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onNavigate }) {
-  const [src, setSrc] = useState("franchise");
+  const [src, setSrc] = useState("all");
 
   const days = useMemo(() => {
     const now = Date.now();
@@ -20,17 +21,16 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
       .map((b) => {
         const email = (b.emails || []).find((e) => ticketByEmail[(e || "").toLowerCase()]);
         const ticket = email ? ticketByEmail[email.toLowerCase()] : null;
-        return { ...b, _ticket: ticket };
+        // The Cal event type is the source of truth (franchise vs hiring);
+        // fall back to the matched lead's board, unmatched stay under Franchise.
+        const group = b.source
+          ? b.source
+          : !ticket || ticket._boardKey === "franchise"
+            ? "franchise"
+            : "hiring";
+        return { ...b, _ticket: ticket, _group: group };
       })
-      .filter((b) => {
-        // The Cal event type is the source of truth (franchise vs hiring).
-        if (b.source) return b.source === src;
-        // Fall back to the matched lead's board; unmatched stay under Franchise.
-        if (!b._ticket) return src === "franchise";
-        return src === "franchise"
-          ? b._ticket._boardKey === "franchise"
-          : b._ticket._boardKey === "instructor" || b._ticket._boardKey === "frontadmin";
-      })
+      .filter((b) => src === "all" || b._group === src)
       .sort((a, b) => new Date(a.start) - new Date(b.start))
       .slice(0, 10);
 
@@ -131,6 +131,18 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
                         {b._ticket ? displayName(b._ticket) : b.title || (b.emails || [])[0] || "Meeting"}
                       </span>
                     </span>
+                    {src === "all" && (
+                      <span
+                        className="ml-auto text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full shrink-0"
+                        style={
+                          b._group === "franchise"
+                            ? { background: "#fbe0e2", color: "#a34a5c" }
+                            : { background: "#f6eee7", color: "#8a6a4f" }
+                        }
+                      >
+                        {b._group === "franchise" ? "Franchise" : "Hiring"}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
