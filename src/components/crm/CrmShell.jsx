@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
 import CrmSidebar from "./CrmSidebar";
+import CrmUserMenu from "./CrmUserMenu";
 import { CRM } from "./crmTheme";
 
 export default function CrmShell({ page, source, onNavigate, title, user, children }) {
@@ -63,13 +64,7 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
               {title}
             </h1>
           </div>
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold shrink-0"
-            style={{ background: "#e9d5f5", color: "#7c5295" }}
-            title={user?.email}
-          >
-            {initials}
-          </div>
+          <CrmUserMenu user={user} initials={initials} />
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 lg:px-8 py-6 pip-view-in">
