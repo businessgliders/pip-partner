@@ -50,15 +50,20 @@ export default function CrmLeads({ source, currentUser }) {
 
   const active = useMemo(() => tickets.filter((t) => !t.archived), [tickets]);
 
+  // Terminal statuses hidden from the "Active" tab
+  const TERMINAL = ["ghosted", "closed", "declined"];
+
   const counts = useMemo(() => {
-    const c = { all: active.length };
+    const c = { all: active.filter((t) => !TERMINAL.includes(t.status)).length };
     board.statuses.forEach((s) => { c[s] = 0; });
     active.forEach((t) => { if (c[t.status] !== undefined) c[t.status] += 1; });
     return c;
   }, [active, board.statuses]);
 
   const visible = useMemo(() => {
-    let list = tab === "all" ? active : active.filter((t) => t.status === tab);
+    let list = tab === "all"
+      ? active.filter((t) => !TERMINAL.includes(t.status))
+      : active.filter((t) => t.status === tab);
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter((t) =>
@@ -127,7 +132,7 @@ export default function CrmLeads({ source, currentUser }) {
                   borderBottom: isActive ? `2px solid ${CRM.accent}` : "2px solid transparent",
                 }}
               >
-                {s === "all" ? "All" : getStatusLabel(board.key, s)}
+                {s === "all" ? "Active" : getStatusLabel(board.key, s)}
                 <span
                   className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
                   style={{ background: "rgba(182,118,81,0.08)", color: CRM.sub }}
