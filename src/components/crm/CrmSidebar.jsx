@@ -78,7 +78,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
 
       <nav className="space-y-1">
         <NavItem icon={LayoutGrid} label="Dashboard" active={page === "dashboard"} onClick={() => onNavigate("dashboard")} />
-        <NavItem icon={CalendarDays} label="Bookings" active={page === "bookings"} onClick={() => onNavigate("bookings")} />
+        <NavItem icon={CalendarDays} label="Meetings" active={page === "bookings"} onClick={() => onNavigate("bookings")} />
         <NavItem
           icon={Users}
           label="Leads"
@@ -112,7 +112,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
       <div className="my-5 border-t" style={{ borderColor: "rgba(182,118,81,0.15)" }} />
 
       <nav className="space-y-1">
-        <NavItem icon={Truck} label="Delivery" active={page === "delivery"} placeholder onClick={() => onNavigate("delivery")} />
+        <NavItem icon={Truck} label="Build Out" active={page === "delivery"} placeholder onClick={() => onNavigate("delivery")} />
         <NavItem icon={LayoutTemplate} label="Templates" active={page === "templates"} onClick={() => onNavigate("templates")} />
         <NavItem icon={LineChart} label="Financials" active={page === "financials"} placeholder onClick={() => onNavigate("financials")} />
         <NavItem icon={Settings} label="Settings" active={page === "settings"} onClick={() => onNavigate("settings")} />

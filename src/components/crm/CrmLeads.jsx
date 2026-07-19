@@ -59,6 +59,13 @@ export default function CrmLeads({ source, currentUser }) {
   // Deep link from notification emails: ?ticket=<id>&openEmail=1 expands the
   // lead and opens the email panel, then clears the params from the URL.
   const [searchParams, setSearchParams] = useSearchParams();
+  // AI follow-up filter (deep-linked from the dashboard tile via ?filter=ai)
+  const aiOnly = searchParams.get("filter") === "ai";
+  const clearAiFilter = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("filter");
+    setSearchParams(next, { replace: true });
+  };
   const deepTicketId = searchParams.get("ticket");
   useEffect(() => {
     if (!deepTicketId || tickets.length === 0) return;
@@ -85,6 +92,7 @@ export default function CrmLeads({ source, currentUser }) {
     let list = tab === "all"
       ? active.filter((t) => !TERMINAL.includes(t.status))
       : active.filter((t) => t.status === tab);
+    if (aiOnly) list = list.filter((t) => t.follow_up?.enabled);
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter((t) =>
@@ -104,7 +112,7 @@ export default function CrmLeads({ source, currentUser }) {
       }
       return sort.dir === "desc" ? -cmp : cmp;
     });
-  }, [active, tab, search, sort]);
+  }, [active, tab, search, sort, aiOnly]);
 
   const toggleSort = (key) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: key === "created" ? "desc" : "asc" }));
@@ -164,6 +172,17 @@ export default function CrmLeads({ source, currentUser }) {
             );
           })}
         </div>
+        {aiOnly && (
+          <button
+            type="button"
+            onClick={clearAiFilter}
+            className="shrink-0 inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-[11px] font-semibold"
+            style={{ background: "#fef3c7", color: "#b45309" }}
+            title="Showing only leads with an active AI follow-up. Click to clear."
+          >
+            AI follow-ups only ✕
+          </button>
+        )}
         <div className="relative shrink-0 sm:w-56">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: CRM.sub }} />
           <input

@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
+import { Bot, CalendarDays } from "lucide-react";
 import { displayName, BOARD_TYPES } from "@/components/board/boardConfig";
+import useReplyNotifications from "@/hooks/useReplyNotifications";
 import CrmDashboardNotifications from "./CrmDashboardNotifications";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
@@ -33,10 +35,8 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
       return resp?.data?.bookingsList || [];
     },
   });
-  const { data: inboundEmails = [] } = useQuery({
-    queryKey: ["crm-inbound-emails"],
-    queryFn: () => base44.entities.EmailMessage.filter({ direction: "inbound" }, "-created_date", 200),
-  });
+  // Shared notification feed (same source as the header bell + sidebar badges)
+  const { notifications: replyNotifs } = useReplyNotifications();
 
   const fr = useMemo(() => franchise.filter((t) => !t.archived).map((t) => ({ ...t, _boardKey: "franchise" })), [franchise]);
   const ins = useMemo(() => instructor.filter((t) => !t.archived).map((t) => ({ ...t, _boardKey: "instructor" })), [instructor]);
@@ -95,21 +95,16 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
   const newLeads = all.filter((t) => ["new", "pending"].includes(t.status));
   const activeFollowUps = all.filter((t) => t.follow_up?.enabled);
   const cutoff = Date.now() - 7 * 24 * 3600 * 1000;
-  const recentReplies = inboundEmails.filter(
-    (m) => new Date(m.created_date).getTime() >= cutoff && !(m.read_by || []).length
-  );
+  const recentReplies = replyNotifs.filter((n) => n.unread && n.ts >= cutoff);
   const notifRows = [
     { label: "New leads", items: newLeads.map(leadItem) },
     {
       label: "Unread replies (7 days)",
-      items: recentReplies.map((m) => {
-        const t = ticketById[m.ticket_id] || null;
-        return {
-          label: m.from_name || m.from_email || m.subject,
-          ticket: t,
-          group: m.ticket_type === "FranchiseInquiry" ? "franchise" : "hiring",
-        };
-      }),
+      items: recentReplies.map((n) => ({
+        label: displayName(n.ticket),
+        ticket: ticketById[n.ticket.id] || null,
+        group: n.boardKey === "franchise" ? "franchise" : "hiring",
+      })),
     },
     { label: "Active follow-ups", items: activeFollowUps.map(leadItem) },
   ];
@@ -149,13 +144,19 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
           </button>
 
           {/* Active AI follow-ups tile */}
-          <div className="rounded-2xl p-5" style={{ background: "#e8e4d8", boxShadow: CRM.cardShadow }}>
+          <button
+            type="button"
+            onClick={() => onNavigate("leads", "franchise", { filter: "ai" })}
+            className="relative overflow-hidden rounded-2xl p-5 text-left hover:brightness-[0.98] transition"
+            style={{ background: "#e8e4d8", boxShadow: CRM.cardShadow }}
+          >
+            <Bot className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "#6b6353", opacity: 0.12 }} />
             <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#6b6353" }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
               Active AI follow-ups
             </div>
             <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{activeFollowUps.length}</div>
-          </div>
+          </button>
         </div>
 
         {/* Column 3: inquiries sparkline + meetings tile */}
@@ -181,13 +182,19 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
           </div>
 
           {/* Meetings this week tile */}
-          <div className="rounded-2xl p-5" style={{ background: "#fbe0e2", boxShadow: CRM.cardShadow }}>
+          <button
+            type="button"
+            onClick={() => onNavigate("bookings")}
+            className="relative overflow-hidden rounded-2xl p-5 text-left hover:brightness-[0.98] transition"
+            style={{ background: "#fbe0e2", boxShadow: CRM.cardShadow }}
+          >
+            <CalendarDays className="absolute -right-2 -bottom-3 w-20 h-20 pointer-events-none" style={{ color: "#a34a5c", opacity: 0.12 }} />
             <div className="text-[10px] tracking-[0.12em] uppercase font-semibold flex items-center gap-1.5" style={{ color: "#a34a5c" }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: CRM.accent }} />
               Meetings this week
             </div>
             <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{meetingsThisWeek}</div>
-          </div>
+          </button>
         </div>
       </div>
 

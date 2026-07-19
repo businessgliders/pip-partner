@@ -53,7 +53,7 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
             <CalendarDays className="w-3.5 h-3.5" style={{ color: "#b8860b" }} />
           </span>
           <span className="text-[14px] font-semibold" style={{ color: CRM.ink }}>
-            Upcoming bookings
+            Upcoming meetings
           </span>
         </div>
         <div className="flex items-center gap-2">

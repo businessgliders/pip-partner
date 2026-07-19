@@ -13,7 +13,7 @@ import CrmProjects from "@/components/crm/CrmProjects";
 import CrmSplash from "@/components/crm/CrmSplash";
 import CrmWelcomeSplash from "@/components/crm/CrmWelcomeSplash";
 
-const PLACEHOLDERS = { projects: "Tasks", delivery: "Delivery", financials: "Financials" };
+const PLACEHOLDERS = { projects: "Tasks", delivery: "Build Out", financials: "Financials" };
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
 
 export default function CrmBoard() {
@@ -27,9 +27,10 @@ export default function CrmBoard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const onNavigate = (p, s) => {
+  const onNavigate = (p, s, extra) => {
     const params = { page: p };
     if (p === "leads") params.source = s || "franchise";
+    if (extra) Object.assign(params, extra);
     setSearchParams(params);
   };
 
@@ -37,7 +38,7 @@ export default function CrmBoard() {
   const title =
     page === "dashboard" ? `Hello, ${firstName}` :
     page === "leads" ? `Leads · ${SOURCE_LABELS[source] || "Franchising"}` :
-    page === "bookings" ? "Bookings" :
+    page === "bookings" ? "Meetings" :
     page === "templates" ? "Templates" :
     page === "settings" ? "Settings" :
     PLACEHOLDERS[page] || "Dashboard";
@@ -53,7 +54,7 @@ export default function CrmBoard() {
         {page === "templates" && <CrmTemplates />}
         {page === "settings" && <CrmSettings onNavigate={onNavigate} />}
         {page === "projects" && <CrmProjects />}
-        {page === "delivery" && <CrmSplash label="Delivery" />}
+        {page === "delivery" && <CrmSplash label="Build Out" />}
         {page === "financials" && <CrmSplash label="Financials" />}
       </CrmShell>
     </>
