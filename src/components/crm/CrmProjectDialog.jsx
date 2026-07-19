@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { displayName } from "@/components/board/boardConfig";
 import { LEAD_TYPE_LABELS } from "./CrmProjectColumn";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 export default function CrmProjectDialog({ project, columns, leads, onSave, onDelete, onClose, saving }) {
   const [form, setForm] = useState({
@@ -19,6 +20,7 @@ export default function CrmProjectDialog({ project, columns, leads, onSave, onDe
   });
 
   const leadOptions = (leads || []).filter((t) => !form.lead_type || t._boardKey === form.lead_type);
+  useLockBodyScroll();
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 crm-root pip-fade-in">

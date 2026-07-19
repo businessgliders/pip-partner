@@ -10,10 +10,12 @@ import FddCountdownPill from "@/components/board/FddCountdownPill";
 import { displayName } from "@/components/board/boardConfig";
 import useReplyNotifications from "@/hooks/useReplyNotifications";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 // Right-hand slide-in drawer hosting the full email thread + composer for a lead.
 export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClose, highlightMessageId }) {
   // Opening a thread dismisses that lead's reply notifications for this user.
+  useLockBodyScroll();
   const { notifications, markTicketRead } = useReplyNotifications();
   const dismissedRef = useRef(new Set());
   useEffect(() => {

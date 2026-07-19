@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { X, Save } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 const GROUPS = [
   { key: "franchise", label: "Franchising", hint: "Inbound replies on franchise leads" },
@@ -17,6 +18,7 @@ export default function CrmNotificationsDialog({ onClose }) {
     queryFn: () => base44.entities.NotificationSetting.list(),
   });
   const [rows, setRows] = useState(null);
+  useLockBodyScroll();
 
   useEffect(() => {
     if (isLoading || rows) return;

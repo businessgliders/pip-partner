@@ -4,11 +4,13 @@ import { base44 } from "@/api/base44Client";
 import { X, Plus, ArrowUp, ArrowDown, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 // Manage kanban swimlanes: add, rename and reorder TaskColumn records.
 export default function CrmTaskColumnsDialog({ columns, onClose }) {
   const queryClient = useQueryClient();
   const [rows, setRows] = useState(columns.map((c) => ({ ...c })));
+  useLockBodyScroll();
 
   const saveMutation = useMutation({
     mutationFn: async (list) => {

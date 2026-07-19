@@ -6,9 +6,11 @@ import CrmSidebar from "./CrmSidebar";
 import CrmUserMenu from "./CrmUserMenu";
 import CrmNotificationBell from "./CrmNotificationBell";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 export default function CrmShell({ page, source, onNavigate, title, user, children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  useLockBodyScroll(mobileNavOpen);
   const initials = (user?.full_name || user?.email || "?")
     .split(" ")
     .map((p) => p[0])

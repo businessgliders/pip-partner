@@ -4,6 +4,7 @@ import { X, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { displayName, getStatusLabel } from "@/components/board/boardConfig";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 const TABS = [
   { key: "all", label: "All" },
@@ -15,6 +16,7 @@ const TABS = [
 // Modal listing every lead with an active AI follow-up, filterable by lead type.
 export default function CrmAiFollowUpsModal({ leads, onOpenLead, onClose }) {
   const [tab, setTab] = useState("all");
+  useLockBodyScroll();
   const visible = tab === "all" ? leads : leads.filter((t) => t._boardKey === tab);
   const countFor = (key) => (key === "all" ? leads.length : leads.filter((t) => t._boardKey === key).length);
 

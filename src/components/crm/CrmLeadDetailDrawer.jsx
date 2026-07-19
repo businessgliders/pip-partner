@@ -9,6 +9,7 @@ import { DetailField, detailFields } from "./crmLeadFields";
 import CrmEmailPreview from "./CrmEmailPreview";
 import CrmEmailDrawer from "./CrmEmailDrawer";
 import { CRM, dotFor } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 // Right-hand slide-in drawer showing a lead's full details vertically —
 // the same content as an expanded lead row (details, notes, email preview).
@@ -17,6 +18,7 @@ export default function CrmLeadDetailDrawer({ ticket, board, currentUser, onClos
   const [notes, setNotes] = useState(ticket?.notes || "");
   const [copied, setCopied] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
+  useLockBodyScroll();
 
   if (!ticket || !board || typeof document === "undefined") return null;
 

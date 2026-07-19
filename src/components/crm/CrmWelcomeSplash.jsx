@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { ArrowRight, LogOut, X } from "lucide-react";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 const RESTRICTED_EMAILS = ["info@pilatesinpinkstudio.com"];
 
@@ -42,8 +43,10 @@ export default function CrmWelcomeSplash({ user }) {
   const [saving, setSaving] = useState(false);
 
   const restricted = RESTRICTED_EMAILS.includes((user?.email || "").toLowerCase());
+  const show = !(dismissed || (!restricted && user?.crm_intro_seen_v2));
+  useLockBodyScroll(show);
 
-  if (dismissed || (!restricted && user?.crm_intro_seen_v2)) return null;
+  if (!show) return null;
 
   const isLast = step === SLIDES.length - 1;
   const slide = SLIDES[step];

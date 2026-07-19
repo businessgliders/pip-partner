@@ -6,6 +6,7 @@ import "react-quill/dist/quill.snow.css";
 import { Label } from "@/components/ui/label";
 import CrmEmailShellPreview from "./CrmEmailShellPreview";
 import { CRM } from "./crmTheme";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 const SAMPLE_BODY = `<p>Hi Jane,</p><p>Thanks so much for reaching out. Here is a quick sample of how your emails will look with your signature attached.</p>`;
 
@@ -14,6 +15,7 @@ export default function CrmSignatureDialog({ onClose }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(null);
+  useLockBodyScroll();
 
   useEffect(() => {
     base44.auth.me().then((u) => {
