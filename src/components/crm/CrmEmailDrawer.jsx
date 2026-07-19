@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -8,10 +8,23 @@ import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import FollowUpControl from "@/components/admin/FollowUpControl";
 import FddCountdownPill from "@/components/board/FddCountdownPill";
 import { displayName } from "@/components/board/boardConfig";
+import useReplyNotifications from "@/hooks/useReplyNotifications";
 import { CRM } from "./crmTheme";
 
 // Right-hand slide-in drawer hosting the full email thread + composer for a lead.
 export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClose, highlightMessageId }) {
+  // Opening a thread dismisses that lead's reply notifications for this user.
+  const { notifications, markTicketRead } = useReplyNotifications();
+  const dismissedRef = useRef(new Set());
+  useEffect(() => {
+    if (!ticket?.id || dismissedRef.current.has(ticket.id)) return;
+    if (notifications.some((n) => n.unread && n.ticket.id === ticket.id)) {
+      dismissedRef.current.add(ticket.id);
+      markTicketRead.mutate(ticket.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticket?.id, notifications]);
+
   // Cal.com meeting for this lead (shared cache with the Bookings page).
   const { data: bookings = [] } = useQuery({
     queryKey: ["crm-bookings-all"],
