@@ -82,7 +82,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
         <NavItem
           icon={Users}
           label="Leads"
-          active={leadsOpen}
+          active={page === "leads"}
           chevron
           open={leadsOpen}
           onClick={() => onNavigate("leads", source || "franchise")}
@@ -96,7 +96,7 @@ export default function CrmSidebar({ page, source, onNavigate }) {
                 type="button"
                 onClick={() => onNavigate("leads", s.key)}
                 className={`w-full flex items-center justify-between gap-2 text-left px-3.5 py-1.5 rounded-full text-[12px] transition-all ${
-                  source === s.key ? "bg-white font-semibold shadow-sm" : "hover:bg-white/50 font-medium"
+                  page === "leads" && source === s.key ? "bg-white font-semibold shadow-sm" : "hover:bg-white/50 font-medium"
                 }`}
                 style={{ color: CRM.ink }}
               >
