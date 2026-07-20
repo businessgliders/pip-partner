@@ -108,10 +108,11 @@ export default function Home() {
           </nav>
           <Link
             to="/ApplicationBoard"
-            className="inline-flex items-center gap-1.5 shrink-0 ml-4 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase text-white shadow-sm hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-1.5 shrink-0 ml-4 p-2.5 sm:px-4 sm:py-1.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase text-white shadow-sm hover:opacity-90 transition-opacity"
             style={{ background: "#f1889b" }}
+            aria-label="Log In"
           >
-            Log In <Lock className="w-3 h-3" />
+            <span className="hidden sm:inline">Log In</span> <Lock className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
           </Link>
         </header>
 
