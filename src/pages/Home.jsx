@@ -43,7 +43,6 @@ const NAV = [
   { label: "About Us", href: "https://www.pilatesinpinkstudio.com", external: true },
   { label: "Careers", href: "#paths" },
   { label: "Franchise", href: "/OwnAStudio", route: true },
-  { label: "Contact", href: "mailto:info@pilatesinpinkstudio.com" },
 ];
 
 function NavLink({ item }) {
@@ -168,14 +167,14 @@ export default function Home() {
         </section>
 
         {/* Cards grid */}
-        <section id="paths" className="max-w-6xl mx-auto px-5 md:px-6 pt-5 pb-16 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <section id="paths" className="max-w-6xl mx-auto px-5 md:px-6 pt-5 pb-16 grid grid-cols-1 md:grid-cols-3 gap-5">
           {TILES.map((tile, i) => (
             <motion.div
               key={tile.href}
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.15 + i * 0.06 }}
-              className={tile.image ? "" : "md:self-start"}
+              className={tile.image ? "" : "md:col-span-3"}
             >
               <Link to={tile.href} className="group block h-full">
                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-500 h-full">
