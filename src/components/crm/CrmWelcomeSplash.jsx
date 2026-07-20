@@ -8,22 +8,22 @@ const RESTRICTED_EMAILS = ["info@pilatesinpinkstudio.com"];
 
 const SLIDES = [
   {
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/fb648300b_generated_image.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/d3e41e646_IMG_0453.jpg",
     title: "New look. Same PiP Partner.",
     body: "The Application Board has been fully redesigned: a warm new look, a simpler sidebar, and a dashboard that greets you with live metrics and notifications.",
   },
   {
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/bd0d84591_generated_image.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/8422cbc54_IMG_0459.jpg",
     title: "Leads, reimagined",
     body: "Leads open inline with the full email conversation, attributed team notes, and AI follow-up progress visible at a glance.",
   },
   {
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/40602c002_generated_image.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/78c5df8a9_IMG_0456.jpg",
     title: "Meetings & Tasks",
     body: "Meetings live on a calendar filtered by Franchise or Hiring, and the new Tasks board gives you custom swimlanes with tasks linked to leads.",
   },
   {
-    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/5a531a851_generated_image.png",
+    image: "https://media.base44.com/images/public/697a18eb75a9e57a35bc853a/e6c6123a7_IMG_0457.jpg",
     title: "Smart email notifications",
     body: "When a lead replies, your team gets an email with a direct link into the conversation. Manage recipients under Settings · Notification preferences.",
   },
