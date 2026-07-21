@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { buildSubjectTag, cleanSubjectBase } from '../../shared/subjectTags.ts';
 
 const STAFF_DOMAINS = ['pilatesinpinkstudio.com', 'pilatesinpink.ca'];
 const BUSINESS_NAME = 'Pilates in Pink';
@@ -139,11 +140,6 @@ function base64url(str) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function buildSubjectTag(ticket) {
-  if (ticket?.app_number) return `[Application #${ticket.app_number}]`;
-  return `[Application #${(ticket?.id || '').slice(-8)}]`;
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -238,15 +234,12 @@ Deno.serve(async (req) => {
     const realEmails = existing.filter((m) => !m.is_welcome);
     const lastReal = realEmails[realEmails.length - 1];
 
-    const subjectTag = buildSubjectTag(ticket);
+    const subjectTag = buildSubjectTag(ticket, ticket_type);
     let subject;
     if (subject_override && typeof subject_override === 'string' && subject_override.trim()) {
-      // Staff-provided subject (e.g. from a template). Strip any tag they may have
-      // pasted in and rebuild with the canonical tag so threading stays consistent.
-      const clean = subject_override
-        .replace(/^(Re:\s*)+/i, '')
-        .replace(/^\[(Ticket|Application|Internal) #?[^\]]*\]\s*/g, '')
-        .trim();
+      // Staff-provided subject (e.g. from a template). Strip any tags/Re: they may
+      // have pasted in and rebuild with the canonical tag so threading stays consistent.
+      const clean = cleanSubjectBase(subject_override);
       const prefix = lastReal ? 'Re: ' : '';
       subject = safeSubjectInput(`${prefix}${subjectTag} ${clean}`);
     } else if (isInternal) {
@@ -258,11 +251,8 @@ Deno.serve(async (req) => {
       const applicantName = getTicketName(ticket);
       subject = safeSubjectInput(`[Internal] ${subjectTag} ${inquiryWord} — ${applicantName}`);
     } else if (lastReal?.subject) {
-      // Strip existing Re: and tag (old or new format) from previous subject, then rebuild
-      let prev = lastReal.subject
-        .replace(/^(Re:\s*)+/i, '')
-        .replace(/^\[(Ticket|Application|Internal) #?[^\]]*\]\s*/g, '')
-        .trim();
+      // Strip ALL existing Re: prefixes and tags (old or new format), then rebuild
+      const prev = cleanSubjectBase(lastReal.subject);
       subject = safeSubjectInput(`Re: ${subjectTag} ${prev}`);
     } else {
       const inquiryWord =

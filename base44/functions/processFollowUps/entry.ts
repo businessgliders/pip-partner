@@ -16,6 +16,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { createClient } from 'npm:@base44/sdk@0.8.31';
+import { buildSubjectTag, cleanSubjectBase } from '../../shared/subjectTags.ts';
 
 const ENTITY_NAMES = ['FranchiseInquiry', 'InfluencerApplication', 'InstructorApplication', 'FrontAdminApplication'];
 
@@ -89,11 +90,6 @@ function base64url(str) {
   let binary = '';
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function buildSubjectTag(ticket) {
-  if (ticket?.app_number) return `[Application #${ticket.app_number}]`;
-  return `[Application #${(ticket?.id || '').slice(-8)}]`;
 }
 
 function getTicketName(t) {
@@ -271,10 +267,10 @@ Return JSON: { "subject_hint": string (short, no [Application #] tag), "body_htm
   const nextIntervalDays = clampInterval(llm?.next_interval_days);
 
   // Compose subject: thread Re: + canonical [Application #] tag.
-  const subjectTag = buildSubjectTag(ticket);
+  const subjectTag = buildSubjectTag(ticket, entityName);
   let subject;
   if (lastReal?.subject) {
-    let prev = lastReal.subject.replace(/^(Re:\s*)+/i, '').replace(/^\[(Ticket|Application|Internal) #?[^\]]*\]\s*/g, '').trim();
+    const prev = cleanSubjectBase(lastReal.subject);
     subject = `Re: ${subjectTag} ${prev}`;
   } else {
     subject = `${subjectTag} Following up`;
