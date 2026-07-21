@@ -1,22 +1,14 @@
 import React from "react";
 import { base44 } from "@/api/base44Client";
-import { LogOut, Moon, Sun, SunMoon } from "lucide-react";
+import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CRM } from "./crmTheme";
-import useTheme from "@/hooks/useTheme";
-
-const MODES = [
-  { key: "light", label: "Light", icon: Sun },
-  { key: "dark", label: "Dark", icon: Moon },
-  { key: "auto", label: "Auto", icon: SunMoon },
-];
 
 export default function CrmUserMenu({ user, initials }) {
-  const { mode, setMode } = useTheme();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -41,29 +33,6 @@ export default function CrmUserMenu({ user, initials }) {
             {user?.email}
           </div>
         </div>
-
-        {/* Theme switch */}
-        <div className="rounded-xl p-1 mb-1 grid grid-cols-3 gap-1" style={{ background: "var(--crm-page-bg)" }}>
-          {MODES.map((m) => {
-            const active = mode === m.key;
-            const Icon = m.icon;
-            return (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => setMode(m.key)}
-                className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${active ? "shadow-sm" : "opacity-60 hover:opacity-100"}`}
-                style={{ background: active ? "var(--crm-card-bg)" : "transparent", color: CRM.ink }}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {m.label}
-              </button>
-            );
-          })}
-        </div>
-        <p className="px-1 pb-2 text-[10px]" style={{ color: CRM.sub }}>
-          Auto turns dark mode on after sunset.
-        </p>
 
         <button
           type="button"

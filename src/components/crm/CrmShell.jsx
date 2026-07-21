@@ -5,6 +5,7 @@ const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", fron
 import CrmSidebar from "./CrmSidebar";
 import CrmUserMenu from "./CrmUserMenu";
 import CrmNotificationBell from "./CrmNotificationBell";
+import CrmThemeToggle from "./CrmThemeToggle";
 import { CRM } from "./crmTheme";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 import useTheme from "@/hooks/useTheme";
@@ -85,6 +86,7 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <CrmThemeToggle />
             <CrmNotificationBell currentUser={user} />
             <CrmUserMenu user={user} initials={initials} />
           </div>

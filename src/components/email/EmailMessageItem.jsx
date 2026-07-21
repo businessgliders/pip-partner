@@ -58,6 +58,9 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
   const fromDisplay = isInternal ? resolveName(message.from_email) : message.from_email;
   const toDisplay = isInternal ? resolveName(message.to_email) : message.to_email;
 
+  // Outbound pink bubbles use light text for contrast (light + dark mode).
+  const isPinkBubble = !isInbound && !isFailed && !isInternal;
+
   const cleanText = stripQuotedReply(stripHtml(message.body_html || message.body_text || ""));
   // Bubble is truncated to a single line, so surface the "tap to expand" icon
   // whenever the preview likely overflows that one line.
@@ -177,10 +180,17 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               )
             ) : (
               message.from_email && (
-                <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
+                <div
+                  className="text-[10px] mb-1.5 leading-tight pb-1.5 border-b"
+                  style={
+                    isPinkBubble
+                      ? { color: "rgba(255,255,255,0.85)", borderColor: "rgba(255,255,255,0.35)" }
+                      : { color: "#6b7280", borderColor: "rgba(229,231,235,0.7)" }
+                  }
+                >
                   <div className="truncate">
-                    <span className="text-gray-400">From:</span>{" "}
-                    <span className="font-medium text-gray-700">{fromDisplay}</span>
+                    <span style={{ opacity: 0.75 }}>From:</span>{" "}
+                    <span className="font-medium">{fromDisplay}</span>
                   </div>
                 </div>
               )
@@ -199,16 +209,23 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
                  ? { color: "var(--crm-ink)" }
                  : isFailed || isInternal
                  ? undefined
-                 : { color: "var(--tile-rose-fg)" }
+                 : { color: "#ffffff" }
              }
            >
              {cleanText || "(empty)"}
            </div>
           )}
-          <div className={`text-[10px] text-gray-500 mt-1 flex items-center gap-1 ${message.is_ai_summary ? "justify-end" : ""}`}>
+          <div
+            className={`text-[10px] text-gray-500 mt-1 flex items-center gap-1 ${message.is_ai_summary ? "justify-end" : ""}`}
+            style={isPinkBubble && !message.is_ai_summary ? { color: "rgba(255,255,255,0.75)" } : undefined}
+          >
             <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>
             {isLong && !message.is_ai_summary && (
-              <Maximize2 className="w-3 h-3 text-gray-400" title="Tap to view full message" />
+              <Maximize2
+                className="w-3 h-3 text-gray-400"
+                style={isPinkBubble ? { color: "rgba(255,255,255,0.75)" } : undefined}
+                title="Tap to view full message"
+              />
             )}
           </div>
         </div>

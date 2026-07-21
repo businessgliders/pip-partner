@@ -49,7 +49,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
                 >
                   <span
                     className="block text-[10px] leading-snug line-clamp-2"
-                    style={{ color: inbound ? "var(--crm-ink)" : "var(--tile-rose-fg)" }}
+                    style={{ color: inbound ? "var(--crm-ink)" : "#ffffff" }}
                   >
                     {stripHtmlToText(m.snippet || (m.body_text || "").slice(0, 200) || m.subject) || "(no content)"}
                   </span>
