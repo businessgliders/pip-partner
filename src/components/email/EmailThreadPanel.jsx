@@ -509,7 +509,7 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30" style={{ flex: "0 0 40%" }}>
+          <div className="overflow-y-auto px-6 lg:px-10 py-4 bg-gradient-to-b from-amber-50/30 to-pink-50/30 flex-1 min-h-0">
             <div className="max-w-3xl mx-auto">
               {allMessages.map((m) => {
                 const readBy = Array.isArray(m.read_by) ? m.read_by : [];
@@ -538,8 +538,8 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               )}
             </div>
           </div>
-          <div className="border-t bg-white overflow-y-auto" style={{ flex: "0 0 60%" }}>
-            <div className="max-w-3xl mx-auto h-full">
+          <div className="border-t bg-white flex flex-col shrink-0" style={{ height: "58%" }}>
+            <div className="max-w-3xl mx-auto w-full h-full flex flex-col min-h-0">
               <EmailComposer
                 ticket={ticket}
                 ticketType={ticketType}
