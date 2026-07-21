@@ -16,6 +16,16 @@ export function displayAppNumber(rawNumber, ticketType) {
   return cfg ? String(cfg.base + Number(rawNumber) * cfg.stride) : String(rawNumber);
 }
 
+// Invert a public display number back to the raw app_number (or null if it
+// can't belong to this entity type).
+export function rawFromDisplay(display, ticketType) {
+  const cfg = DISPLAY_CFG[ticketType];
+  if (!cfg) return null;
+  const diff = Number(display) - cfg.base;
+  if (!Number.isFinite(diff) || diff < 0 || diff % cfg.stride !== 0) return null;
+  return diff / cfg.stride;
+}
+
 export function buildSubjectTag(ticket, ticketType) {
   const display = displayAppNumber(ticket?.app_number, ticketType);
   if (display) return `[Application #${display}]`;

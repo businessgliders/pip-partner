@@ -232,7 +232,13 @@ Deno.serve(async (req) => {
       500
     );
     const realEmails = existing.filter((m) => !m.is_welcome);
-    const lastReal = realEmails[realEmails.length - 1];
+    // Anchor threading to the matching conversation: applicant emails must never
+    // thread into the internal team thread (and vice-versa).
+    const externalEmails = realEmails.filter((m) => !m.is_internal);
+    const internalEmails = realEmails.filter((m) => m.is_internal);
+    const lastReal = isInternal
+      ? internalEmails[internalEmails.length - 1]
+      : externalEmails[externalEmails.length - 1];
 
     const subjectTag = buildSubjectTag(ticket, ticket_type);
     let subject;
@@ -326,8 +332,9 @@ Deno.serve(async (req) => {
     headers.push('MIME-Version: 1.0');
     headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
 
-    // Only thread into the applicant conversation when this is NOT an internal email
-    if (!isInternal && lastReal?.rfc_message_id) {
+    // Thread into the matching conversation (applicant or internal — lastReal is
+    // already scoped to the right one above).
+    if (lastReal?.rfc_message_id) {
       headers.push(`In-Reply-To: ${lastReal.rfc_message_id}`);
       const refs = lastReal.references
         ? `${lastReal.references} ${lastReal.rfc_message_id}`
@@ -356,7 +363,7 @@ Deno.serve(async (req) => {
     const raw = base64url(rawMime);
 
     const sendPayload = { raw };
-    if (!isInternal && lastReal?.gmail_thread_id) {
+    if (lastReal?.gmail_thread_id) {
       sendPayload.threadId = lastReal.gmail_thread_id;
     }
 
@@ -428,7 +435,7 @@ Deno.serve(async (req) => {
       }
     } catch (_) {}
 
-    const refsChain = !isInternal && lastReal
+    const refsChain = lastReal
       ? (lastReal.references
           ? `${lastReal.references} ${lastReal.rfc_message_id}`
           : lastReal?.rfc_message_id || '')
@@ -440,7 +447,7 @@ Deno.serve(async (req) => {
       gmail_thread_id: gmailThreadId,
       gmail_message_id: gmailMessageId,
       rfc_message_id: rfcMessageId,
-      in_reply_to: !isInternal ? (lastReal?.rfc_message_id || '') : '',
+      in_reply_to: lastReal?.rfc_message_id || '',
       references: refsChain,
       direction: 'outbound',
       from_email: fromEmail,

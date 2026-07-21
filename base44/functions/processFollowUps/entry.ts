@@ -193,8 +193,11 @@ async function processOne(base44, entityName, ticket) {
     return { action: 'completed', detail: `marked not interested after ${maxSteps} sends` };
   }
 
-  // Find the last outbound REAL email (anchors threading + subject).
-  const lastReal = [...realEmails].reverse().find((m) => m.direction === 'outbound') || realEmails[realEmails.length - 1] || null;
+  // Find the last outbound APPLICANT-FACING email (anchors threading + subject).
+  // Internal team emails are excluded so follow-ups never thread into — or take
+  // their subject from — the internal conversation.
+  const externalEmails = realEmails.filter((m) => !m.is_internal);
+  const lastReal = [...externalEmails].reverse().find((m) => m.direction === 'outbound') || externalEmails[externalEmails.length - 1] || null;
 
   // Build a compact thread digest for the LLM (last 6 messages).
   const tail = realEmails.slice(-6).map((m) => {

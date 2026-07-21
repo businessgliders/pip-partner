@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { base64UrlEncode, rfc2047, base64Utf8, wrapBase64Lines } from '../../shared/gmailMime.ts';
+import { rawFromDisplay } from '../../shared/subjectTags.ts';
 
 const ENTITY_NAMES = [
   'FranchiseInquiry',
@@ -226,6 +227,31 @@ async function processMessageId(base44, accessToken, messageId) {
           break;
         }
       } catch (_) {}
+    }
+  }
+
+  // Try application tag in subject: [Application #NNNN] (public display number).
+  // Invert the display number back to the raw app_number per entity type.
+  if (!parentId) {
+    const appMatch = subject.match(/\[Application #(\d+)\]/i);
+    if (appMatch) {
+      const display = Number(appMatch[1]);
+      for (const entityName of ENTITY_NAMES) {
+        const rawNum = rawFromDisplay(display, entityName);
+        if (rawNum === null) continue;
+        try {
+          const hits = await base44.asServiceRole.entities[entityName].filter(
+            { app_number: rawNum },
+            '-created_date',
+            1
+          );
+          if (hits.length > 0) {
+            parentId = hits[0].id;
+            parentType = entityName;
+            break;
+          }
+        } catch (_) {}
+      }
     }
   }
 
