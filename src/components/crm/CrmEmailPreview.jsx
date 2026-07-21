@@ -24,34 +24,38 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
       className="group relative w-full text-left rounded-xl overflow-hidden"
       style={{ border: "1px solid rgba(182,118,81,0.15)", background: "var(--crm-page-bg)" }}
     >
-      <div className="p-3 space-y-2 max-h-32 overflow-hidden">
+      <div className="p-3 space-y-1.5 max-h-36 overflow-hidden">
         {previewMsgs.length === 0 ? (
           <div className="text-[12px]" style={{ color: CRM.sub }}>
             Welcome email sent — open to view the full thread and reply.
           </div>
         ) : (
-          previewMsgs.map((m) => (
-            <div key={m.id} className="flex items-start gap-2 min-w-0">
-              <span
-                className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 mt-0.5"
-                style={
-                  m.direction === "inbound"
-                    ? { background: CRM.blush, color: "#a34a5c" }
-                    : { background: "rgba(182,118,81,0.10)", color: CRM.brown }
-                }
-              >
-                {m.direction === "inbound" ? "Them" : "You"}
-              </span>
-              <span className="flex-1 min-w-0 overflow-hidden">
-                <span className="block text-[12px] font-medium truncate" style={{ color: CRM.ink }}>
-                  {m.subject || "(no subject)"}
-                </span>
-                <span className="block text-[11px] truncate" style={{ color: CRM.sub }}>
-                  {m.snippet || (m.body_text || "").slice(0, 120)}
-                </span>
-              </span>
-            </div>
-          ))
+          [...previewMsgs].reverse().map((m) => {
+            const inbound = m.direction === "inbound";
+            return (
+              <div key={m.id} className={`flex ${inbound ? "justify-start" : "justify-end"}`}>
+                <div
+                  className={`max-w-[78%] px-2.5 py-1.5 shadow-sm ${
+                    inbound
+                      ? "rounded-2xl rounded-bl-md"
+                      : "rounded-2xl rounded-br-md"
+                  }`}
+                  style={
+                    inbound
+                      ? { background: "var(--crm-card-bg)", border: "1px solid rgba(182,118,81,0.15)" }
+                      : { background: CRM.accentSoft }
+                  }
+                >
+                  <span
+                    className="block text-[10px] leading-snug line-clamp-2"
+                    style={{ color: inbound ? "var(--crm-ink)" : "var(--tile-rose-fg)" }}
+                  >
+                    {m.snippet || (m.body_text || "").slice(0, 140) || m.subject || "(no content)"}
+                  </span>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
       {/* Gradient wash fading the preview out */}
