@@ -11,6 +11,7 @@ import { DetailField, detailFields } from "./crmLeadFields";
 import CrmEmailPreview from "./CrmEmailPreview";
 import CrmLeadActions from "./CrmLeadActions";
 import CrmLeadNotes from "./CrmLeadNotes";
+import CrmLeadContracts from "./CrmLeadContracts";
 import { CRM, dotFor } from "./crmTheme";
 
 export default function CrmLeadRow({
@@ -176,6 +177,9 @@ export default function CrmLeadRow({
 
                   {/* Notes */}
                   <CrmLeadNotes ticket={ticket} currentUser={currentUser} onUpdate={onUpdate} />
+
+                  {/* Contracts — same compact chips as the slide-in detail panel */}
+                  <CrmLeadContracts ticket={ticket} />
                 </div>
 
                 {/* Right: details */}

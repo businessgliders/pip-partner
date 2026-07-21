@@ -350,7 +350,7 @@ export default function EmailComposer({
   })();
 
   return (
-    <div className={`border-t bg-white space-y-2 ${isMobileFullscreen ? "p-3" : "px-4 py-3"}`}>
+    <div className={`border-t bg-white space-y-2 ${isMobileFullscreen ? "p-3" : "px-4 py-3"} ${isFullscreen ? "flex flex-col h-full" : ""}`}>
       <div className="flex items-start justify-between text-xs text-gray-600 gap-2">
         <div className="space-y-0.5 min-w-0 flex-1">
           {!headerExpanded ? (
@@ -683,8 +683,8 @@ export default function EmailComposer({
         }}
       />
 
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex items-center gap-1 border-b bg-gray-50 px-2 py-1">
+      <div className={`border rounded-lg overflow-hidden ${isFullscreen ? "flex flex-col flex-1 min-h-0" : ""}`}>
+        <div className="flex items-center gap-1 border-b bg-gray-50 px-2 py-1 shrink-0">
           <button type="button" onClick={() => exec("bold")} className="p-1.5 hover:bg-gray-200 rounded" title="Bold">
             <Bold className="w-3.5 h-3.5" />
           </button>
@@ -856,7 +856,7 @@ export default function EmailComposer({
             editorHeightPx
               ? ""
               : isFullscreen
-                ? "min-h-32 max-h-[28vh]"
+                ? "flex-1 min-h-0"
                 : isMobileFullscreen
                   ? "min-h-[45vh] max-h-[70vh]"
                   : (hasContent ? "min-h-32 max-h-48" : "min-h-16 max-h-48")
@@ -867,7 +867,7 @@ export default function EmailComposer({
           // Two-line layout on every breakpoint:
           //   line 1 — "Signature" label + gear (opens quick-edit modal)
           //   line 2 — rendered signature preview
-          <div className="border-t bg-gray-50/60 px-2.5 py-1.5">
+          <div className="border-t bg-gray-50/60 px-2.5 py-1.5 shrink-0">
             <div className="flex items-center gap-1.5">
               <span className="text-[9px] uppercase tracking-wider text-gray-400 font-semibold">
                 Signature
