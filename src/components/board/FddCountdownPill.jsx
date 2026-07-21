@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { FileSignature, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { FileSignature, Clock, AlertTriangle } from "lucide-react";
 
 const FDD_DEADLINE_DAYS = 14;
 
@@ -104,19 +104,15 @@ export default function FddCountdownPill({ ticket }) {
   const hours = totalHours % 24;
   const label = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
 
-  const tone =
-    days >= 7
-      ? "bg-emerald-100 border-emerald-300 text-emerald-800"
-      : days >= 3
-      ? "bg-amber-100 border-amber-300 text-amber-800"
-      : "bg-red-100 border-red-300 text-red-800";
+  // Timer running → always orange
+  const tone = "bg-orange-100 border-orange-300 text-orange-800";
 
   return (
     <span
       className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${tone}`}
       title={`FDD review — ends ${deadlineStr}`}
     >
-      {days >= 7 ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+      <Clock className="w-3 h-3" />
       FDD: {label}
     </span>
   );

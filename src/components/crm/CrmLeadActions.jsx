@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
-import FddCountdownPill from "@/components/board/FddCountdownPill";
+import FddCountdownBadge from "@/components/admin/FddCountdownBadge";
 import FollowUpControl from "@/components/admin/FollowUpControl";
 
 // Row of lead "function" pills — FDD timer, Cal.com meeting, AI follow-up.
@@ -35,7 +35,7 @@ export default function CrmLeadActions({ ticket, board }) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {board.key === "franchise" && <FddCountdownPill ticket={ticket} />}
+      {board.key === "franchise" && <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />}
       {meeting && (
         <span
           className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${

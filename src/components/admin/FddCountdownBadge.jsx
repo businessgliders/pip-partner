@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { FileSignature, Clock, AlertTriangle, CheckCircle2, Play, RotateCcw } from "lucide-react";
+import { FileSignature, Clock, AlertTriangle, Play, RotateCcw } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -90,6 +90,7 @@ export default function FddCountdownBadge({ ticketId, ticket, hideWhenInactive =
     });
     if (ticket) ticket.fdd_countdown_started_at = iso;
     queryClient.invalidateQueries({ queryKey: ["app-board", "FranchiseInquiry"] });
+    queryClient.invalidateQueries({ queryKey: ["crm-leads", "FranchiseInquiry"] });
   };
 
   // Manual override is active → countdown from that timestamp
@@ -225,13 +226,8 @@ export default function FddCountdownBadge({ ticketId, ticket, hideWhenInactive =
   const hours = totalHours % 24;
   const label = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
 
-  // Colour scale: green > 7d, amber 3–7d, red < 3d
-  const tone =
-    days >= 7
-      ? "bg-emerald-100 border-emerald-300 text-emerald-800 hover:bg-emerald-200"
-      : days >= 3
-      ? "bg-amber-100 border-amber-300 text-amber-800 hover:bg-amber-200"
-      : "bg-red-100 border-red-300 text-red-800 hover:bg-red-200";
+  // Timer running → always orange
+  const tone = "bg-orange-100 border-orange-300 text-orange-800 hover:bg-orange-200";
 
   return (
     <Popover>
@@ -241,7 +237,7 @@ export default function FddCountdownBadge({ ticketId, ticket, hideWhenInactive =
           className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border font-medium transition whitespace-nowrap ${tone}`}
           title={`14-day FDD waiting period — started ${startedStr}, ends ${deadlineStr}`}
         >
-          {days >= 7 ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+          <Clock className="w-3 h-3" />
           <span>FDD: {label} left{manualStartTs ? " ·" : ""}</span>
         </button>
       </PopoverTrigger>
