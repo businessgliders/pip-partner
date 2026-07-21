@@ -209,7 +209,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
                  ? { color: "var(--crm-ink)" }
                  : isFailed || isInternal
                  ? undefined
-                 : { color: "#ffffff" }
+                 : { color: "var(--tile-rose-fg)" }
              }
            >
              {cleanText || "(empty)"}
