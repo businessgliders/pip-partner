@@ -38,7 +38,7 @@ function buildIntakeFull(ticket, ticketType) {
   const add = (label, value) => {
     if (value === undefined || value === null || value === "") return;
     rows.push(
-      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:#94a3b8;font-weight:600;width:140px;word-break:break-word;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:#334155;word-break:break-word;overflow-wrap:anywhere;">${value}</td></tr>`
+      `<tr><td style="padding:4px 12px 4px 0;vertical-align:top;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--crm-sub,#94a3b8);font-weight:600;width:140px;word-break:break-word;">${label}</td><td style="padding:4px 0;vertical-align:top;font-size:13px;color:var(--crm-ink,#334155);word-break:break-word;overflow-wrap:anywhere;">${value}</td></tr>`
     );
   };
 
@@ -67,7 +67,7 @@ function buildIntakeFull(ticket, ticketType) {
     add("Postal Code", ticket?.postal_code);
     add("Province", ticket?.province);
     if (ticket?.qualifications?.length) add("Qualifications", ticket.qualifications.join(", "));
-    if (ticket?.resume_url) add("Resume", `<a href="${ticket.resume_url}" target="_blank" rel="noopener noreferrer" style="color:#0f172a;text-decoration:underline;">View Resume</a>`);
+    if (ticket?.resume_url) add("Resume", `<a href="${ticket.resume_url}" target="_blank" rel="noopener noreferrer" style="color:var(--crm-ink,#0f172a);text-decoration:underline;">View Resume</a>`);
     add("Message", ticket?.message);
   }
 
@@ -136,7 +136,7 @@ function buildIntakeSummary(ticket, ticketType) {
 
   return sentences
     .slice(0, 3)
-    .map((s) => `<p style="margin:0 0 6px 0;font-size:13px;line-height:1.55;color:#334155;">${escape(s)}</p>`)
+    .map((s) => `<p style="margin:0 0 6px 0;font-size:13px;line-height:1.55;color:var(--crm-ink,#334155);">${escape(s)}</p>`)
     .join("");
 }
 

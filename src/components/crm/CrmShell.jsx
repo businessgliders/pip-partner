@@ -80,8 +80,8 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            <CrmThemeToggle />
             <CrmNotificationBell currentUser={user} />
+            <CrmThemeToggle />
             <CrmUserMenu user={user} initials={initials} />
           </div>
         </header>
