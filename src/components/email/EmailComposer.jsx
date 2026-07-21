@@ -315,7 +315,14 @@ export default function EmailComposer({
     }
   };
   const handleApply = (html) => {
-    setHtml(html);
+    if (!html) return;
+    // Write into the editor and immediately push the same value up as the
+    // draft, so the draft-hydration effect can't re-hydrate stale content
+    // over the freshly generated text.
+    if (editorRef.current) editorRef.current.innerHTML = html;
+    setHasContent(!isEmpty(html));
+    onDraftChange?.(html);
+    editorRef.current?.focus();
     setShowDescribe(false);
     setShowSuggest(false);
   };
