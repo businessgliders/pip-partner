@@ -125,9 +125,9 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{ background: b._ticket ? dotFor(b._ticket.status) : CRM.accent }}
                     />
-                    <span className="flex items-center gap-1.5 text-[12px] font-medium truncate" style={{ color: CRM.ink }}>
+                    <span className="flex-1 min-w-0 flex items-center gap-1.5 text-[12px] font-medium" style={{ color: CRM.ink }}>
                       <Video className="w-3 h-3 shrink-0" style={{ color: CRM.accent }} />
-                      <span className="truncate">
+                      <span className="line-clamp-2 sm:line-clamp-1 break-words">
                         {b._ticket ? displayName(b._ticket) : b.title || (b.emails || [])[0] || "Meeting"}
                       </span>
                     </span>
