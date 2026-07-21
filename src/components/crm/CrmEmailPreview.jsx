@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Mail } from "lucide-react";
 import { CRM } from "./crmTheme";
+import { stripHtmlToText } from "@/lib/textPreview";
 
 // Compact preview of the most recent emails on a ticket. Clicking it opens
 // the full email panel (via onOpen).
@@ -13,7 +14,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
       base44.entities.EmailMessage.filter(
         { ticket_id: ticket.id, ticket_type: entity },
         "-created_date",
-        4
+        8
       ),
   });
 
@@ -24,7 +25,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
       className="group relative w-full text-left rounded-xl overflow-hidden"
       style={{ border: "1px solid rgba(182,118,81,0.15)", background: "var(--crm-page-bg)" }}
     >
-      <div className="p-3 space-y-1.5 max-h-36 overflow-hidden">
+      <div className="p-3 max-h-36 overflow-hidden flex flex-col justify-end gap-1.5">
         {previewMsgs.length === 0 ? (
           <div className="text-[12px]" style={{ color: CRM.sub }}>
             Welcome email sent — open to view the full thread and reply.
@@ -50,7 +51,7 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
                     className="block text-[10px] leading-snug line-clamp-2"
                     style={{ color: inbound ? "var(--crm-ink)" : "var(--tile-rose-fg)" }}
                   >
-                    {m.snippet || (m.body_text || "").slice(0, 140) || m.subject || "(no content)"}
+                    {stripHtmlToText(m.snippet || (m.body_text || "").slice(0, 200) || m.subject) || "(no content)"}
                   </span>
                 </div>
               </div>
@@ -58,10 +59,10 @@ export default function CrmEmailPreview({ ticket, entity, onOpen }) {
           })
         )}
       </div>
-      {/* Gradient wash fading the preview out */}
+      {/* Gradient wash fading older (clipped) messages out at the top */}
       <div
-        className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, transparent, var(--crm-page-bg) 85%)" }}
+        className="absolute inset-x-0 top-0 h-8 pointer-events-none"
+        style={{ background: "linear-gradient(to top, transparent, var(--crm-page-bg) 85%)" }}
       />
       {/* Hover overlay */}
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 backdrop-blur-[2px]">

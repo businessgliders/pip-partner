@@ -10,16 +10,7 @@ const ENTITY_TO_TAB_KEY = {
   FrontAdminApplication: "frontadmin",
 };
 
-function stripHtml(html) {
-  return (html || "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { stripHtmlToText as stripHtml } from "@/lib/textPreview";
 
 function relativeTime(iso) {
   if (!iso) return "";
