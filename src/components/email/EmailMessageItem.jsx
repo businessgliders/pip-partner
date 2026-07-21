@@ -3,17 +3,14 @@ import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sparkles, AlertTriangle, Maximize2, Bot } from "lucide-react";
 import UnreadMessageMarker from "./UnreadMessageMarker";
+import { decodeEntities } from "@/lib/textPreview";
 
 function stripHtml(html) {
-  return (html || "")
+  const text = (html || "")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .trim();
+    .replace(/<[^>]+>/g, "");
+  return decodeEntities(text).trim();
 }
 
 function stripQuotedReply(text) {
@@ -136,13 +133,20 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
         <div
           className={`relative max-w-[80%] rounded-2xl px-4 py-2.5 cursor-pointer transition-all ${
             isInbound
-              ? "bg-white border border-gray-200 rounded-bl-sm"
+              ? "rounded-bl-sm"
               : isFailed
               ? "bg-red-50 border border-red-300 rounded-br-sm"
               : isInternal
               ? "bg-amber-50 border border-amber-200 rounded-br-sm"
-              : "bg-pink-100 rounded-br-sm"
+              : "rounded-br-sm"
           } ${isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""} ${message.is_ai_summary ? "pr-9" : ""}`}
+          style={
+            isInbound
+              ? { background: "var(--crm-card-bg)", border: "1px solid rgba(182,118,81,0.15)" }
+              : isFailed || isInternal
+              ? undefined
+              : { background: "var(--crm-accent-soft)" }
+          }
           onClick={() => setOpen(true)}
         >
           {message.is_ai_summary && (
@@ -188,7 +192,16 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
              dangerouslySetInnerHTML={{ __html: message.body_html }}
            />
           ) : (
-           <div className="lg:text-sm text-xs text-gray-800 truncate line-clamp-1">
+           <div
+             className="lg:text-sm text-xs text-gray-800 truncate line-clamp-1"
+             style={
+               isInbound
+                 ? { color: "var(--crm-ink)" }
+                 : isFailed || isInternal
+                 ? undefined
+                 : { color: "var(--tile-rose-fg)" }
+             }
+           >
              {cleanText || "(empty)"}
            </div>
           )}
