@@ -1,8 +1,7 @@
 import React, { useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef } from "react";
-import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Mail, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Mail, X } from "lucide-react";
 import EmailMessageItem from "./EmailMessageItem";
 import EmailComposer from "./EmailComposer";
 import ComposerDragHandle from "./ComposerDragHandle";
@@ -144,32 +143,12 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
   const containerRef = useRef(null);
   const panelRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
-  // On mobile (< sm) open the fullscreen composer popup immediately —
-  // no extra "Reply" tap needed. Desktop keeps the inline composer.
-  const [composerOpen, setComposerOpen] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches
-  );
-  // Desktop composer editor height (in px) when user has resized via the drag handle.
+  // Compact toolbar styling for the composer on small screens
+  const isMobile =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches;
+  // Composer editor height (in px) when user has resized via the drag handle.
   // null = use the default responsive sizing baked into EmailComposer.
   const [editorHeight, setEditorHeight] = useState(null);
-  // Mobile popup composer height (in px). Defaults to a generous initial size on open.
-  const [mobileEditorHeight, setMobileEditorHeight] = useState(null);
-  // Track mobile viewport height so we can clamp the drag handle's max.
-  const [mobileVh, setMobileVh] = useState(
-    typeof window !== "undefined" ? window.innerHeight : 800
-  );
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const onResize = () => setMobileVh(window.innerHeight);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  // Initialize the mobile editor to ~50% of viewport height when the popup opens.
-  useEffect(() => {
-    if (composerOpen && mobileEditorHeight === null) {
-      setMobileEditorHeight(Math.round(mobileVh * 0.5));
-    }
-  }, [composerOpen, mobileEditorHeight, mobileVh]);
   // Track panel height so the inline drag handle can clamp the editor and keep
   // the Send Reply row visible inside the container.
   const [panelHeight, setPanelHeight] = useState(0);
@@ -458,19 +437,8 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         </div>
 
         <div className="border-t bg-white">
-          {/* Mobile-only Reply button (< sm / 640px) — opens the fullscreen popup */}
-          <button
-            type="button"
-            onClick={() => setComposerOpen(true)}
-            className="sm:hidden w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-          >
-            <span className="text-xs tracking-wider uppercase text-gray-600 font-semibold">
-              Reply
-            </span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
-          </button>
-          {/* Inline composer — tablet + desktop (sm+) keep it always mounted */}
-          <div className="hidden sm:block">
+          {/* Inline composer — always mounted on every breakpoint */}
+          <div>
             <ComposerDragHandle
               currentHeight={editorHeight ?? 200}
               onResize={(h) => setEditorHeight(Math.min(h, inlineEditorMax))}
@@ -483,6 +451,7 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
               currentUser={currentUser}
               onSent={handleSentAndClearDraft}
               onRequestFullscreen={() => setFullscreen(true)}
+              isMobileFullscreen={isMobile}
               editorHeightPx={editorHeight}
               draftHtml={draftHtml}
               onDraftChange={setDraftHtml}
@@ -570,95 +539,6 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
         saving={confirmSaving}
       />
 
-      {/* Mobile-only popup (< sm) — entire thread + composer. Portaled to
-          document.body so `position: fixed` is viewport-scoped (parent has a
-          lingering transform from pip-view-in). Slides up to cover the
-          ticket card + email panel entirely, starting right below the top
-          page header. */}
-      {composerOpen && typeof document !== "undefined" && createPortal(
-        <div
-          className="fixed left-0 right-0 z-[60] sm:hidden bg-white flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 pip-slide-up"
-          style={{
-            top: "calc(env(safe-area-inset-top, 0px) + 112px)",
-            bottom: "env(safe-area-inset-bottom, 0px)",
-          }}
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-50 to-pink-50 shrink-0">
-            <span className="font-semibold text-sm text-gray-800">Email Communications</span>
-            <button
-              type="button"
-              onClick={() => requestClose(() => setComposerOpen(false))}
-              className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          {/* Two-section body: scrollable message list (top, shrinks) +
-              fixed-height composer (bottom, resizable via drag handle). Both
-              flex children with min-h-0 so they can shrink correctly. */}
-          <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 p-3 bg-gradient-to-b from-amber-50/30 to-pink-50/30 overflow-y-auto">
-              {allMessages.map((m) => {
-                const readBy = Array.isArray(m.read_by) ? m.read_by : [];
-                const isUnread =
-                  !!userEmail &&
-                  m.direction === "inbound" &&
-                  !String(m.id || "").startsWith("__") &&
-                  !readBy.some((e) => (e || "").toLowerCase() === userEmail);
-                return (
-                  <EmailMessageItem
-                    key={m.id}
-                    message={m}
-                    isHighlighted={highlightMessageId === m.id}
-                    isUnread={isUnread}
-                    onMarkRead={isUnread && markAsRead ? () => markAsRead(m.id) : undefined}
-                    staffNameByEmail={staffNameByEmail}
-                  />
-                );
-              })}
-              {ticket?.follow_up?.enabled && (
-                <div className="mt-2 flex justify-end">
-                  <div className="max-w-[80%] w-full">
-                    <FollowUpControl ticket={ticket} ticketType={ticketType} />
-                  </div>
-                </div>
-              )}
-            </div>
-            {/* Drag handle — drag UP to expand the composer into the email
-                preview area, DOWN to shrink it. Bounded so at least ~120px
-                of messages stay visible and composer keeps a min working
-                height. */}
-            <ComposerDragHandle
-              currentHeight={mobileEditorHeight ?? Math.round(mobileVh * 0.5)}
-              onResize={(h) => setMobileEditorHeight(h)}
-              minHeight={140}
-              maxHeight={Math.max(200, mobileVh - 240)}
-            />
-            <div className="shrink-0 overflow-y-auto hide-scrollbar">
-              <EmailComposer
-                ticket={ticket}
-                ticketType={ticketType}
-                currentUser={currentUser}
-                onSent={async () => {
-                  await handleSentAndClearDraft();
-                  setComposerOpen(false);
-                }}
-                isMobileFullscreen
-                editorHeightPx={
-                  mobileEditorHeight
-                    ? Math.max(80, mobileEditorHeight - 220)
-                    : undefined
-                }
-                draftHtml={draftHtml}
-                onDraftChange={setDraftHtml}
-                draftStatus={draft.status}
-                draftLastSavedAt={draft.lastSavedAt}
-              />
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </>
   );
 }
