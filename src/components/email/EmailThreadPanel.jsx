@@ -148,7 +148,8 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
     typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches;
   // Composer editor height (in px) when user has resized via the drag handle.
   // null = use the default responsive sizing baked into EmailComposer.
-  const [editorHeight, setEditorHeight] = useState(null);
+  // Mobile starts at the drag handle's minimum so the thread gets max space.
+  const [editorHeight, setEditorHeight] = useState(isMobile ? 80 : null);
   // Track panel height so the inline drag handle can clamp the editor and keep
   // the Send Reply row visible inside the container.
   const [panelHeight, setPanelHeight] = useState(0);
