@@ -144,7 +144,11 @@ function EmailThreadPanelInner({ ticket, ticketType, currentUser, highlightMessa
   const containerRef = useRef(null);
   const panelRef = useRef(null);
   const userEmail = (currentUser?.email || "").toLowerCase().trim();
-  const [composerOpen, setComposerOpen] = useState(false);
+  // On mobile (< sm) open the fullscreen composer popup immediately —
+  // no extra "Reply" tap needed. Desktop keeps the inline composer.
+  const [composerOpen, setComposerOpen] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches
+  );
   // Desktop composer editor height (in px) when user has resized via the drag handle.
   // null = use the default responsive sizing baked into EmailComposer.
   const [editorHeight, setEditorHeight] = useState(null);

@@ -120,7 +120,7 @@ export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscree
            <span className={isMobileFullscreen ? "hidden" : ""}>Meeting</span>
          </Button>
        </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-0" align="start">
+      <PopoverContent className="w-[420px] max-w-[92vw] p-0 z-[70]" align="start">
         <div className="p-4 border-b space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div>

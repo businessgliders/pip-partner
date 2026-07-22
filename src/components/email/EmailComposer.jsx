@@ -437,7 +437,7 @@ export default function EmailComposer({
                   + Add
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-72 p-0 max-h-80 overflow-y-auto">
+              <PopoverContent align="start" className="w-72 p-0 max-h-80 overflow-y-auto z-[70]">
                 <div className="p-2 border-b">
                   <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2 px-1">
                     Applicant
@@ -715,7 +715,7 @@ export default function EmailComposer({
                 )}
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-72 p-2 max-h-80 overflow-y-auto">
+            <PopoverContent align="start" className="w-72 p-2 max-h-80 overflow-y-auto z-[70]">
               <div className="flex flex-col gap-1 mb-2 pb-2 border-b border-gray-100">
                 <button
                   type="button"
@@ -789,7 +789,7 @@ export default function EmailComposer({
                   <ChevronDown className="w-3 h-3 ml-0.5 opacity-70" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 z-[70]">
                 <DropdownMenuItem
                   onClick={() => { setShowDescribe((v) => !v); setShowSuggest(false); }}
                   className="text-xs gap-2"

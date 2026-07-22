@@ -44,7 +44,7 @@ export default function TemplatePicker({ vars, onSelect, isMobileFullscreen }) {
            <span className={isMobileFullscreen ? "hidden" : ""}>Templates</span>
          </Button>
        </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 max-h-96 overflow-y-auto">
+      <DropdownMenuContent className="w-64 max-h-96 overflow-y-auto z-[70]">
         {templates.length === 0 && (
           <div className="px-3 py-4 text-xs text-gray-500 text-center">No templates yet</div>
         )}
