@@ -37,18 +37,18 @@ const STATUS_COLORS = {
   declined: { hex: "#be123c", bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", dot: "bg-rose-500" },
 };
 
-// Territory progression gradient — yellow → green as the lead moves down the
-// franchise pipeline. Keyed by status, ordered to match the board flow.
+// Territory progression gradient — red → yellow → green as the lead moves
+// down the franchise pipeline. Keyed by status, ordered to match the board flow.
 const TERRITORY_GRADIENT = {
-  new: "#eab308",
-  discovery: "#d0bb0e",
-  no_show: "#b6b313",
-  nda: "#9cab19",
-  fdd: "#82a31e",
-  signed: "#689b24",
-  site_selection: "#4e9329",
-  lease: "#348b2f",
-  build_out: "#268536",
+  new: "#dc2626",
+  discovery: "#e4531c",
+  no_show: "#ec7c12",
+  nda: "#f59e0b",
+  fdd: "#eab308",
+  signed: "#a3b310",
+  site_selection: "#65a30d",
+  lease: "#4d9b22",
+  build_out: "#2f8c31",
   training: "#15803d",
 };
 

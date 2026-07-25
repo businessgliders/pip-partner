@@ -8,14 +8,17 @@ const SEGMENTS = [
 ];
 
 // Dashboard "Total leads" tile rendered as a donut/pie breakdown per board.
-export default function CrmLeadsPieTile({ counts, total, signed, onClick }) {
+// Clicking a legend row or pie segment opens that specific board's leads.
+export default function CrmLeadsPieTile({ counts, total, signed, onClick, onSelect }) {
   const data = SEGMENTS.map((s) => ({ ...s, value: counts[s.key] || 0 }));
   const hasData = total > 0;
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="rounded-2xl p-5 text-left flex flex-col flex-1 hover:brightness-[0.98] transition"
+      onKeyDown={(e) => { if (e.key === "Enter") onClick?.(); }}
+      className="rounded-2xl p-5 text-left flex flex-col flex-1 hover:brightness-[0.98] transition cursor-pointer"
       style={{ background: "var(--tile-pink-bg)", boxShadow: "var(--crm-card-shadow)" }}
     >
       <span className="text-[12px] font-semibold" style={{ color: "var(--tile-pink-fg)" }}>
@@ -33,9 +36,15 @@ export default function CrmLeadsPieTile({ counts, total, signed, onClick }) {
               paddingAngle={hasData ? 2 : 0}
               strokeWidth={0}
               isAnimationActive={false}
+              onClick={(d, i, e) => {
+                if (d?.key && onSelect) {
+                  e?.stopPropagation?.();
+                  onSelect(d.key);
+                }
+              }}
             >
               {(hasData ? data : [{ color: "rgba(255,255,255,0.35)" }]).map((d, i) => (
-                <Cell key={i} fill={d.color} />
+                <Cell key={i} fill={d.color} style={{ cursor: "pointer" }} />
               ))}
             </Pie>
           </PieChart>
@@ -50,11 +59,19 @@ export default function CrmLeadsPieTile({ counts, total, signed, onClick }) {
 
       <div className="mt-3 space-y-1.5 text-[12px]" style={{ color: "var(--tile-pink-fg)" }}>
         {data.map((d) => (
-          <div key={d.key} className="flex items-center gap-2">
+          <button
+            key={d.key}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              (onSelect || onClick)?.(d.key);
+            }}
+            className="w-full flex items-center gap-2 rounded-md px-1 -mx-1 py-0.5 hover:bg-white/40 transition-colors text-left"
+          >
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.color }} />
             <span className="flex-1">{d.label}</span>
             <strong>{d.value}</strong>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -64,6 +81,6 @@ export default function CrmLeadsPieTile({ counts, total, signed, onClick }) {
         </div>
         <div className="text-xl font-bold" style={{ color: "var(--crm-ink)" }}>{signed}</div>
       </div>
-    </button>
+    </div>
   );
 }

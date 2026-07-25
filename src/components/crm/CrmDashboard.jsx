@@ -9,6 +9,7 @@ import useReplyNotifications from "@/hooks/useReplyNotifications";
 import CrmDashboardNotifications from "./CrmDashboardNotifications";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
+import CrmEmailDrawer from "./CrmEmailDrawer";
 import CrmAiFollowUpsModal from "./CrmAiFollowUpsModal";
 import CrmLeadsPieTile from "./CrmLeadsPieTile";
 import { CRM } from "./crmTheme";
@@ -17,6 +18,7 @@ const groupOf = (boardKey) => (boardKey === "franchise" ? "franchise" : "hiring"
 
 export default function CrmDashboard({ onNavigate, currentUser }) {
   const [detailTicket, setDetailTicket] = useState(null);
+  const [emailTicket, setEmailTicket] = useState(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
 
   const { data: franchise = [] } = useQuery({
@@ -121,6 +123,7 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
             total={all.length}
             signed={signed}
             onClick={() => goToLeads("franchise")}
+            onSelect={(key) => goToLeads(key)}
           />
 
           {/* Active AI follow-ups tile */}
@@ -187,8 +190,17 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
       {aiModalOpen && (
         <CrmAiFollowUpsModal
           leads={activeFollowUps}
-          onOpenLead={(t) => { setAiModalOpen(false); setDetailTicket(t); }}
+          onOpenLead={(t) => { setAiModalOpen(false); setEmailTicket(t); }}
           onClose={() => setAiModalOpen(false)}
+        />
+      )}
+
+      {emailTicket && (
+        <CrmEmailDrawer
+          ticket={emailTicket}
+          ticketType={BOARD_TYPES.find((b) => b.key === emailTicket._boardKey)?.entity}
+          currentUser={currentUser}
+          onClose={() => setEmailTicket(null)}
         />
       )}
 
