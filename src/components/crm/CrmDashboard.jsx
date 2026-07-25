@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { format, subMonths, startOfMonth } from "date-fns";
+import { format, startOfMonth, addMonths } from "date-fns";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Bot, FileSignature } from "lucide-react";
 import { displayName, BOARD_TYPES } from "@/components/board/boardConfig";
@@ -71,12 +71,14 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
     ["signed", "site_selection", "lease", "build_out", "training"].includes(t.status)
   ).length;
 
-  // Inquiries sparkline — last 8 months.
+  // Inquiries sparkline — from May 2026 through the current month.
   const sparkData = useMemo(() => {
     const months = [];
-    for (let i = 7; i >= 0; i--) {
-      const m = startOfMonth(subMonths(new Date(), i));
+    let m = startOfMonth(new Date(2026, 4, 1)); // May 2026
+    const end = startOfMonth(new Date());
+    while (m <= end) {
       months.push({ key: format(m, "yyyy-MM"), label: format(m, "MMM"), count: 0 });
+      m = addMonths(m, 1);
     }
     all.forEach((t) => {
       if (!t.created_date) return;
@@ -149,7 +151,7 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
               Inquiries received
             </div>
             <div className="text-[10px] tracking-wider uppercase font-semibold mt-0.5" style={{ color: "var(--tile-peach-sub)" }}>
-              Last 8 months
+              Since May 2026
             </div>
             <div className="flex-1 min-h-[80px] mt-2">
               <ResponsiveContainer width="100%" height="100%">
