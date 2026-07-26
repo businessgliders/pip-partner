@@ -110,7 +110,7 @@ async function notifyInboundReply(base44, accessToken, parentType, parentId, fro
     }
   } catch (_) {}
 
-  const appBase = (Deno.env.get('APP_BASE_URL') || '').replace(/\/+$/, '');
+  const appBase = 'https://partner.pilatesinpinkstudio.com';
   const link = `${appBase}/ApplicationBoard?page=leads&source=${NOTIFY_BOARD_KEYS[parentType]}&ticket=${parentId}&openEmail=1`;
   const groupLabel = group === 'franchise' ? 'Franchising' : 'Hiring';
 
