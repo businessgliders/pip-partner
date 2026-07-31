@@ -7,6 +7,7 @@ import { X, CalendarDays } from "lucide-react";
 import EmailThreadPanel from "@/components/email/EmailThreadPanel";
 import FollowUpControl from "@/components/admin/FollowUpControl";
 import FddCountdownPill from "@/components/board/FddCountdownPill";
+import BookingManagePopover from "./BookingManagePopover";
 import { displayName } from "@/components/board/boardConfig";
 import useReplyNotifications from "@/hooks/useReplyNotifications";
 import { CRM } from "./crmTheme";
@@ -75,18 +76,24 @@ export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClos
           </div>
           <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             {meeting && (
-              <span
-                className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${
-                  meeting._past
-                    ? "bg-white/70 text-stone-500"
-                    : "bg-emerald-100 text-emerald-800"
-                }`}
-                title={meeting.title || "Cal.com meeting"}
+              <BookingManagePopover
+                meeting={meeting}
+                boardKey={ticketType === "FranchiseInquiry" ? "franchise" : "hiring"}
               >
-                <CalendarDays className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{meeting._past ? "Met" : "Meeting"}</span>
-                {format(new Date(meeting.start), "MMM d, h:mma").toLowerCase()}
-              </span>
+                <button
+                  type="button"
+                  className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition ${
+                    meeting._past
+                      ? "bg-white/70 text-stone-500 hover:bg-white"
+                      : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                  }`}
+                  title={meeting.title || "Manage Cal.com booking"}
+                >
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{meeting._past ? "Met" : "Meeting"}</span>
+                  {format(new Date(meeting.start), "MMM d, h:mma").toLowerCase()}
+                </button>
+              </BookingManagePopover>
             )}
             {ticketType === "FranchiseInquiry" && <FddCountdownPill ticket={ticket} />}
             {/* Full labelled pill on md+, icon-only when the header is crowded on small screens */}

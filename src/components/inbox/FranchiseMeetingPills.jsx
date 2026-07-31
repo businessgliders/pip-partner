@@ -4,7 +4,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ExternalLink, CalendarClock, XCircle, Video } from "lucide-react";
+import { Video } from "lucide-react";
+import BookingManagePopover from "@/components/crm/BookingManagePopover";
 import FddCountdownBadge from "@/components/admin/FddCountdownBadge";
 import SubmitterCalBookingsPopover from "@/components/admin/SubmitterCalBookingsPopover";
 import ResendBookingEmailsButton from "@/components/admin/ResendBookingEmailsButton";
@@ -37,9 +38,6 @@ export default function FranchiseMeetingPills({
 
   const startIso = ticket?._cal_booking?.start || ticket?.scheduled_call_time;
   const uid = ticket?._cal_booking?.uid || ticket?._cal_booking?.bookingId;
-  const calBookingUrl = uid ? `https://cal.com/booking/${uid}` : null;
-  const rescheduleUrl = uid ? `https://cal.com/reschedule/${uid}` : null;
-  const cancelUrl = uid ? `https://cal.com/booking/${uid}?cancel=true` : null;
   const meetingUrlRaw = ticket?._cal_booking?.meetingUrl || "";
   const meetingUrl = /^https?:\/\//i.test(meetingUrlRaw) ? meetingUrlRaw : null;
 
@@ -91,8 +89,11 @@ export default function FranchiseMeetingPills({
 
       {/* Cal.com booking pill — only when there's a known booking */}
       {showCalPill && label && (
-        <Popover>
-          <PopoverTrigger asChild>
+        uid ? (
+          <BookingManagePopover
+            meeting={{ uid, start: startIso, title: "Discovery call", meetingUrl }}
+            boardKey="franchise"
+          >
             <button
               type="button"
               className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition whitespace-nowrap"
@@ -100,39 +101,19 @@ export default function FranchiseMeetingPills({
             >
               📅 <span className={compact ? "hidden sm:inline" : ""}>{label}</span>
             </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 p-1">
-            {uid ? (
-              <>
-                <a
-                  href={calBookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
-                  Open meeting in Cal.com
-                </a>
-                <a
-                  href={rescheduleUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                >
-                  <CalendarClock className="w-3.5 h-3.5 text-emerald-700" />
-                  Reschedule on Cal.com
-                </a>
-                <a
-                  href={cancelUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-100"
-                >
-                  <XCircle className="w-3.5 h-3.5 text-red-600" />
-                  Cancel booking
-                </a>
-              </>
-            ) : (
+          </BookingManagePopover>
+        ) : (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-medium hover:bg-emerald-200 transition whitespace-nowrap"
+                title="Manage booking"
+              >
+                📅 <span className={compact ? "hidden sm:inline" : ""}>{label}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-1">
               <div className="px-2.5 py-2 text-xs text-slate-500">
                 No Cal.com booking linked.{" "}
                 <a
@@ -145,9 +126,9 @@ export default function FranchiseMeetingPills({
                 </a>
                 .
               </div>
-            )}
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        )
       )}
 
       {/* Join meeting */}
