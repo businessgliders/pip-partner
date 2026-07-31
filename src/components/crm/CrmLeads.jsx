@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, ArrowUpDown } from "lucide-react";
+import { Search, ArrowUpDown, Archive } from "lucide-react";
 import { BOARD_TYPES, getStatusLabel, displayName } from "@/components/board/boardConfig";
 import CrmLeadRow from "./CrmLeadRow";
 import CrmEmailDrawer from "./CrmEmailDrawer";
@@ -52,6 +52,7 @@ export default function CrmLeads({ source, currentUser }) {
   const handleUpdate = (id, data) => updateMutation.mutate({ id, data });
 
   const active = useMemo(() => tickets.filter((t) => !t.archived), [tickets]);
+  const archived = useMemo(() => tickets.filter((t) => t.archived), [tickets]);
 
   // Terminal statuses hidden from the "Active" tab
   const TERMINAL = ["ghosted", "closed", "declined"];
@@ -91,6 +92,8 @@ export default function CrmLeads({ source, currentUser }) {
   const visible = useMemo(() => {
     let list = tab === "all"
       ? active.filter((t) => !TERMINAL.includes(t.status))
+      : tab === "archived"
+      ? archived
       : active.filter((t) => t.status === tab);
     if (aiOnly) list = list.filter((t) => t.follow_up?.enabled);
     const q = search.trim().toLowerCase();
@@ -112,7 +115,7 @@ export default function CrmLeads({ source, currentUser }) {
       }
       return sort.dir === "desc" ? -cmp : cmp;
     });
-  }, [active, tab, search, sort, aiOnly]);
+  }, [active, archived, tab, search, sort, aiOnly]);
 
   const toggleSort = (key) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: key === "created" ? "desc" : "asc" }));
@@ -171,6 +174,28 @@ export default function CrmLeads({ source, currentUser }) {
               </button>
             );
           })}
+          {/* Archived leads — icon-only filter at the end of the row */}
+          <span className="h-4 w-px shrink-0 self-center" style={{ background: "rgba(182,118,81,0.3)" }} />
+          <button
+            type="button"
+            onClick={() => { setTab("archived"); setExpandedId(null); }}
+            className="flex items-center gap-1 pb-1.5 shrink-0 transition-colors"
+            title={`Archived leads (${archived.length})`}
+            style={{
+              color: tab === "archived" ? CRM.ink : CRM.sub,
+              borderBottom: tab === "archived" ? `2px solid ${CRM.accent}` : "2px solid transparent",
+            }}
+          >
+            <Archive className="w-4 h-4" />
+            {archived.length > 0 && (
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                style={{ background: "rgba(182,118,81,0.08)", color: CRM.sub }}
+              >
+                {archived.length}
+              </span>
+            )}
+          </button>
         </div>
         {aiOnly && (
           <button

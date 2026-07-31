@@ -156,9 +156,9 @@ export default function CrmLeadRow({
                   <DropdownMenuContent align="end" className="crm-root">
                     <DropdownMenuItem
                       className="text-[12px] gap-2"
-                      onClick={() => onUpdate(ticket.id, { archived: true })}
+                      onClick={() => onUpdate(ticket.id, { archived: !ticket.archived })}
                     >
-                      <Archive className="w-3.5 h-3.5" /> Archive lead
+                      <Archive className="w-3.5 h-3.5" /> {ticket.archived ? "Restore lead" : "Archive lead"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
