@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
+import { displayName } from "@/components/board/boardConfig";
 import FddCountdownBadge from "@/components/admin/FddCountdownBadge";
 import FollowUpControl from "@/components/admin/FollowUpControl";
 import BookingManagePopover from "./BookingManagePopover";
@@ -38,7 +39,15 @@ export default function CrmLeadActions({ ticket, board }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {board.key === "franchise" && <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />}
-      {!meeting && <CalComLinkButton email={ticket?.email} />}
+      {!meeting && (
+        <BookingManagePopover
+          meeting={null}
+          boardKey={board.key}
+          lead={{ email: ticket?.email, name: displayName(ticket) }}
+        >
+          <CalComLinkButton />
+        </BookingManagePopover>
+      )}
       {meeting && (
         <BookingManagePopover meeting={meeting} boardKey={board.key}>
           <button

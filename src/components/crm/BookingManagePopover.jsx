@@ -6,14 +6,14 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Info, CalendarClock, XCircle, ChevronLeft, Loader2, Video, CheckCircle2,
+  Info, CalendarClock, XCircle, ChevronLeft, Loader2, Video, CheckCircle2, CalendarPlus,
 } from "lucide-react";
 
 // Popover that wraps a Cal.com booking pill and offers view details,
 // reschedule (via Cal.com API + availability for the right event type),
 // and cancel booking. `boardKey` "franchise" uses the franchise event type;
 // everything else uses the hiring event type for reschedule slots.
-export default function BookingManagePopover({ meeting, boardKey = "hiring", children }) {
+export default function BookingManagePopover({ meeting, boardKey = "hiring", lead = null, children }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("menu"); // menu | details | reschedule | cancel | done
@@ -24,6 +24,8 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", chi
 
   const uid = meeting?.uid || meeting?.bookingId;
   const availBoardKey = boardKey === "franchise" ? "franchise" : "hiring";
+  // No existing booking → the popover becomes a "book a meeting" flow.
+  const bookMode = !uid;
 
   const reset = () => {
     setView("menu");
@@ -86,7 +88,25 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", chi
     onError: (e) => setErrorMsg(e?.response?.data?.error || e.message || "Cancel failed"),
   });
 
-  if (!uid) return children;
+  const bookMut = useMutation({
+    mutationFn: async (start) => {
+      const resp = await base44.functions.invoke("bookCalEvent", {
+        start,
+        boardKey: availBoardKey,
+        name: lead?.name || lead?.email,
+        email: lead?.email,
+      });
+      return resp?.data;
+    },
+    onSuccess: () => {
+      invalidateBookings();
+      setDoneMsg("Meeting booked — Cal.com has sent the invite.");
+      setView("done");
+    },
+    onError: (e) => setErrorMsg(e?.response?.data?.error || e.message || "Booking failed"),
+  });
+
+  if (bookMode && !lead?.email) return children;
 
   const days = Object.keys(avail || {}).filter((d) => (avail[d] || []).length > 0).slice(0, 14);
   const slots = selectedDay ? avail?.[selectedDay] || [] : [];
@@ -119,16 +139,36 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", chi
         {view === "menu" && (
           <>
             <div className="px-2.5 pb-1.5 pt-0.5">
-              <div className="text-xs font-semibold text-slate-800 truncate">{meeting?.title || "Cal.com booking"}</div>
-              {meeting?.start && (
+              <div className="text-xs font-semibold text-slate-800 truncate">
+                {bookMode ? "No meeting booked" : (meeting?.title || "Cal.com booking")}
+              </div>
+              {bookMode ? (
+                <div className="text-[11px] text-slate-500 truncate">{lead?.email}</div>
+              ) : meeting?.start && (
                 <div className="text-[11px] text-slate-500">
                   {format(new Date(meeting.start), "EEE, MMM d · h:mma").toLowerCase()}
                 </div>
               )}
             </div>
-            {menuItem(<Info className="w-3.5 h-3.5 text-blue-600" />, "View details", () => setView("details"))}
-            {menuItem(<CalendarClock className="w-3.5 h-3.5 text-emerald-700" />, "Reschedule booking", () => setView("reschedule"))}
-            {menuItem(<XCircle className="w-3.5 h-3.5 text-red-600" />, "Cancel booking", () => setView("cancel"), true)}
+            {bookMode ? (
+              <>
+                {menuItem(<CalendarPlus className="w-3.5 h-3.5 text-emerald-700" />, "Book a meeting", () => setView("reschedule"))}
+                <a
+                  href="https://app.cal.com/bookings/upcoming"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-2 px-2.5 py-2 text-xs rounded-md text-slate-700 hover:bg-slate-100"
+                >
+                  <Info className="w-3.5 h-3.5 text-blue-600" /> Open Cal.com
+                </a>
+              </>
+            ) : (
+              <>
+                {menuItem(<Info className="w-3.5 h-3.5 text-blue-600" />, "View details", () => setView("details"))}
+                {menuItem(<CalendarClock className="w-3.5 h-3.5 text-emerald-700" />, "Reschedule booking", () => setView("reschedule"))}
+                {menuItem(<XCircle className="w-3.5 h-3.5 text-red-600" />, "Cancel booking", () => setView("cancel"), true)}
+              </>
+            )}
           </>
         )}
 
@@ -233,12 +273,12 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", chi
                 </div>
                 <button
                   type="button"
-                  disabled={!selectedSlot || rescheduleMut.isPending}
-                  onClick={() => selectedSlot && rescheduleMut.mutate(selectedSlot)}
+                  disabled={!selectedSlot || rescheduleMut.isPending || bookMut.isPending}
+                  onClick={() => selectedSlot && (bookMode ? bookMut : rescheduleMut).mutate(selectedSlot)}
                   className="w-full mt-2 h-8 rounded-md text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
-                  {rescheduleMut.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  Confirm reschedule
+                  {(rescheduleMut.isPending || bookMut.isPending) && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {bookMode ? "Confirm booking" : "Confirm reschedule"}
                 </button>
               </div>
             )}

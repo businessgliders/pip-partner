@@ -1,21 +1,18 @@
 import React from "react";
 
-// Fallback pill shown when a lead has no Cal.com booking — links straight to
-// the Cal.com bookings app, filtered to this lead's email.
-export default function CalComLinkButton({ email }) {
-  const href = email
-    ? `https://app.cal.com/bookings/upcoming?q=${encodeURIComponent(email)}`
-    : "https://app.cal.com/bookings/upcoming";
-
+// Pill shown when a lead has no Cal.com booking — opens the booking popover.
+const CalComLinkButton = React.forwardRef(function CalComLinkButton(props, ref) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      title="No meeting booked — open Cal.com"
+    <button
+      ref={ref}
+      type="button"
+      title="No meeting booked — book on Cal.com"
       className="inline-flex items-center h-7 px-2.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-slate-600 text-white hover:bg-slate-700 transition"
+      {...props}
     >
       Cal.com
-    </a>
+    </button>
   );
-}
+});
+
+export default CalComLinkButton;
