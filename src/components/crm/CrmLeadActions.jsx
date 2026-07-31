@@ -6,6 +6,7 @@ import { CalendarDays } from "lucide-react";
 import FddCountdownBadge from "@/components/admin/FddCountdownBadge";
 import FollowUpControl from "@/components/admin/FollowUpControl";
 import BookingManagePopover from "./BookingManagePopover";
+import CalComLinkButton from "./CalComLinkButton";
 
 // Row of lead "function" pills — FDD timer, Cal.com meeting, AI follow-up.
 export default function CrmLeadActions({ ticket, board }) {
@@ -37,6 +38,7 @@ export default function CrmLeadActions({ ticket, board }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {board.key === "franchise" && <FddCountdownBadge ticketId={ticket.id} ticket={ticket} />}
+      {!meeting && <CalComLinkButton email={ticket?.email} />}
       {meeting && (
         <BookingManagePopover meeting={meeting} boardKey={board.key}>
           <button
