@@ -1,0 +1,66 @@
+{
+  "name": "MeetingReminder",
+  "type": "object",
+  "properties": {
+    "booking_uid": {
+      "type": "string",
+      "description": "Cal.com booking uid/id this reminder was sent for"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "24h",
+        "1h"
+      ],
+      "description": "Which reminder was sent: 24 hours prior or 1 hour prior"
+    },
+    "ticket_id": {
+      "type": "string",
+      "description": "ID of the lead the reminder was sent to"
+    },
+    "ticket_type": {
+      "type": "string",
+      "description": "Entity name of the lead"
+    },
+    "to_email": {
+      "type": "string",
+      "description": "Recipient email address"
+    },
+    "meeting_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Meeting start time (ISO)"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the reminder email was sent"
+    }
+  },
+  "required": [
+    "booking_uid",
+    "kind"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
