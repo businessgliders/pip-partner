@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { PenLine, LayoutTemplate, Bell, Users } from "lucide-react";
+import { PenLine, LayoutTemplate, Bell, Users, CalendarClock } from "lucide-react";
 import CrmSignatureDialog from "./CrmSignatureDialog";
 import CrmNotificationsDialog from "./CrmNotificationsDialog";
+import CrmMeetingGuestsDialog from "./CrmMeetingGuestsDialog";
 import { CRM } from "./crmTheme";
 
 function SettingCard({ icon: Icon, title, description, onClick, disabled }) {
@@ -26,6 +27,7 @@ function SettingCard({ icon: Icon, title, description, onClick, disabled }) {
 export default function CrmSettings({ onNavigate }) {
   const [sigOpen, setSigOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [guestsOpen, setGuestsOpen] = useState(false);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -57,10 +59,17 @@ export default function CrmSettings({ onNavigate }) {
           description="Choose who gets emailed when leads reply."
           onClick={() => setNotifOpen(true)}
         />
+        <SettingCard
+          icon={CalendarClock}
+          title="Meeting guests"
+          description="Pick which team members join each Cal.com call type."
+          onClick={() => setGuestsOpen(true)}
+        />
       </div>
 
       {sigOpen && <CrmSignatureDialog onClose={() => setSigOpen(false)} />}
       {notifOpen && <CrmNotificationsDialog onClose={() => setNotifOpen(false)} />}
+      {guestsOpen && <CrmMeetingGuestsDialog onClose={() => setGuestsOpen(false)} />}
     </div>
   );
 }

@@ -1,0 +1,47 @@
+{
+  "name": "MeetingGuestSetting",
+  "type": "object",
+  "properties": {
+    "event_type_id": {
+      "type": "string",
+      "description": "Cal.com event type ID this setting covers"
+    },
+    "event_label": {
+      "type": "string",
+      "description": "Display name of the Cal.com event type at save time"
+    },
+    "guests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Team member emails added as guests on new bookings of this event type"
+    }
+  },
+  "required": [
+    "event_type_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

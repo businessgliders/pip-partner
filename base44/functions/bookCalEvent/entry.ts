@@ -88,20 +88,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Franchise bookings include the internal team as optional guests so they
-    // get the calendar invite. Excluded if the booker themselves is one of
-    // them (avoids inviting yourself).
+    // Internal team members join new bookings as optional guests so they get
+    // the calendar invite. Per-event-type guest lists are configurable via the
+    // MeetingGuestSetting entity (Settings → Meeting guests); when no setting
+    // exists we fall back to the historical franchise default. The booker
+    // themselves is always excluded (avoids inviting yourself).
     const FRANCHISE_TEAM_GUESTS = [
       'gurpreen@pilatesinpinkstudio.com',
       'rashmeen@pilatesinpinkstudio.com',
       'sahil@pilatesinpinkstudio.com',
     ];
-    const guests =
-      boardKey === 'franchise'
-        ? FRANCHISE_TEAM_GUESTS.filter(
-            (g) => g.toLowerCase() !== String(email || '').toLowerCase()
-          )
-        : [];
+    let guestList = boardKey === 'franchise' ? FRANCHISE_TEAM_GUESTS : [];
+    try {
+      const settings = await base44.asServiceRole.entities.MeetingGuestSetting.filter(
+        { event_type_id: String(eventTypeId) }, '-created_date', 1
+      );
+      if (settings.length > 0) {
+        guestList = (settings[0].guests || []).filter((g) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(g || '').trim()));
+      }
+    } catch (guestErr) {
+      console.error('bookCalEvent: guest setting lookup failed, using defaults', guestErr);
+    }
+    const guests = guestList
+      .map((g) => String(g).trim())
+      .filter((g) => g.toLowerCase() !== String(email || '').toLowerCase());
 
     const payload = {
       start,
