@@ -94,7 +94,7 @@ async function findLead(base44, email) {
   return null;
 }
 
-async function sendReminder(base44, accessToken, { kind, booking, entityName, ticket, template }) {
+async function sendReminder(base44, accessToken, { kind, booking, entityName, ticket, template, overrideTo, skipLog }) {
   const start = booking.start || booking.startTime;
   const meetUrl = booking.meetingUrl || (typeof booking.location === 'string' && /^https?:\/\//i.test(booking.location) ? booking.location : '');
   const fullName = getTicketName(ticket);
@@ -120,7 +120,7 @@ async function sendReminder(base44, accessToken, { kind, booking, entityName, ti
 
   const fromAlias = FROM_ALIASES[entityName] || FROM_ALIASES.InstructorApplication;
   const fromHeader = `${rfc2047(fromAlias.name)} <${fromAlias.email}>`;
-  const toEmail = ticket.email;
+  const toEmail = overrideTo || ticket.email;
 
   const wrappedHtml = brandedShell(bodyHtml, fill(template.subject, vars));
   const bodyText = htmlToText(bodyHtml);
@@ -132,7 +132,7 @@ async function sendReminder(base44, accessToken, { kind, booking, entityName, ti
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ];
-  if (lastReal?.rfc_message_id) {
+  if (!skipLog && lastReal?.rfc_message_id) {
     headers.push(`In-Reply-To: ${lastReal.rfc_message_id}`);
     const refs = lastReal.references ? `${lastReal.references} ${lastReal.rfc_message_id}` : lastReal.rfc_message_id;
     headers.push(`References: ${refs}`);
@@ -155,7 +155,7 @@ async function sendReminder(base44, accessToken, { kind, booking, entityName, ti
   ].join('\r\n');
   const raw = base64UrlEncode(headers.join('\r\n') + '\r\n\r\n' + mimeBody);
   const sendPayload = { raw };
-  if (lastReal?.gmail_thread_id) sendPayload.threadId = lastReal.gmail_thread_id;
+  if (!skipLog && lastReal?.gmail_thread_id) sendPayload.threadId = lastReal.gmail_thread_id;
 
   const gmailSend = (payload) => fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
     method: 'POST',
@@ -172,6 +172,9 @@ async function sendReminder(base44, accessToken, { kind, booking, entityName, ti
     throw new Error(`gmail send failed: ${errText.slice(0, 200)}`);
   }
   const sendResult = await sendRes.json();
+
+  // Test sends go to a staff inbox only — don't touch the lead's thread log.
+  if (skipLog) return;
 
   // Pull the RFC Message-ID for future threading.
   let rfcMessageId = '';
@@ -226,6 +229,9 @@ export default async function(req) {
     const now = Date.now();
     const HOUR = 60 * 60 * 1000;
 
+    let body = {};
+    try { body = await req.json(); } catch (_) {}
+
     // Load editable templates once (fallback to built-in copy).
     const templates = {};
     for (const kind of ['24h', '1h']) {
@@ -238,6 +244,30 @@ export default async function(req) {
 
     let accessToken = null;
     const results = [];
+
+    // TEST MODE — preview both reminders in a staff inbox using a real lead's
+    // data. Nothing is logged and the lead is never emailed.
+    if (body?.test_to && body?.test_ticket_id) {
+      const entityName = body.test_entity || 'FranchiseInquiry';
+      const ticket = await base44.asServiceRole.entities[entityName].get(body.test_ticket_id);
+      const realBooking = bookings.find((b) =>
+        (b?.attendees || []).some((a) => (a?.email || '').toLowerCase() === String(ticket.email).toLowerCase())
+      );
+      const conn = await base44.asServiceRole.connectors.getConnection('gmail');
+      const sent = [];
+      for (const kind of ['24h', '1h']) {
+        const booking = realBooking || {
+          start: new Date(now + (kind === '24h' ? 24 * HOUR : HOUR)).toISOString(),
+          meetingUrl: 'https://meet.google.com/abc-defg-hij',
+        };
+        await sendReminder(base44, conn.accessToken, {
+          kind, booking, entityName, ticket, template: templates[kind],
+          overrideTo: body.test_to, skipLog: true,
+        });
+        sent.push({ kind, start: booking.start || booking.startTime, usedRealBooking: !!realBooking });
+      }
+      return Response.json({ success: true, test: true, to: body.test_to, lead: ticket.email, sent });
+    }
 
     for (const b of bookings) {
       const start = b?.start || b?.startTime;
