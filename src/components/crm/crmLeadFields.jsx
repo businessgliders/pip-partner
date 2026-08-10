@@ -35,6 +35,8 @@ export function detailFields(t, boardKey) {
   if (boardKey === "franchise") {
     return [
       ["Phone", [t.phone_country, t.phone].filter(Boolean).join(" ")],
+      ["Location", [t.preferred_location || t.city, t.province].filter(Boolean).join(", ")],
+      ["Postal Code", t.preferred_postal_code],
       ["Available Capital", t.available_capital || t.investment_readiness],
       ["Operation Style", t.operation_style],
       ["Ready to Sign NDA", t.ready_to_sign_nda],
