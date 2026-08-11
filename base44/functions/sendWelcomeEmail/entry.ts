@@ -19,6 +19,22 @@ const PROGRAM_LABELS = {
   FrontAdminApplication: 'Front Desk Application',
 };
 
+// Editable auto-reply templates (Application Board → Templates). When a
+// template exists but is switched off (inactive), the welcome auto-reply is
+// skipped for future leads. When missing, the built-in copy below is used.
+const WELCOME_TEMPLATE_NAMES = {
+  FranchiseInquiry: 'Welcome — Franchise Inquiry',
+  InstructorApplication: 'Welcome — Instructor Application',
+  FrontAdminApplication: 'Welcome — Front Desk Application',
+};
+
+function fillTemplate(str, vars) {
+  return String(str || '').replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (m, k) => {
+    const key = k.toLowerCase();
+    return vars[key] !== undefined ? vars[key] : m;
+  });
+}
+
 // Per-program branding for welcome emails (mirrors owner-notification look)
 const PROGRAM_THEMES = {
   FranchiseInquiry: {
@@ -128,12 +144,15 @@ function htmlToText(html) {
 const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png';
 
 // Franchise welcome — acknowledgment of inquiry received
-function buildFranchiseWelcomeHtml({ firstName, appNumber }) {
+function buildFranchiseWelcomeHtml({ firstName, appNumber, customBodyHtml }) {
   const BRAND_PINK = '#f1889b';
   const BRAND_ROSE = '#b67651';
   const safeFirst = escapeHtml(firstName);
   const safeApp = escapeHtml(appNumber);
-  const inner = `
+  const inner = customBodyHtml ? `
+    <div style="font-size:15px;line-height:1.6;color:#5a3a28;">${customBodyHtml}</div>
+    ${safeApp ? `<p style="margin-top:24px;font-size:11px;color:#a08778;text-align:center;">Reference: Application #${safeApp}</p>` : ''}
+  ` : `
     <h1 style="margin:0 0 16px;font-size:28px;font-weight:300;color:${BRAND_ROSE};line-height:1.2;">We've Received Your <em style="color:${BRAND_PINK};">Franchise Inquiry</em></h1>
     <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#5a3a28;">Hi ${safeFirst}, thank you for your interest in a Pilates in Pink&trade; franchise partnership. We're reviewing your inquiry.</p>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#5a3a28;">A member of our Franchise Team will be in touch personally within 1-2 business days to discuss the next steps.</p>
@@ -165,23 +184,27 @@ function buildFranchiseWelcomeHtml({ firstName, appNumber }) {
 </body></html>`;
 }
 
-function buildWelcomeHtml({ clientName, programLabel, appNumber, theme }) {
+function buildWelcomeHtml({ clientName, programLabel, appNumber, theme, customBodyHtml }) {
   const safeName = escapeHtml(clientName);
   const safeProgram = escapeHtml(programLabel);
   const safeApp = escapeHtml(appNumber);
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: ${theme.bgGradient}; padding: 40px 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png" alt="Pilates in Pink" style="width: 80px; height: 80px; margin-bottom: 15px;" />
-      </div>
-      <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  const cardContent = customBodyHtml
+    ? `<div style="margin: 0; padding: 18px 20px; background: ${theme.softBg}; border-radius: 10px; color: #4a3a30; line-height: 1.6; font-size: 15px;">${customBodyHtml}</div>`
+    : `
         <h2 style="color: ${theme.accent}; margin-top: 0; font-size: 24px; font-weight: 300;">We've Received Your ${safeProgram}${safeApp ? ` &middot; #${safeApp}` : ''}</h2>
         <div style="margin: 20px 0; padding: 18px 20px; background: ${theme.softBg}; border-radius: 10px;">
           <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Hi ${safeName},</p>
           <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">Thank you for submitting your ${safeProgram} to <strong style="color:${theme.accent};">Pilates in Pink&trade;</strong>. We're reviewing your application and a member of our team will be in touch personally within 1-2 business days.</p>
           <p style="margin: 0 0 12px 0; color: #4a3a30; line-height: 1.6; font-size: 15px;">In the meantime, feel free to reply to this email with any questions &mdash; we read every message.</p>
           <p style="margin: 0; color: ${theme.accent}; font-style: italic; font-size: 15px;">Best regards,<br/>The Pilates in Pink&trade; Team</p>
-        </div>
+        </div>`;
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: ${theme.bgGradient}; padding: 40px 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_690aada19e27fe8fcf067828/33a04cb27_Pilatesinpinklogojusticon1.png" alt="Pilates in Pink" style="width: 80px; height: 80px; margin-bottom: 15px;" />
+      </div>
+      <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        ${cardContent}
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid ${theme.borderColor};">
           <p style="color: ${theme.accent}; margin: 0; font-size: 12px;">${safeApp ? `Reference: Application #${safeApp} &middot; ` : ''}&copy; ${new Date().getFullYear()} Pilates in Pink&trade;</p>
         </div>
@@ -257,11 +280,34 @@ Deno.serve(async (req) => {
     const theme = PROGRAM_THEMES[ticket_type];
     const appNumber = await ensureAppNumber(base44, ticket_type, ticket_id, ticket);
     const displayNumber = formatAppNumber(appNumber, ticket_type);
+
+    // Editable template — Application Board → Templates. Inactive = auto-reply off.
+    let template = null;
+    const tplName = WELCOME_TEMPLATE_NAMES[ticket_type];
+    if (tplName) {
+      const found = await base44.asServiceRole.entities.EmailTemplate.filter({ name: tplName }, '-created_date', 1);
+      template = found[0] || null;
+    }
+    if (template && template.is_active === false) {
+      return Response.json({ skipped: true, reason: 'welcome template disabled' });
+    }
+    const vars = {
+      client_name: clientName,
+      client_first_name: ticket?.first_name || clientName.split(' ')[0] || 'there',
+      app_number: displayNumber,
+      program_label: programLabel,
+    };
+    const customBodyHtml = (template?.subject && template?.body_html)
+      ? fillTemplate(template.body_html, vars)
+      : null;
+
     const bodyHtml = ticket_type === 'FranchiseInquiry'
-      ? buildFranchiseWelcomeHtml({ firstName: ticket?.first_name || clientName.split(' ')[0] || 'there', appNumber: displayNumber })
-      : buildWelcomeHtml({ clientName, programLabel, appNumber: displayNumber, theme });
+      ? buildFranchiseWelcomeHtml({ firstName: vars.client_first_name, appNumber: displayNumber, customBodyHtml })
+      : buildWelcomeHtml({ clientName, programLabel, appNumber: displayNumber, theme, customBodyHtml });
     const bodyText = htmlToText(bodyHtml);
-    const subject = ticket_type === 'FranchiseInquiry'
+    const subject = customBodyHtml
+      ? `[Application #${displayNumber}] ${fillTemplate(template.subject, vars)}`.replace(/[\r\n]+/g, ' ').slice(0, 200)
+      : ticket_type === 'FranchiseInquiry'
       ? `[Application #${displayNumber}] We've Received Your Franchise Inquiry`
       : ticket_type === 'InfluencerApplication'
       ? `[Application #${displayNumber}] We've Received Your Influencer Application`
