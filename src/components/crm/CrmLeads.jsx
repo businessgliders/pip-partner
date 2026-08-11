@@ -34,6 +34,10 @@ export default function CrmLeads({ source, currentUser }) {
   const gridTemplateMobile = "minmax(0,1.4fr) minmax(0,1fr)";
 
   const [tab, setTab] = useState("all");
+  // Two-step pipeline (franchise): Step 1 = inquiry → FDD, Step 2 = signed → training
+  const hasSteps = !!board.stepOne;
+  const [step, setStep] = useState(1);
+  const stepStatuses = hasSteps ? (step === 1 ? board.stepOne : board.stepTwo || []) : null;
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState({ key: "created", dir: "desc" });
   const [expandedId, setExpandedId] = useState(null);
@@ -72,6 +76,7 @@ export default function CrmLeads({ source, currentUser }) {
     if (!deepTicketId || tickets.length === 0) return;
     const t = tickets.find((x) => x.id === deepTicketId);
     if (t) {
+      if (board.stepTwo?.includes(t.status)) setStep(2);
       if (TERMINAL.includes(t.status)) setTab(t.status);
       setExpandedId(t.id);
       if (searchParams.get("openEmail")) setEmailTicket(t);
@@ -83,15 +88,24 @@ export default function CrmLeads({ source, currentUser }) {
   }, [deepTicketId, tickets]);
 
   const counts = useMemo(() => {
-    const c = { all: active.filter((t) => !TERMINAL.includes(t.status)).length };
+    const inStep = (t) => !stepStatuses || stepStatuses.includes(t.status);
+    const c = { all: active.filter((t) => !TERMINAL.includes(t.status) && inStep(t)).length };
     board.statuses.forEach((s) => { c[s] = 0; });
     active.forEach((t) => { if (c[t.status] !== undefined) c[t.status] += 1; });
     return c;
-  }, [active, board.statuses]);
+  }, [active, board.statuses, stepStatuses]);
+
+  const stepCounts = useMemo(() => {
+    if (!hasSteps) return null;
+    return {
+      1: active.filter((t) => board.stepOne.includes(t.status) && !TERMINAL.includes(t.status)).length,
+      2: active.filter((t) => (board.stepTwo || []).includes(t.status)).length,
+    };
+  }, [active, board, hasSteps]);
 
   const visible = useMemo(() => {
     let list = tab === "all"
-      ? active.filter((t) => !TERMINAL.includes(t.status))
+      ? active.filter((t) => !TERMINAL.includes(t.status) && (!stepStatuses || stepStatuses.includes(t.status)))
       : tab === "archived"
       ? archived
       : active.filter((t) => t.status === tab);
@@ -115,31 +129,52 @@ export default function CrmLeads({ source, currentUser }) {
       }
       return sort.dir === "desc" ? -cmp : cmp;
     });
-  }, [active, archived, tab, search, sort, aiOnly]);
+  }, [active, archived, tab, search, sort, aiOnly, stepStatuses]);
 
   const toggleSort = (key) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: key === "created" ? "desc" : "asc" }));
 
-  // Status filter tabs: hide zero-count statuses; for franchise, insert a
-  // separator between step-1 and step-2 statuses.
+  // Status filter tabs: hide zero-count statuses; for franchise, only the
+  // statuses of the currently selected step are shown.
   const tabItems = useMemo(() => {
     const nonEmpty = board.statuses.filter((s) => (counts[s] ?? 0) > 0 || s === "shortlisted");
-    if (board.stepOne) {
-      const one = board.stepOne.filter((s) => nonEmpty.includes(s));
-      const two = (board.stepTwo || []).filter((s) => nonEmpty.includes(s));
-      const rest = nonEmpty.filter((s) => !one.includes(s) && !two.includes(s));
-      const items = ["all", ...one];
-      if (two.length) items.push("__sep__", ...two);
-      if (rest.length) items.push("__sep__", ...rest);
-      return items;
+    if (hasSteps) {
+      return ["all", ...stepStatuses.filter((s) => nonEmpty.includes(s))];
     }
     return ["all", ...nonEmpty];
-  }, [board, counts]);
+  }, [board, counts, hasSteps, stepStatuses]);
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Tabs + search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        {hasSteps && (
+          <div className="flex items-center gap-1 p-1 rounded-full shrink-0 self-start sm:self-center" style={{ background: "rgba(182,118,81,0.10)" }}>
+            {[
+              { n: 1, label: "Step 1", title: "Pipeline — inquiry through FDD" },
+              { n: 2, label: "Step 2", title: "Onboarding — signed through training" },
+            ].map(({ n, label, title }) => (
+              <button
+                key={n}
+                type="button"
+                title={title}
+                onClick={() => { setStep(n); setTab("all"); setExpandedId(null); }}
+                className="flex items-center gap-1.5 h-7 px-3 rounded-full text-[12px] font-semibold transition-colors"
+                style={step === n
+                  ? { background: "#fff", color: CRM.ink, boxShadow: "0 1px 4px rgba(182,118,81,0.20)" }
+                  : { color: CRM.sub }}
+              >
+                {label}
+                <span
+                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                  style={{ background: "rgba(182,118,81,0.10)", color: CRM.sub }}
+                >
+                  {stepCounts?.[n] ?? 0}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-4 overflow-x-auto hide-scrollbar flex-1 min-w-0">
           {tabItems.map((s, idx) => {
             if (s === "__sep__") {

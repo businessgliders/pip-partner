@@ -90,6 +90,20 @@ function escapeHtml(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Gmail snippets arrive HTML-escaped (&#39; etc.) — decode them first so we
+// don't double-escape when building the notification email.
+function decodeEntities(s) {
+  return String(s || '')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
 async function notifyInboundReply(base44, accessToken, parentType, parentId, from, subject, snippet) {
   const group = NOTIFY_GROUPS[parentType];
   if (!group) return;
@@ -121,7 +135,7 @@ async function notifyInboundReply(base44, accessToken, parentType, parentId, fro
 <div style="font-size:10px;letter-spacing:2px;color:#b67651;font-weight:700;margin-bottom:14px;">PIP PARTNER &middot; ${groupLabel.toUpperCase()}</div>
 <div style="font-size:18px;font-weight:600;color:#2f2430;margin-bottom:6px;">New reply from ${escapeHtml(leadName)}</div>
 <div style="font-size:13px;color:#8a7264;margin-bottom:14px;">${escapeHtml(subject || '')}</div>
-${snippet ? `<div style="font-size:13px;color:#5c4a3f;background:#fdf8f4;border-radius:12px;padding:12px 14px;margin-bottom:20px;">${escapeHtml(snippet)}</div>` : ''}
+${snippet ? `<div style="font-size:13px;color:#5c4a3f;background:#fdf8f4;border-radius:12px;padding:12px 14px;margin-bottom:20px;">${escapeHtml(decodeEntities(snippet))}</div>` : ''}
 <a href="${link}" style="display:inline-block;background:#fbe0e2;color:#a34a5c;font-size:13px;font-weight:600;padding:10px 20px;border-radius:999px;text-decoration:none;">Open in email panel</a>
 </td></tr></table></td></tr></table></body></html>`;
 
