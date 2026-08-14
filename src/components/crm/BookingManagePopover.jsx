@@ -9,14 +9,24 @@ import {
   Info, CalendarClock, XCircle, ChevronLeft, Loader2, Video, CheckCircle2, CalendarPlus,
 } from "lucide-react";
 
+// Franchise sub-types — kept in sync with the backend whitelist in
+// getCalAvailability / bookCalEvent.
+const FRANCHISE_EVENT_TYPES = [
+  { id: "5595622", label: "[Part 1] Discovery", slug: "/franchise" },
+  { id: "6052661", label: "[Part 2] Prospectus", slug: "/franchise2" },
+];
+
 // Popover that wraps a Cal.com booking pill and offers view details,
 // reschedule (via Cal.com API + availability for the right event type),
-// and cancel booking. `boardKey` "franchise" uses the franchise event type;
-// everything else uses the hiring event type for reschedule slots.
+// cancel booking, and booking a new meeting. `boardKey` "franchise" lets
+// staff pick between the /franchise and /franchise2 event types; everything
+// else uses the hiring event type.
 export default function BookingManagePopover({ meeting, boardKey = "hiring", lead = null, children }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState("menu"); // menu | details | reschedule | cancel | done
+  const [view, setView] = useState("menu"); // menu | details | eventtype | reschedule | cancel | done
+  const [flow, setFlow] = useState(null); // "book" | "reschedule"
+  const [eventTypeId, setEventTypeId] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [doneMsg, setDoneMsg] = useState("");
@@ -26,13 +36,38 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
   const availBoardKey = boardKey === "franchise" ? "franchise" : "hiring";
   // No existing booking → the popover becomes a "book a meeting" flow.
   const bookMode = !uid;
+  const isBooking = flow === "book";
+  const canBookNew = !!lead?.email;
 
   const reset = () => {
     setView("menu");
+    setFlow(null);
+    setEventTypeId(null);
     setSelectedDay(null);
     setSelectedSlot(null);
     setDoneMsg("");
     setErrorMsg("");
+  };
+
+  // Booking a new meeting: franchise picks an event type first, hiring goes
+  // straight to the slot picker.
+  const startBookFlow = () => {
+    setFlow("book");
+    setSelectedDay(null);
+    setSelectedSlot(null);
+    if (availBoardKey === "franchise") {
+      setView("eventtype");
+    } else {
+      setView("reschedule");
+    }
+  };
+
+  const startRescheduleFlow = () => {
+    setFlow("reschedule");
+    setEventTypeId(null);
+    setSelectedDay(null);
+    setSelectedSlot(null);
+    setView("reschedule");
   };
 
   // Booking details — fetched when the details view opens
@@ -46,11 +81,13 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
     staleTime: 60000,
   });
 
-  // Availability — fetched when the reschedule view opens
+  // Availability — fetched when the slot picker opens
   const { data: avail, isLoading: availLoading } = useQuery({
-    queryKey: ["cal-availability", availBoardKey],
+    queryKey: ["cal-availability", availBoardKey, eventTypeId || "default"],
     queryFn: async () => {
-      const resp = await base44.functions.invoke("getCalAvailability", { boardKey: availBoardKey });
+      const payload = { boardKey: availBoardKey };
+      if (availBoardKey === "franchise" && eventTypeId) payload.eventTypeId = eventTypeId;
+      const resp = await base44.functions.invoke("getCalAvailability", payload);
       return resp?.data?.slots || {};
     },
     enabled: open && view === "reschedule",
@@ -95,6 +132,7 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
         boardKey: availBoardKey,
         name: lead?.name || lead?.email,
         email: lead?.email,
+        ...(availBoardKey === "franchise" && eventTypeId ? { eventTypeId } : {}),
       });
       return resp?.data;
     },
@@ -152,7 +190,7 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
             </div>
             {bookMode ? (
               <>
-                {menuItem(<CalendarPlus className="w-3.5 h-3.5 text-emerald-700" />, "Book a meeting", () => setView("reschedule"))}
+                {menuItem(<CalendarPlus className="w-3.5 h-3.5 text-emerald-700" />, "Book a meeting", startBookFlow)}
                 <a
                   href="https://app.cal.com/bookings/upcoming"
                   target="_blank"
@@ -165,11 +203,30 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
             ) : (
               <>
                 {menuItem(<Info className="w-3.5 h-3.5 text-blue-600" />, "View details", () => setView("details"))}
-                {menuItem(<CalendarClock className="w-3.5 h-3.5 text-emerald-700" />, "Reschedule booking", () => setView("reschedule"))}
+                {menuItem(<CalendarClock className="w-3.5 h-3.5 text-emerald-700" />, "Reschedule booking", startRescheduleFlow)}
                 {menuItem(<XCircle className="w-3.5 h-3.5 text-red-600" />, "Cancel booking", () => setView("cancel"), true)}
+                {canBookNew && menuItem(<CalendarPlus className="w-3.5 h-3.5 text-emerald-700" />, "Book new meeting", startBookFlow)}
               </>
             )}
           </>
+        )}
+
+        {view === "eventtype" && (
+          <div className="px-1">
+            {backBtn}
+            <div className="px-2 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Meeting type</div>
+            {FRANCHISE_EVENT_TYPES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => { setEventTypeId(t.id); setView("reschedule"); }}
+                className="w-full flex items-center justify-between gap-2 px-2.5 py-2 text-xs rounded-md text-left text-slate-700 hover:bg-slate-100"
+              >
+                <span>{t.label}</span>
+                <span className="text-[10px] text-slate-400">{t.slug}</span>
+              </button>
+            ))}
+          </div>
         )}
 
         {view === "details" && (
@@ -274,11 +331,11 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
                 <button
                   type="button"
                   disabled={!selectedSlot || rescheduleMut.isPending || bookMut.isPending}
-                  onClick={() => selectedSlot && (bookMode ? bookMut : rescheduleMut).mutate(selectedSlot)}
+                  onClick={() => selectedSlot && ((bookMode || isBooking) ? bookMut : rescheduleMut).mutate(selectedSlot)}
                   className="w-full mt-2 h-8 rounded-md text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {(rescheduleMut.isPending || bookMut.isPending) && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  {bookMode ? "Confirm booking" : "Confirm reschedule"}
+                  {(bookMode || isBooking) ? "Confirm booking" : "Confirm reschedule"}
                 </button>
               </div>
             )}
