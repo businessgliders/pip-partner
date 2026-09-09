@@ -1,0 +1,38 @@
+{
+  "name": "Gmail Inbound Reply Webhook",
+  "description": "",
+  "trigger": {
+    "condition": "${ (.trigger.data.has_new_messages == true) }",
+    "config": {
+      "trigger_type": "connector",
+      "events": [
+        "mailbox"
+      ],
+      "integration_type": "gmail",
+      "resource_id": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "gmail_inbound_reply_webhook",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "ingestGmailReply",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "ingestGmailReply"
+  }
+}
