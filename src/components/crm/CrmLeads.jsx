@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, ArrowUpDown, Archive } from "lucide-react";
+import { ArrowUpDown, Archive } from "lucide-react";
+import CrmLeadSearch from "./CrmLeadSearch";
 import { BOARD_TYPES, getStatusLabel, displayName } from "@/components/board/boardConfig";
 import CrmLeadRow from "./CrmLeadRow";
 import CrmEmailDrawer from "./CrmEmailDrawer";
@@ -154,10 +155,10 @@ export default function CrmLeads({ source, currentUser }) {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Tabs + search */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-        {hasSteps && (
-          <div className="flex items-center gap-1 p-1 rounded-full shrink-0 self-start sm:self-center" style={{ background: "rgba(182,118,81,0.10)" }}>
+      {/* Step switcher — its own row above the status tabs */}
+      {hasSteps && (
+        <div className="flex mb-3">
+          <div className="flex items-center gap-1 p-1 rounded-full" style={{ background: "rgba(182,118,81,0.10)" }}>
             {[
               { n: 1, label: "Step 1", title: board.stepTitles?.[1] || "Step 1" },
               { n: 2, label: "Step 2", title: board.stepTitles?.[2] || "Step 2" },
@@ -182,7 +183,11 @@ export default function CrmLeads({ source, currentUser }) {
               </button>
             ))}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Status tabs + search */}
+      <div className="flex items-center gap-3 mb-6">
         <div className="flex items-center gap-4 overflow-x-auto hide-scrollbar flex-1 min-w-0">
           {tabItems.map((s, idx) => {
             if (s === "__sep__") {
@@ -251,16 +256,7 @@ export default function CrmLeads({ source, currentUser }) {
             AI follow-ups only ✕
           </button>
         )}
-        <div className="relative shrink-0 sm:w-56">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: CRM.sub }} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search"
-            className="w-full h-9 pl-9 pr-3 rounded-full bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-pink-200"
-            style={{ border: "1px solid rgba(182,118,81,0.15)", color: CRM.ink }}
-          />
-        </div>
+        <CrmLeadSearch value={search} onChange={setSearch} collapsible={tabItems.length > 5} />
       </div>
 
       {/* Column headers */}
