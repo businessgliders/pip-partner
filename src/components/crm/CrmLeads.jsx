@@ -256,7 +256,7 @@ export default function CrmLeads({ source, currentUser }) {
             AI follow-ups only ✕
           </button>
         )}
-        <CrmLeadSearch value={search} onChange={setSearch} collapsible={tabItems.length > 5} />
+        <CrmLeadSearch value={search} onChange={setSearch} statusCount={tabItems.length} />
       </div>
 
       {/* Column headers */}

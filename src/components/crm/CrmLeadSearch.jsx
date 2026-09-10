@@ -1,13 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { CRM } from "./crmTheme";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Search control for the leads header. When `collapsible` is true (a status row
 // crowded with many tabs) it renders as an icon-only button that expands into a
 // full search field on click; otherwise the field is always visible.
-export default function CrmLeadSearch({ value, onChange, collapsible }) {
+export default function CrmLeadSearch({ value, onChange, statusCount = 0 }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const inputRef = useRef(null);
+  // Crowded status rows collapse the field to an icon — the mobile row runs out
+  // of space far sooner than the desktop one.
+  const collapsible = statusCount > (isMobile ? 2 : 5);
   const expanded = !collapsible || open || !!value;
 
   useEffect(() => {
