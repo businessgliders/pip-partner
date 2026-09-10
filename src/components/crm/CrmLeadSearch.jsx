@@ -1,46 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { Search, X } from "lucide-react";
 import { CRM } from "./crmTheme";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-// Search control for the leads header. When `collapsible` is true (a status row
-// crowded with many tabs) it renders as an icon-only button that expands into a
-// full search field on click; otherwise the field is always visible.
-export default function CrmLeadSearch({ value, onChange, statusCount = 0 }) {
-  const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
-  const inputRef = useRef(null);
-  // Crowded status rows collapse the field to an icon — the mobile row runs out
-  // of space far sooner than the desktop one.
-  const collapsible = statusCount > (isMobile ? 2 : 5);
-  const expanded = !collapsible || open || !!value;
-
-  useEffect(() => {
-    if (collapsible && open) inputRef.current?.focus();
-  }, [collapsible, open]);
-
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        title="Search leads"
-        className="shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center transition-colors hover:bg-white"
-        style={{ border: "1px solid rgba(182,118,81,0.15)", color: CRM.sub }}
-      >
-        <Search className="w-4 h-4" />
-      </button>
-    );
-  }
-
+// Search control for the leads header — lives on the step-switcher row, so it
+// stays a full field (icon + input) at every screen size.
+export default function CrmLeadSearch({ value, onChange }) {
   return (
-    <div className="relative shrink-0 w-40 sm:w-56">
+    <div className="relative w-full max-w-[220px] sm:max-w-[240px]">
       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: CRM.sub }} />
       <input
-        ref={inputRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={() => { if (collapsible && !value) setOpen(false); }}
         placeholder="Search"
         className="w-full h-9 pl-9 pr-8 rounded-full bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-pink-200"
         style={{ border: "1px solid rgba(182,118,81,0.15)", color: CRM.ink }}
@@ -48,7 +18,7 @@ export default function CrmLeadSearch({ value, onChange, statusCount = 0 }) {
       {!!value && (
         <button
           type="button"
-          onClick={() => { onChange(""); if (collapsible) setOpen(false); }}
+          onClick={() => onChange("")}
           className="absolute right-2.5 top-1/2 -translate-y-1/2"
           style={{ color: CRM.sub }}
           title="Clear search"

@@ -155,10 +155,10 @@ export default function CrmLeads({ source, currentUser }) {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Step switcher — its own row above the status tabs */}
-      {hasSteps && (
-        <div className="flex mb-3">
-          <div className="flex items-center gap-1 p-1 rounded-full" style={{ background: "rgba(182,118,81,0.10)" }}>
+      {/* Step switcher + search — their own row above the status tabs */}
+      <div className="flex items-center gap-3 mb-3">
+        {hasSteps && (
+          <div className="flex items-center gap-1 p-1 rounded-full shrink-0" style={{ background: "rgba(182,118,81,0.10)" }}>
             {[
               { n: 1, label: "Step 1", title: board.stepTitles?.[1] || "Step 1" },
               { n: 2, label: "Step 2", title: board.stepTitles?.[2] || "Step 2" },
@@ -183,10 +183,13 @@ export default function CrmLeads({ source, currentUser }) {
               </button>
             ))}
           </div>
+        )}
+        <div className="flex-1 min-w-0 flex justify-end">
+          <CrmLeadSearch value={search} onChange={setSearch} />
         </div>
-      )}
+      </div>
 
-      {/* Status tabs + search */}
+      {/* Status tabs */}
       <div className="flex items-center gap-3 mb-6">
         <div className="flex items-center gap-4 overflow-x-auto hide-scrollbar flex-1 min-w-0">
           {tabItems.map((s, idx) => {
@@ -256,7 +259,6 @@ export default function CrmLeads({ source, currentUser }) {
             AI follow-ups only ✕
           </button>
         )}
-        <CrmLeadSearch value={search} onChange={setSearch} statusCount={tabItems.length} />
       </div>
 
       {/* Column headers */}
