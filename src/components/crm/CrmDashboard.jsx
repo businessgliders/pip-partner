@@ -12,6 +12,7 @@ import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
 import CrmEmailDrawer from "./CrmEmailDrawer";
 import CrmAiFollowUpsModal from "./CrmAiFollowUpsModal";
 import CrmLeadsPieTile from "./CrmLeadsPieTile";
+import CrmHiredTile from "./CrmHiredTile";
 import { CRM } from "./crmTheme";
 
 const groupOf = (boardKey) => (boardKey === "franchise" ? "franchise" : "hiring");
@@ -70,6 +71,9 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
   const signed = fr.filter((t) =>
     ["signed", "site_selection", "lease", "build_out", "training"].includes(t.status)
   ).length;
+  const HIRED = ["hired", "onboarding"];
+  const hiredInstructor = ins.filter((t) => HIRED.includes(t.status)).length;
+  const hiredFrontadmin = fa.filter((t) => HIRED.includes(t.status)).length;
 
   // Inquiries sparkline — from May 2026 through the current month.
   const sparkData = useMemo(() => {
@@ -142,6 +146,12 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
             </div>
             <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{activeFollowUps.length}</div>
           </button>
+
+          <CrmHiredTile
+            instructor={hiredInstructor}
+            frontadmin={hiredFrontadmin}
+            onSelect={(key) => onNavigate("leads", key, { step: "2" })}
+          />
         </div>
 
         {/* Column 3: inquiries sparkline + meetings tile */}

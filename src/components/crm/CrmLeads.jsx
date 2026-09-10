@@ -37,6 +37,15 @@ export default function CrmLeads({ source, currentUser }) {
   // Two-step pipeline (franchise): Step 1 = inquiry → FDD, Step 2 = signed → training
   const hasSteps = !!board.stepOne;
   const [step, setStep] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Deep link from the dashboard Hired tile: ?step=2 opens Step 2 directly.
+  useEffect(() => {
+    if (!hasSteps || searchParams.get("step") !== "2") return;
+    setStep(2);
+    const next = new URLSearchParams(searchParams);
+    next.delete("step");
+    setSearchParams(next, { replace: true });
+  }, []);
   const stepStatuses = hasSteps ? (step === 1 ? board.stepOne : board.stepTwo || []) : null;
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState({ key: "created", dir: "desc" });
@@ -63,7 +72,6 @@ export default function CrmLeads({ source, currentUser }) {
 
   // Deep link from notification emails: ?ticket=<id>&openEmail=1 expands the
   // lead and opens the email panel, then clears the params from the URL.
-  const [searchParams, setSearchParams] = useSearchParams();
   // AI follow-up filter (deep-linked from the dashboard tile via ?filter=ai)
   const aiOnly = searchParams.get("filter") === "ai";
   const clearAiFilter = () => {
@@ -151,8 +159,8 @@ export default function CrmLeads({ source, currentUser }) {
         {hasSteps && (
           <div className="flex items-center gap-1 p-1 rounded-full shrink-0 self-start sm:self-center" style={{ background: "rgba(182,118,81,0.10)" }}>
             {[
-              { n: 1, label: "Step 1", title: "Pipeline — inquiry through FDD" },
-              { n: 2, label: "Step 2", title: "Onboarding — signed through training" },
+              { n: 1, label: "Step 1", title: board.stepTitles?.[1] || "Step 1" },
+              { n: 2, label: "Step 2", title: board.stepTitles?.[2] || "Step 2" },
             ].map(({ n, label, title }) => (
               <button
                 key={n}

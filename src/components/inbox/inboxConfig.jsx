@@ -33,6 +33,8 @@ const STATUS_CHIPS = {
   reviewed: "bg-amber-100 text-amber-700",
   invited: "bg-sky-100 text-sky-700",
   declined: "bg-rose-100 text-rose-700",
+  hired: "bg-teal-100 text-teal-700",
+  onboarding: "bg-sky-100 text-sky-800",
 };
 
 export function statusChip(status) {
@@ -61,10 +63,12 @@ export const INBOX_STATUS_GROUPS = {
   ],
   instructor: [
     { statuses: ["pending", "reviewed", "invited"] },
+    { label: "Step 2", statuses: ["hired", "onboarding"] },
     { label: "Other", statuses: ["declined", "ghosted"] },
   ],
   frontadmin: [
     { statuses: ["pending", "reviewed", "invited"] },
+    { label: "Step 2", statuses: ["hired", "onboarding"] },
     { label: "Other", statuses: ["declined", "ghosted"] },
   ],
 };

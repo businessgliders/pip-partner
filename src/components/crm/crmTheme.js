@@ -34,6 +34,8 @@ export const STATUS_DOT = {
   shortlisted: "#6366f1",
   invited: "#10b981",
   declined: "#f43f5e",
+  hired: "#0f766e",
+  onboarding: "#0284c7",
   approved: "#10b981",
 };
 

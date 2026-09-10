@@ -76,7 +76,9 @@
         "shortlisted",
         "invited",
         "declined",
-        "ghosted"
+        "ghosted",
+        "hired",
+        "onboarding"
       ],
       "default": "pending",
       "description": "Application status"

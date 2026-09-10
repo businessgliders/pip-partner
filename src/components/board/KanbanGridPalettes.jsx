@@ -29,6 +29,8 @@ const HIRING = {
   invited:  { colorClasses: "from-emerald-400/30 to-emerald-300/15 border-emerald-300/40", headerClasses: "bg-emerald-500/50 border-emerald-300/50" },
   declined: { colorClasses: "from-rose-400/25 to-red-300/15 border-rose-300/40",         headerClasses: "bg-rose-500/50 border-rose-300/50" },
   ghosted:  { colorClasses: "from-violet-400/30 to-violet-300/15 border-violet-300/40",    headerClasses: "bg-violet-500/50 border-violet-300/50" },
+  hired:      { colorClasses: "from-teal-400/30 to-teal-300/15 border-teal-300/40",        headerClasses: "bg-teal-500/50 border-teal-300/50" },
+  onboarding: { colorClasses: "from-sky-400/30 to-sky-300/15 border-sky-300/40",           headerClasses: "bg-sky-500/50 border-sky-300/50" },
 };
 
 const INFLUENCER = {
