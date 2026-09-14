@@ -6,7 +6,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Info, CalendarClock, XCircle, ChevronLeft, Loader2, Video, CheckCircle2, CalendarPlus,
+  Info, CalendarClock, XCircle, ChevronLeft, Loader2, Video, CheckCircle2, CalendarPlus, RefreshCw,
 } from "lucide-react";
 
 // Franchise sub-types — kept in sync with the backend whitelist in
@@ -96,6 +96,13 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
     staleTime: 0,
     refetchOnMount: "always",
   });
+
+  const refreshAvailability = () => {
+    queryClient.removeQueries({ queryKey: ["cal-availability"] });
+    queryClient.invalidateQueries({ queryKey: ["crm-bookings-all"] });
+    setDoneMsg("Availability refreshed from Cal.com.");
+    setView("done");
+  };
 
   const invalidateBookings = () => {
     queryClient.invalidateQueries({ queryKey: ["crm-bookings-all"] });
@@ -211,6 +218,7 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
                 {canBookNew && menuItem(<CalendarPlus className="w-3.5 h-3.5 text-emerald-700" />, "Book new meeting", startBookFlow)}
               </>
             )}
+            {menuItem(<RefreshCw className="w-3.5 h-3.5 text-slate-500" />, "Refresh availability", refreshAvailability)}
           </>
         )}
 
