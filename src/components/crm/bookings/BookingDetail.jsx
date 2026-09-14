@@ -24,7 +24,19 @@ export default function BookingDetail({ booking, lead, onBack, onAction, onOpenL
   const flash = (m) => { setToast(m); setTimeout(() => setToast(""), 1600); };
   const organizer = booking.hosts?.[0];
   const attendees = booking.attendees || [];
-  const guests = booking.guests || [];
+  // Cal.com merges guests into the attendees list, so the same person can appear
+  // in both. Keep the attendee row and drop the duplicate guest row.
+  const seen = new Set(
+    [organizer?.email, ...attendees.map((a) => a.email)]
+      .filter(Boolean)
+      .map((e) => String(e).toLowerCase())
+  );
+  const guests = (booking.guests || []).filter((g) => {
+    const email = String(typeof g === "string" ? g : g?.email || "").toLowerCase();
+    if (!email || seen.has(email)) return false;
+    seen.add(email);
+    return true;
+  });
   const participantCount = (organizer ? 1 : 0) + attendees.length + guests.length;
   const primaryEmail = attendees[0]?.email || booking.emails?.[0];
   const pillStyle = { background: "var(--crm-blush)", color: CRM.ink };
