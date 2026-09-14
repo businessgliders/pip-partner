@@ -32,7 +32,10 @@ Deno.serve(async (req) => {
         if (body?.range) range = body.range;
       }
     } catch (_) {}
-    const statuses = range === 'all' ? ['upcoming', 'past'] : ['upcoming'];
+    // range=all also pulls cancelled + unconfirmed so the list view can filter
+    // by Cal.com status. Consumers that only want live meetings must filter
+    // out status === 'cancelled' themselves.
+    const statuses = range === 'all' ? ['upcoming', 'past', 'cancelled', 'unconfirmed'] : ['upcoming'];
 
     // Classify each booking as franchise vs hiring based on its Cal event type.
     const FR_EVENT_ID = String(Deno.env.get('CAL_EVENT_TYPE_ID_FRANCHISE') || '');
@@ -75,7 +78,8 @@ Deno.serve(async (req) => {
         if (bookings.length === 0) break;
 
         for (const b of bookings) {
-          if (b?.status && String(b.status).toLowerCase() === 'cancelled') continue;
+          const isCancelled = b?.status && String(b.status).toLowerCase() === 'cancelled';
+          if (isCancelled && status !== 'cancelled') continue;
           const start = b?.start || b?.startTime;
           if (!start) continue;
           const bId = b?.id || b?.uid;
@@ -103,10 +107,17 @@ Deno.serve(async (req) => {
             uid: b?.uid || null,
             meetingUrl: b?.meetingUrl || b?.location || null,
             emails,
+            attendees: attendees.map((a) => ({ name: a?.name || '', email: (a?.email || '').toLowerCase() })),
+            hosts: (Array.isArray(b?.hosts) ? b.hosts : []).map((h) => ({ name: h?.name || '', email: (h?.email || '').toLowerCase() })),
+            guests: Array.isArray(b?.guests) ? b.guests : [],
+            duration: b?.duration || null,
+            eventTypeSlug: b?.eventType?.slug || null,
+            recurring: !!b?.recurringBookingUid,
+            listStatus: status,
           };
           list.push(entry);
 
-          if (status === 'upcoming') {
+          if (status === 'upcoming' && !isCancelled) {
             for (const email of emails) {
               const existing = map[email];
               // Keep the earliest upcoming booking per email.
