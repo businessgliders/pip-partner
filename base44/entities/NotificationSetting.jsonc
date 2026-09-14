@@ -6,14 +6,15 @@
       "type": "string",
       "enum": [
         "franchise",
-        "hiring"
+        "hiring",
+        "meetings"
       ],
-      "description": "Which lead group this notification setting covers"
+      "description": "Which notification group this setting covers"
     },
     "enabled": {
       "type": "boolean",
       "default": true,
-      "description": "Whether inbound-reply email notifications are sent for this group"
+      "description": "Whether notifications are sent for this group"
     },
     "emails": {
       "type": "array",

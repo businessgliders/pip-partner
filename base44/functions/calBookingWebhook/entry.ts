@@ -18,6 +18,48 @@
 // }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getStaffRecipients, sendStaffEmail } from '../../shared/staffNotify.ts';
+
+const TZ = 'America/Toronto';
+
+function fmtWhen(iso) {
+  return new Date(iso).toLocaleString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', timeZone: TZ,
+  }) + ' ET';
+}
+
+// Branded internal alert — a new booking landed in "awaiting confirmation".
+async function notifyStaffPending(base44, booking) {
+  const to = await getStaffRecipients(base44, 'meetings');
+  if (to.length === 0) return { sent: 0, reason: 'no staff recipients' };
+
+  const start = booking.startTime || booking.start;
+  const attendee = booking.attendees?.[0] || {};
+  const uid = booking.uid || booking.id;
+  const calUrl = uid ? `https://app.cal.com/booking/${uid}` : 'https://app.cal.com/bookings/unconfirmed';
+  const row = (label, value) =>
+    `<tr><td style="padding:6px 0;font-size:13px;color:#96806f;width:130px;">${label}</td><td style="padding:6px 0;font-size:14px;color:#2d2320;font-weight:600;">${value}</td></tr>`;
+
+  const inner = `
+<h1 style="margin:0 0 8px;font-size:22px;font-weight:600;color:#2d2320;">A meeting needs your confirmation</h1>
+<p style="margin:0 0 20px;font-size:14px;color:#96806f;">This booking was requested and is waiting to be confirmed in Cal.com.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f4;border-radius:16px;padding:16px 20px;">
+${row('Meeting', booking.title || 'Meeting')}
+${row('When', start ? fmtWhen(start) : '—')}
+${row('Requested by', attendee.name || '—')}
+${row('Email', attendee.email ? `<a href="mailto:${attendee.email}" style="color:#b67651;">${attendee.email}</a>` : '—')}
+</table>
+<p style="text-align:center;margin:26px 0 6px;"><a href="${calUrl}" style="display:inline-block;background:#f1889b;color:#ffffff;padding:13px 32px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;">Confirm in Cal.com</a></p>
+<p style="text-align:center;font-size:12px;color:#96806f;margin:0;">Until it's confirmed, the time slot stays pending.</p>`;
+
+  return await sendStaffEmail(base44, {
+    to,
+    subject: `Awaiting confirmation — ${booking.title || 'new meeting'}${start ? ` on ${fmtWhen(start)}` : ''}`,
+    innerHtml: inner,
+    preheader: 'A new booking is waiting to be confirmed.',
+  });
+}
 
 async function verifySignature(req, secret) {
   if (!secret) return true; // Skip verification if no secret configured
@@ -57,6 +99,13 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
     const body = await req.json();
+
+    // Booking requested (awaiting confirmation) → branded staff alert only.
+    // Nothing applicant-facing is sent or changed here.
+    if (body.triggerEvent === 'BOOKING_REQUESTED' && body.data) {
+      const result = await notifyStaffPending(base44, body.data);
+      return Response.json({ success: true, pendingNotification: result });
+    }
 
     // Only process BOOKING_CREATED events
     if (body.triggerEvent !== 'BOOKING_CREATED' || !body.data) {

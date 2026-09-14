@@ -8,6 +8,8 @@ import { displayName, BOARD_TYPES } from "@/components/board/boardConfig";
 import useReplyNotifications from "@/hooks/useReplyNotifications";
 import CrmDashboardNotifications from "./CrmDashboardNotifications";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
+import CrmMeetingsQuickPill from "./CrmMeetingsQuickPill";
+import { unconfirmedCount } from "./bookings/bookingUtils";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
 import CrmEmailDrawer from "./CrmEmailDrawer";
 import CrmAiFollowUpsModal from "./CrmAiFollowUpsModal";
@@ -113,11 +115,27 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
     { label: "Active follow-ups", items: activeFollowUps.map(leadItem) },
   ];
 
+  const pendingCount = useMemo(() => unconfirmedCount(bookings), [bookings]);
+  const upcomingCount = useMemo(
+    () =>
+      bookings.filter(
+        (b) => b?.start && new Date(b.start) >= new Date() && String(b.status || "").toLowerCase() !== "cancelled"
+      ).length,
+    [bookings]
+  );
+
   const goToLeads = (src) => onNavigate("leads", src);
   const detailBoard = detailTicket ? BOARD_TYPES.find((b) => b.key === detailTicket._boardKey) : null;
 
   return (
     <div className="max-w-5xl mx-auto space-y-4 pb-10">
+      {/* Mobile quick access into the meetings view */}
+      <CrmMeetingsQuickPill
+        upcoming={upcomingCount}
+        unconfirmed={pendingCount}
+        onOpen={() => onNavigate("bookings")}
+      />
+
       {/* Row 1: notifications first, then stats tiles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CrmDashboardNotifications rows={notifRows} onOpenItem={(t) => setDetailTicket(t)} />

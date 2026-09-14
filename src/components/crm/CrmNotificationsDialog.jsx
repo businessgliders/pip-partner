@@ -9,6 +9,7 @@ import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 const GROUPS = [
   { key: "franchise", label: "Franchising", hint: "Inbound replies on franchise leads" },
   { key: "hiring", label: "Hiring", hint: "Inbound replies on instructor and front desk leads" },
+  { key: "meetings", label: "Meetings awaiting confirmation", hint: "A new booking needs to be confirmed in Cal.com" },
 ];
 
 export default function CrmNotificationsDialog({ onClose }) {

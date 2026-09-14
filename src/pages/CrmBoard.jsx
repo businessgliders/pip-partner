@@ -14,6 +14,7 @@ import CrmContracts from "@/components/crm/CrmContracts";
 import CrmTerritories from "@/components/crm/CrmTerritories";
 import CrmSplash from "@/components/crm/CrmSplash";
 import CrmWelcomeSplash from "@/components/crm/CrmWelcomeSplash";
+import { unconfirmedCount } from "@/components/crm/bookings/bookingUtils";
 
 const PLACEHOLDERS = { projects: "Tasks", delivery: "Build Out", financials: "Contracts" };
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
@@ -28,6 +29,16 @@ export default function CrmBoard() {
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
   });
+
+  // Bookings awaiting confirmation — badge on the mobile Meetings tab.
+  const { data: allBookings = [] } = useQuery({
+    queryKey: ["crm-bookings-all"],
+    queryFn: async () => {
+      const resp = await base44.functions.invoke("getCalBookings", { range: "all" });
+      return resp?.data?.bookingsList || [];
+    },
+  });
+  const meetingsBadge = unconfirmedCount(allBookings);
 
   const onNavigate = (p, s, extra) => {
     const params = { page: p };
@@ -50,7 +61,7 @@ export default function CrmBoard() {
     <>
       <AdminFavicon title="PiP Partner — Application Hub" />
       {user && <CrmWelcomeSplash user={user} />}
-      <CrmShell page={page} source={source} onNavigate={onNavigate} title={title} user={user}>
+      <CrmShell page={page} source={source} onNavigate={onNavigate} title={title} user={user} meetingsBadge={meetingsBadge}>
         {page === "dashboard" && <CrmDashboard onNavigate={onNavigate} currentUser={user} />}
         {page === "leads" && <CrmLeads key={source} source={source} currentUser={user} />}
         {page === "bookings" && <CrmBookings currentUser={user} />}
