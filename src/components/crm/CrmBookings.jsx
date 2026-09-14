@@ -4,7 +4,22 @@ import { base44 } from "@/api/base44Client";
 import { BOARD_TYPES } from "@/components/board/boardConfig";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
 import CrmBookingsCalendar from "./CrmBookingsCalendar";
+import CrmBookingsList from "./bookings/CrmBookingsList";
+import { CalendarDays, List } from "lucide-react";
 import { CRM } from "./crmTheme";
+
+// Desktop (lg+) can switch between the calendar grid and the Cal.com-style
+// list; below lg the list is the only view.
+function useIsDesktop() {
+  const [is, setIs] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  React.useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const fn = () => setIs(mql.matches);
+    mql.addEventListener("change", fn);
+    return () => mql.removeEventListener("change", fn);
+  }, []);
+  return is;
+}
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -15,6 +30,9 @@ const FILTERS = [
 export default function CrmBookings({ currentUser }) {
   const [srcFilter, setSrcFilter] = useState("all");
   const [detailTicket, setDetailTicket] = useState(null);
+  const [viewMode, setViewMode] = useState("calendar");
+  const isDesktop = useIsDesktop();
+  const showList = !isDesktop || viewMode === "list";
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ["crm-bookings-all"],
@@ -54,8 +72,9 @@ export default function CrmBookings({ currentUser }) {
   // Calendar bookings filtered by source. Unmatched bookings (no lead found)
   // stay visible under Franchise so no meeting silently disappears.
   const calendarBookings = useMemo(() => {
-    if (srcFilter === "all") return bookings;
-    return bookings.filter((b) => {
+    const live = bookings.filter((b) => String(b.status || "").toLowerCase() !== "cancelled");
+    if (srcFilter === "all") return live;
+    return live.filter((b) => {
       // The Cal event type is the source of truth (franchise vs hiring).
       if (b.source) return b.source === srcFilter;
       const email = (b.emails || []).find((e) => ticketByEmail[(e || "").toLowerCase()]);
@@ -67,10 +86,51 @@ export default function CrmBookings({ currentUser }) {
     });
   }, [bookings, ticketByEmail, srcFilter]);
 
+  const viewToggle = isDesktop && (
+    <div
+      className="inline-flex items-center gap-0.5 p-1 rounded-full bg-white"
+      style={{ border: "1px solid rgba(182,118,81,0.15)" }}
+    >
+      {[{ key: "calendar", label: "Calendar", Icon: CalendarDays }, { key: "list", label: "List", Icon: List }].map(({ key, label, Icon }) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => setViewMode(key)}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-all"
+          style={viewMode === key ? { background: CRM.accentSoft, color: "#5b3038" } : { color: CRM.sub }}
+        >
+          <Icon className="w-3.5 h-3.5" /> {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (showList) {
+    return (
+      <div className="max-w-5xl mx-auto">
+        {viewToggle && <div className="mb-4 flex justify-end">{viewToggle}</div>}
+        <CrmBookingsList
+          bookings={bookings}
+          ticketByEmail={ticketByEmail}
+          isLoading={isLoading || ticketsLoading}
+          onOpenLead={(t) => setDetailTicket(t)}
+        />
+        {detailTicket && (
+          <CrmLeadDetailDrawer
+            ticket={detailTicket}
+            board={BOARD_TYPES.find((b) => b.key === detailTicket._boardKey)}
+            currentUser={currentUser}
+            onClose={() => setDetailTicket(null)}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Source filter */}
-      <div className="mb-6">
+      {/* Source filter + view toggle */}
+      <div className="mb-6 flex items-center justify-between gap-3">
         <div
           className="inline-flex items-center gap-0.5 p-1 rounded-full bg-white"
           style={{ border: "1px solid rgba(182,118,81,0.15)" }}
@@ -87,6 +147,7 @@ export default function CrmBookings({ currentUser }) {
             </button>
           ))}
         </div>
+        {viewToggle}
       </div>
 
       {isLoading || ticketsLoading ? (
