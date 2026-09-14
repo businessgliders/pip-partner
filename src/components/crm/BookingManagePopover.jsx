@@ -91,7 +91,10 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
       return resp?.data?.slots || {};
     },
     enabled: open && view === "reschedule",
-    staleTime: 60000,
+    // Always pull fresh availability when the slot picker opens so changes
+    // made in Cal.com show up immediately.
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const invalidateBookings = () => {
@@ -146,7 +149,7 @@ export default function BookingManagePopover({ meeting, boardKey = "hiring", lea
 
   if (bookMode && !lead?.email) return children;
 
-  const days = Object.keys(avail || {}).filter((d) => (avail[d] || []).length > 0).slice(0, 14);
+  const days = Object.keys(avail || {}).filter((d) => (avail[d] || []).length > 0);
   const slots = selectedDay ? avail?.[selectedDay] || [] : [];
 
   const menuItem = (icon, label, onClick, danger = false) => (
