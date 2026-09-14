@@ -19,6 +19,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { getStaffRecipients, sendStaffEmail } from '../../shared/staffNotify.ts';
+import { attachConfiguredGuests } from '../../shared/calGuests.ts';
 
 const TZ = 'America/Toronto';
 
@@ -103,8 +104,9 @@ Deno.serve(async (req) => {
     // Booking requested (awaiting confirmation) → branded staff alert only.
     // Nothing applicant-facing is sent or changed here.
     if (body.triggerEvent === 'BOOKING_REQUESTED' && body.data) {
+      const guests = await attachConfiguredGuests(base44, body.data);
       const result = await notifyStaffPending(base44, body.data);
-      return Response.json({ success: true, pendingNotification: result });
+      return Response.json({ success: true, pendingNotification: result, guests });
     }
 
     // Only process BOOKING_CREATED events
@@ -113,6 +115,9 @@ Deno.serve(async (req) => {
     }
 
     const booking = body.data;
+    // Match app-booked meetings: pull in the team configured for this event type.
+    const guestResult = await attachConfiguredGuests(base44, booking);
+
     const attendeeEmail = booking.attendees?.[0]?.email;
     const startTime = booking.startTime;
     const uid = booking.uid;
@@ -181,6 +186,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       success: true,
+      guests: guestResult,
       reconciled: {
         inquiryId: inquiry.id,
         email: attendeeEmail,
