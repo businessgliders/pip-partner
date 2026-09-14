@@ -1,7 +1,7 @@
 // Fetches available slots from Cal.com for the configured event type.
 // Uses Cal.com API v2 (/v2/slots) which returns slots grouped by date.
 // Payload (optional): { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", timeZone: "America/Toronto" }
-// Defaults to the next 30 days starting tomorrow, in America/Toronto.
+// Defaults to the next 30 days starting today, in America/Toronto.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -71,12 +71,12 @@ Deno.serve(async (req) => {
 
     const timeZone = body.timeZone || 'America/Toronto';
 
-    // Default range: tomorrow → +30 days
+    // Default range: today → +30 days (Cal.com already drops slots that are in
+    // the past or inside the event type's minimum booking notice)
     const today = new Date();
     const start = new Date(today);
-    start.setDate(start.getDate() + 1);
     const end = new Date(today);
-    end.setDate(end.getDate() + 31);
+    end.setDate(end.getDate() + 30);
 
     const startDate = body.startDate || start.toISOString().slice(0, 10);
     const endDate = body.endDate || end.toISOString().slice(0, 10);
