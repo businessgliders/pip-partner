@@ -16,7 +16,7 @@ export default function BookingStatusFilter({ value, onChange, counts = {} }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative h-10 px-4 rounded-full text-[15px] font-semibold"
+          className="relative h-9 px-3.5 rounded-full text-[13px] font-semibold"
           style={{ background: "var(--crm-card-bg)", color: CRM.ink, boxShadow: "0 1px 6px rgba(45,35,32,0.10)", border: CRM.cardBorder }}
         >
           {current.label}
@@ -40,7 +40,7 @@ export default function BookingStatusFilter({ value, onChange, counts = {} }) {
               key={key}
               type="button"
               onClick={() => { onChange(key); setOpen(false); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[16px] text-left hover:bg-black/5"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-left hover:bg-black/5"
               style={{ color: CRM.ink, fontWeight: active ? 600 : 400 }}
             >
               <Icon className="w-5 h-5" strokeWidth={active ? 2.4 : 1.8} fill={active ? "currentColor" : "none"} style={active ? { color: CRM.ink } : {}} />

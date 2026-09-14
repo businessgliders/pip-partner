@@ -19,7 +19,7 @@ export default function BookingLinkFilter({ value, onChange }) {
       key={key}
       type="button"
       onClick={() => { onChange(key); setOpen(false); }}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[16px] text-left hover:bg-black/5"
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-left hover:bg-black/5"
       style={{ color: CRM.ink, fontWeight: active ? 600 : 400 }}
     >
       <CalendarPlus className="w-5 h-5 shrink-0" strokeWidth={1.8} />
@@ -34,10 +34,10 @@ export default function BookingLinkFilter({ value, onChange }) {
         <button
           type="button"
           aria-label="Filter by link"
-          className="w-10 h-10 rounded-full flex items-center justify-center relative"
+          className="w-9 h-9 rounded-full flex items-center justify-center relative"
           style={{ background: "var(--crm-card-bg)", color: CRM.ink, boxShadow: "0 1px 6px rgba(45,35,32,0.10)", border: CRM.cardBorder }}
         >
-          <ListFilter className="w-5 h-5" strokeWidth={2} />
+          <ListFilter className="w-4 h-4" strokeWidth={2} />
           {value && <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: CRM.accent }} />}
         </button>
       </PopoverTrigger>

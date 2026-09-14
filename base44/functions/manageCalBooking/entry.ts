@@ -1,5 +1,7 @@
 // Admin-only: manage a Cal.com booking via API v2.
-// Payload: { action: 'details' | 'reschedule' | 'cancel' | 'addGuests', uid, start?, reason?, guests? }
+// Payload: { action: 'details' | 'reschedule' | 'cancel' | 'addGuests' | 'confirm' | 'decline', uid, start?, reason?, guests? }
+//   - confirm:    POST /v2/bookings/{uid}/confirm
+//   - decline:    POST /v2/bookings/{uid}/decline       { reason? }
 //   - addGuests:  POST /v2/bookings/{uid}/guests     { guests: [emails] }
 //   - details:    GET  /v2/bookings/{uid}
 //   - reschedule: POST /v2/bookings/{uid}/reschedule  { start, reschedulingReason? }
@@ -54,6 +56,18 @@ export default async function(req) {
         body: JSON.stringify({
           cancellationReason: reason ? String(reason).slice(0, 500) : 'Cancelled by Pilates in Pink staff',
         }),
+      });
+    } else if (action === 'confirm') {
+      resp = await fetch(`https://api.cal.com/v2/bookings/${encodeURIComponent(uid)}/confirm`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({}),
+      });
+    } else if (action === 'decline') {
+      resp = await fetch(`https://api.cal.com/v2/bookings/${encodeURIComponent(uid)}/decline`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(reason ? { reason: String(reason).slice(0, 500) } : {}),
       });
     } else if (action === 'addGuests') {
       const list = (Array.isArray(guests) ? guests : [])

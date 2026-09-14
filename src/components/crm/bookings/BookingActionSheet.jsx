@@ -8,7 +8,38 @@ import { fmtDayShort, fmtRange } from "./bookingUtils";
 import { CRM } from "../crmTheme";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
-const TITLES = { reschedule: "Reschedule Booking", guests: "Add Guests", cancel: "Cancel Event" };
+const TITLES = {
+  reschedule: "Reschedule Booking",
+  guests: "Add Guests",
+  cancel: "Cancel Event",
+  confirm: "Confirm Booking",
+  decline: "Decline Booking",
+};
+
+// Copy for the simple yes/no confirmations (cancel / confirm / decline).
+const SIMPLE = {
+  cancel: {
+    prompt: "Cancel this event? The attendee will be notified by Cal.com and the slot will reopen.",
+    cta: "Yes, cancel event",
+    keep: "Keep booking",
+    color: "#e5484d",
+    payload: { action: "cancel" },
+  },
+  confirm: {
+    prompt: "Confirm this booking? Cal.com will accept the request and send the attendee their calendar invite.",
+    cta: "Yes, confirm booking",
+    keep: "Not now",
+    color: "#2e9e5b",
+    payload: { action: "confirm" },
+  },
+  decline: {
+    prompt: "Decline this booking request? The attendee will be notified that the time wasn't accepted.",
+    cta: "Yes, decline request",
+    keep: "Keep pending",
+    color: "#e5484d",
+    payload: { action: "decline" },
+  },
+};
 
 // iOS-style bottom sheet hosting the reschedule / add-guests / cancel flows.
 // All three call manageCalBooking and refresh the bookings list on success.
@@ -28,6 +59,8 @@ export default function BookingActionSheet({ action, booking, onClose }) {
         reschedule: "Booking rescheduled — attendees will be notified by Cal.com.",
         addGuests: "Guests added — Cal.com has sent them the invite.",
         cancel: "Booking cancelled — attendees will be notified by Cal.com.",
+        confirm: "Booking confirmed — Cal.com has sent the attendee their invite.",
+        decline: "Booking request declined — the attendee has been notified.",
       }[payload.action]);
     },
     onError: (e) => setError(e?.response?.data?.error || e.message || "Something went wrong"),
@@ -43,8 +76,8 @@ export default function BookingActionSheet({ action, booking, onClose }) {
         <div className="mx-auto w-10 h-1.5 rounded-full mb-3 sm:hidden" style={{ background: "rgba(182,118,81,0.25)" }} />
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0">
-            <h3 className="text-[20px] font-bold" style={{ color: CRM.ink }}>{TITLES[action]}</h3>
-            <p className="text-[13px] truncate" style={{ color: CRM.sub }}>{booking.title} · {fmtDayShort(booking.start)}, {fmtRange(booking)}</p>
+            <h3 className="text-[17px] font-bold" style={{ color: CRM.ink }}>{TITLES[action]}</h3>
+            <p className="text-[12px] truncate" style={{ color: CRM.sub }}>{booking.title} · {fmtDayShort(booking.start)}, {fmtRange(booking)}</p>
           </div>
           <button type="button" onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--crm-card-bg)", color: CRM.ink }}>
             <X className="w-4 h-4" />
@@ -61,14 +94,19 @@ export default function BookingActionSheet({ action, booking, onClose }) {
         ) : action === "guests" ? (
           <AddGuestsFlow booking={booking} pending={mut.isPending} error={error} onConfirm={(guests) => mut.mutate({ action: "addGuests", guests })} />
         ) : (
-          <div>
-            <p className="text-[15px]" style={{ color: CRM.ink }}>Cancel this event? The attendee will be notified by Cal.com and the slot will reopen.</p>
-            {error && <p className="mt-3 text-[13px]" style={{ color: "#e5484d" }}>{error}</p>}
-            <button type="button" disabled={mut.isPending} onClick={() => mut.mutate({ action: "cancel" })} className="mt-5 w-full h-12 rounded-2xl text-[16px] font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: "#e5484d" }}>
-              {mut.isPending && <Loader2 className="w-4 h-4 animate-spin" />} Yes, cancel event
-            </button>
-            <button type="button" onClick={onClose} className="mt-2 w-full h-12 rounded-2xl text-[16px] font-semibold" style={{ background: "var(--crm-card-bg)", color: CRM.ink }}>Keep booking</button>
-          </div>
+          (() => {
+            const cfg = SIMPLE[action] || SIMPLE.cancel;
+            return (
+              <div>
+                <p className="text-[14px]" style={{ color: CRM.ink }}>{cfg.prompt}</p>
+                {error && <p className="mt-3 text-[13px]" style={{ color: "#e5484d" }}>{error}</p>}
+                <button type="button" disabled={mut.isPending} onClick={() => mut.mutate(cfg.payload)} className="mt-5 w-full h-12 rounded-2xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: cfg.color }}>
+                  {mut.isPending && <Loader2 className="w-4 h-4 animate-spin" />} {cfg.cta}
+                </button>
+                <button type="button" onClick={onClose} className="mt-2 w-full h-12 rounded-2xl text-[15px] font-semibold" style={{ background: "var(--crm-card-bg)", color: CRM.ink }}>{cfg.keep}</button>
+              </div>
+            );
+          })()
         )}
       </div>
     </div>

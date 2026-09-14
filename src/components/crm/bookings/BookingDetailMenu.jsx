@@ -3,14 +3,15 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Copy, CalendarClock, UserPlus, XCircle } from "lucide-react";
-import { isCancelled, isPast } from "./bookingUtils";
+import { MoreHorizontal, Copy, CalendarClock, UserPlus, XCircle, Check, Ban } from "lucide-react";
+import { isCancelled, isPast, isPending } from "./bookingUtils";
 import { CRM } from "../crmTheme";
 
 // "…" menu in the meeting detail header: Copy Meeting Link · Edit Event › · Danger Zone ›
 export default function BookingDetailMenu({ booking, joinUrl, onAction, onCopied }) {
   const locked = isCancelled(booking) || isPast(booking);
-  const itemCls = "text-[16px] px-3 py-2.5 rounded-xl gap-3";
+  const pending = isPending(booking) && !isCancelled(booking);
+  const itemCls = "text-[14px] px-3 py-2.5 rounded-xl gap-3";
   const contentStyle = { background: "var(--crm-card-bg)", boxShadow: "0 12px 40px rgba(45,35,32,0.18)", color: CRM.ink };
   return (
     <DropdownMenu>
@@ -19,7 +20,17 @@ export default function BookingDetailMenu({ booking, joinUrl, onAction, onCopied
           <MoreHorizontal className="w-5 h-5" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={6} className="crm-root w-[260px] p-2 rounded-2xl border-0 z-[70]" style={contentStyle}>
+      <DropdownMenuContent align="end" sideOffset={6} className="crm-root w-[250px] p-2 rounded-2xl border-0 z-[70]" style={contentStyle}>
+        {pending && (
+          <DropdownMenuItem onClick={() => onAction("confirm")} className={itemCls} style={{ color: "#2e9e5b" }}>
+            <Check className="w-4 h-4" strokeWidth={1.8} /> Confirm Booking
+          </DropdownMenuItem>
+        )}
+        {pending && (
+          <DropdownMenuItem onClick={() => onAction("decline")} className={itemCls} style={{ color: "#e5484d" }}>
+            <Ban className="w-4 h-4" strokeWidth={1.8} /> Decline Booking
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           disabled={!joinUrl}
           onClick={() => { navigator.clipboard?.writeText(joinUrl); onCopied?.(); }}

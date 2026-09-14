@@ -55,16 +55,16 @@ export default function CrmBookingsList({ bookings, ticketByEmail, isLoading, on
             <BookingLinkFilter value={eventTypeId} onChange={setEventTypeId} />
             <BookingStatusFilter value={status} onChange={setStatus} counts={counts} />
           </div>
-          <h1 className="px-5 mb-3 text-[32px] font-bold tracking-tight" style={{ color: CRM.ink }}>Bookings</h1>
+          <h1 className="px-5 mb-3 text-[20px] font-bold tracking-tight" style={{ color: CRM.ink }}>Bookings</h1>
 
           {isLoading ? (
             <p className="px-5 py-10 text-center text-[14px]" style={{ color: CRM.sub }}>Loading bookings…</p>
           ) : groups.length === 0 ? (
-            <p className="px-5 py-14 text-center text-[15px]" style={{ color: CRM.sub }}>No {status} bookings.</p>
+            <p className="px-5 py-14 text-center text-[13px]" style={{ color: CRM.sub }}>No {status} bookings.</p>
           ) : (
             groups.map((g) => (
               <section key={g.key}>
-                <div className="px-4 py-2.5 text-[15px] font-semibold" style={{ background: "rgba(182,118,81,0.10)", color: CRM.ink }}>{g.label}</div>
+                <div className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide" style={{ background: "rgba(182,118,81,0.10)", color: CRM.sub }}>{g.label}</div>
                 {g.items.map((b) => (
                   <BookingCard
                     key={b.uid || b.bookingId || b.start}
