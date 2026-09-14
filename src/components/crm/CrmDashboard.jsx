@@ -140,6 +140,11 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CrmDashboardNotifications rows={notifRows} onOpenItem={(t) => setDetailTicket(t)} />
 
+        {/* Mobile: upcoming meetings sits directly under notifications */}
+        <div className="md:hidden">
+          <CrmUpcomingBookingsWidget bookings={bookings} ticketByEmail={ticketByEmail} onNavigate={onNavigate} />
+        </div>
+
         {/* Column 2: total leads + follow-ups tile */}
         <div className="flex flex-col gap-4">
           <CrmLeadsPieTile
@@ -165,11 +170,6 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
             <div className="text-3xl font-bold mt-1.5" style={{ color: CRM.ink }}>{activeFollowUps.length}</div>
           </button>
 
-          <CrmHiredTile
-            instructor={hiredInstructor}
-            frontadmin={hiredFrontadmin}
-            onSelect={(key) => onNavigate("leads", key, { step: "2" })}
-          />
         </div>
 
         {/* Column 3: inquiries sparkline + meetings tile */}
@@ -194,6 +194,12 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
             </div>
           </div>
 
+          <CrmHiredTile
+            instructor={hiredInstructor}
+            frontadmin={hiredFrontadmin}
+            onSelect={(key) => onNavigate("leads", key, { step: "2" })}
+          />
+
           {/* Contracts tile */}
           <button
             type="button"
@@ -214,8 +220,10 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
         </div>
       </div>
 
-      {/* Row 2: upcoming bookings — calendar schedule view */}
-      <CrmUpcomingBookingsWidget bookings={bookings} ticketByEmail={ticketByEmail} onNavigate={onNavigate} />
+      {/* Row 2 (desktop/tablet): upcoming bookings — calendar schedule view */}
+      <div className="hidden md:block">
+        <CrmUpcomingBookingsWidget bookings={bookings} ticketByEmail={ticketByEmail} onNavigate={onNavigate} />
+      </div>
 
       {aiModalOpen && (
         <CrmAiFollowUpsModal
