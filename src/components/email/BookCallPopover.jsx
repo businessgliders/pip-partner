@@ -61,7 +61,10 @@ export default function BookCallPopover({ onSelect, onAddLink, isMobileFullscree
        setSelectedDay(null);
        setSelectedSlot(null);
        try {
-         const payload = { timeZone: TZ, boardKey };
+         // Always ask from *today* in the studio's timezone — relying on the
+         // server's UTC "today" drops the current day after 8pm EDT.
+         const todayLocal = new Date().toLocaleDateString("en-CA", { timeZone: TZ });
+         const payload = { timeZone: TZ, boardKey, startDate: todayLocal };
          if (boardKey === 'franchise') payload.eventTypeId = franchiseEventTypeId;
          const res = await base44.functions.invoke("getCalAvailability", payload);
          if (cancelled) return;
