@@ -15,7 +15,7 @@ export default function BookingCardMenu({ booking, onAction, children }) {
     <button
       type="button"
       onClick={pick(action)}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-left hover:bg-black/5"
+      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] text-left hover:bg-black/5"
       style={{ color: color || CRM.ink }}
     >
       <Icon className="w-4 h-4 shrink-0" strokeWidth={1.8} />
@@ -30,7 +30,8 @@ export default function BookingCardMenu({ booking, onAction, children }) {
         align="end"
         sideOffset={6}
         onClick={(e) => e.stopPropagation()}
-        className="crm-root w-[250px] p-2 rounded-2xl border-0 z-[70]"
+        collisionPadding={12}
+        className="crm-root w-[210px] p-1.5 rounded-2xl border-0 z-[70]"
         style={{ background: "var(--crm-card-bg)", boxShadow: "0 12px 40px rgba(45,35,32,0.18)" }}
       >
         {pending && item(Check, "Confirm Booking", "confirm", "#2e9e5b")}
