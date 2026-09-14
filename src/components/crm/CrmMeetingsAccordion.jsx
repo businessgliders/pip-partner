@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, ChevronDown, ArrowRight } from "lucide-react";
+import { CalendarDays, ChevronDown, ExternalLink } from "lucide-react";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
 import { CRM } from "./crmTheme";
 
@@ -39,15 +39,18 @@ export default function CrmMeetingsAccordion({ upcoming = 0, unconfirmed = 0, bo
             style={{ color: CRM.sub, transform: open ? "rotate(180deg)" : "none" }}
           />
         </button>
-        <button
-          type="button"
-          aria-label="Open meetings"
-          onClick={() => onNavigate("bookings")}
-          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: CRM.blush, color: "var(--tile-pink-fg)" }}
-        >
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        {open && (
+          <button
+            type="button"
+            aria-label="Open meetings"
+            onClick={() => onNavigate("bookings")}
+            className="h-8 px-3 rounded-full flex items-center gap-1.5 text-[11px] font-semibold shrink-0"
+            style={{ background: CRM.blush, color: "var(--tile-pink-fg)" }}
+          >
+            Open
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {open && (

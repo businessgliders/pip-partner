@@ -72,13 +72,13 @@ export default function CrmDashboardNotifications({ rows, onOpenItem }) {
 
   return (
     <div className="crm-card p-5">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
           <Bell className="w-4 h-4" style={{ color: CRM.accent }} />
           <span className="text-[14px] font-semibold" style={{ color: CRM.ink }}>Notifications</span>
         </div>
         <div
-          className="inline-flex items-center gap-0.5 p-0.5 rounded-full"
+          className="inline-flex items-center gap-0.5 p-0.5 rounded-full shrink-0"
           style={{ border: "1px solid rgba(182,118,81,0.15)" }}
         >
           {FILTERS.map((f) => (

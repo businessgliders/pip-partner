@@ -139,18 +139,18 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
         />
       </div>
 
+      {/* Mobile: collapsible meetings card sits above notifications */}
+      <CrmMeetingsAccordion
+        upcoming={upcomingCount}
+        unconfirmed={pendingCount}
+        bookings={bookings}
+        ticketByEmail={ticketByEmail}
+        onNavigate={onNavigate}
+      />
+
       {/* Row 1: notifications first, then stats tiles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CrmDashboardNotifications rows={notifRows} onOpenItem={(t) => setDetailTicket(t)} />
-
-        {/* Mobile: collapsible meetings card sits directly under notifications */}
-        <CrmMeetingsAccordion
-          upcoming={upcomingCount}
-          unconfirmed={pendingCount}
-          bookings={bookings}
-          ticketByEmail={ticketByEmail}
-          onNavigate={onNavigate}
-        />
 
         {/* Column 2: total leads + follow-ups tile */}
         <div className="flex flex-col gap-4">
