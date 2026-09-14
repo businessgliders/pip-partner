@@ -16,24 +16,26 @@ export default function CrmMeetingsAccordion({ upcoming = 0, unconfirmed = 0, bo
           onClick={() => setOpen((v) => !v)}
           className="flex-1 min-w-0 flex items-center gap-3 text-left"
         >
-          <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: CRM.blush }}>
-            <CalendarDays className="w-[18px] h-[18px]" style={{ color: "var(--tile-pink-fg)" }} />
+          <span className="relative shrink-0">
+            <span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: CRM.blush }}>
+              <CalendarDays className="w-[18px] h-[18px]" style={{ color: "var(--tile-pink-fg)" }} />
+            </span>
+            {unconfirmed > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold leading-[18px] text-center text-white"
+                style={{ background: CRM.accent, border: "2px solid var(--crm-card-bg)" }}
+              >
+                {unconfirmed}
+              </span>
+            )}
           </span>
           <span className="flex-1 min-w-0">
             <span className="block text-[14px] font-semibold" style={{ color: CRM.ink }}>Meetings</span>
-            <span className="block text-[11px]" style={{ color: CRM.sub }}>
-              {upcoming} upcoming
-              {unconfirmed > 0 ? ` · ${unconfirmed} awaiting confirmation` : ""}
+            <span className="block text-[11px] mt-0.5 space-y-0.5" style={{ color: CRM.sub }}>
+              <span className="block">• {upcoming} upcoming</span>
+              {unconfirmed > 0 && <span className="block">• {unconfirmed} awaiting confirmation</span>}
             </span>
           </span>
-          {unconfirmed > 0 && (
-            <span
-              className="min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-bold leading-[22px] text-center text-white shrink-0"
-              style={{ background: CRM.accent }}
-            >
-              {unconfirmed}
-            </span>
-          )}
           <ChevronDown
             className="w-4 h-4 shrink-0 transition-transform"
             style={{ color: CRM.sub, transform: open ? "rotate(180deg)" : "none" }}

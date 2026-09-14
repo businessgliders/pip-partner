@@ -47,7 +47,7 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
 
   return (
     <div className={embedded ? "p-4 pt-1" : "crm-card p-5"}>
-      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+      <div className={embedded ? "hidden" : "flex items-center justify-between gap-2 mb-4 flex-wrap"}>
         <div className={embedded ? "hidden" : "flex items-center gap-2"}>
           <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fdf3d8" }}>
             <CalendarDays className="w-3.5 h-3.5" style={{ color: "#b8860b" }} />
@@ -58,7 +58,7 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
         </div>
         <div className="flex items-center gap-2">
           <div
-            className="inline-flex items-center gap-0.5 p-0.5 rounded-full"
+            className={`inline-flex items-center gap-0.5 p-0.5 rounded-full ${embedded ? "hidden" : ""}`}
             style={{ border: "1px solid rgba(182,118,81,0.15)" }}
           >
             {FILTERS.map((f) => (

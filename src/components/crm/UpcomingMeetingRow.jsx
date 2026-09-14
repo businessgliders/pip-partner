@@ -62,7 +62,7 @@ export default function UpcomingMeetingRow({ booking, showGroup, onOpen }) {
         {pending && (
           <span
             className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
-            style={{ background: CRM.accent, color: "#fff" }}
+            style={{ background: "#2e9e5b", color: "#fff" }}
           >
             Needs confirmation
           </span>
