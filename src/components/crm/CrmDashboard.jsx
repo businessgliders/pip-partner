@@ -9,6 +9,7 @@ import useReplyNotifications from "@/hooks/useReplyNotifications";
 import CrmDashboardNotifications from "./CrmDashboardNotifications";
 import CrmUpcomingBookingsWidget from "./CrmUpcomingBookingsWidget";
 import CrmMeetingsQuickPill from "./CrmMeetingsQuickPill";
+import CrmMeetingsAccordion from "./CrmMeetingsAccordion";
 import { unconfirmedCount } from "./bookings/bookingUtils";
 import CrmLeadDetailDrawer from "./CrmLeadDetailDrawer";
 import CrmEmailDrawer from "./CrmEmailDrawer";
@@ -129,21 +130,27 @@ export default function CrmDashboard({ onNavigate, currentUser }) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-4 pb-10">
-      {/* Mobile quick access into the meetings view */}
-      <CrmMeetingsQuickPill
-        upcoming={upcomingCount}
-        unconfirmed={pendingCount}
-        onOpen={() => onNavigate("bookings")}
-      />
+      {/* Tablet quick access into the meetings view */}
+      <div className="hidden md:block lg:hidden">
+        <CrmMeetingsQuickPill
+          upcoming={upcomingCount}
+          unconfirmed={pendingCount}
+          onOpen={() => onNavigate("bookings")}
+        />
+      </div>
 
       {/* Row 1: notifications first, then stats tiles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CrmDashboardNotifications rows={notifRows} onOpenItem={(t) => setDetailTicket(t)} />
 
-        {/* Mobile: upcoming meetings sits directly under notifications */}
-        <div className="md:hidden">
-          <CrmUpcomingBookingsWidget bookings={bookings} ticketByEmail={ticketByEmail} onNavigate={onNavigate} />
-        </div>
+        {/* Mobile: collapsible meetings card sits directly under notifications */}
+        <CrmMeetingsAccordion
+          upcoming={upcomingCount}
+          unconfirmed={pendingCount}
+          bookings={bookings}
+          ticketByEmail={ticketByEmail}
+          onNavigate={onNavigate}
+        />
 
         {/* Column 2: total leads + follow-ups tile */}
         <div className="flex flex-col gap-4">

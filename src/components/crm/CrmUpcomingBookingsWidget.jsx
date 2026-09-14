@@ -11,7 +11,7 @@ const FILTERS = [
 ];
 
 // Calendar-schedule (agenda) view of upcoming Cal.com bookings on the dashboard.
-export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onNavigate }) {
+export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onNavigate, embedded = false }) {
   const [src, setSrc] = useState("all");
 
   const days = useMemo(() => {
@@ -46,9 +46,9 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
   }, [bookings, ticketByEmail, src]);
 
   return (
-    <div className="crm-card p-5">
+    <div className={embedded ? "p-4 pt-1" : "crm-card p-5"}>
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className={embedded ? "hidden" : "flex items-center gap-2"}>
           <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fdf3d8" }}>
             <CalendarDays className="w-3.5 h-3.5" style={{ color: "#b8860b" }} />
           </span>
@@ -73,14 +73,16 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={() => onNavigate("bookings")}
-            className="text-[11px] font-semibold px-3 py-1 rounded-full"
-            style={{ background: CRM.blush, color: "var(--tile-pink-fg)" }}
-          >
-            View calendar
-          </button>
+          {!embedded && (
+            <button
+              type="button"
+              onClick={() => onNavigate("bookings")}
+              className="text-[11px] font-semibold px-3 py-1 rounded-full"
+              style={{ background: CRM.blush, color: "var(--tile-pink-fg)" }}
+            >
+              View calendar
+            </button>
+          )}
         </div>
       </div>
 
