@@ -5,8 +5,12 @@ import BookingCard from "./BookingCard";
 import BookingDetail from "./BookingDetail";
 import BookingActionSheet from "./BookingActionSheet";
 import CalTabBar from "./CalTabBar";
-import { groupByMonth, matchesStatus } from "./bookingUtils";
+import { groupByMonth, matchesStatus, statusCounts } from "./bookingUtils";
 import { CRM } from "../crmTheme";
+
+// The Cal.com-style tab bar is parked for now (only Bookings exists). Flip to
+// true to bring it back once Links / Availability views are built.
+const SHOW_CAL_TAB_BAR = false;
 
 // Cal.com-style bookings list: filters → month sections → cards → detail.
 export default function CrmBookingsList({ bookings, ticketByEmail, isLoading, onOpenLead }) {
@@ -28,6 +32,8 @@ export default function CrmBookingsList({ bookings, ticketByEmail, isLoading, on
     return groupByMonth(list);
   }, [bookings, status, eventTypeId]);
 
+  const counts = useMemo(() => statusCounts(bookings), [bookings]);
+
   // Keep the detail view in sync when the list refreshes after an action.
   const current = selected ? bookings.find((b) => (b.uid || b.bookingId) === (selected.uid || selected.bookingId)) || selected : null;
 
@@ -47,7 +53,7 @@ export default function CrmBookingsList({ bookings, ticketByEmail, isLoading, on
         <div className="pip-view-in pb-32">
           <div className="flex items-center justify-end gap-2 px-4 mb-3">
             <BookingLinkFilter value={eventTypeId} onChange={setEventTypeId} />
-            <BookingStatusFilter value={status} onChange={setStatus} />
+            <BookingStatusFilter value={status} onChange={setStatus} counts={counts} />
           </div>
           <h1 className="px-5 mb-3 text-[32px] font-bold tracking-tight" style={{ color: CRM.ink }}>Bookings</h1>
 
@@ -73,7 +79,7 @@ export default function CrmBookingsList({ bookings, ticketByEmail, isLoading, on
         </div>
       )}
 
-      <CalTabBar />
+      {SHOW_CAL_TAB_BAR && <CalTabBar />}
 
       {action && (
         <BookingActionSheet action={action.action} booking={action.booking} onClose={() => setAction(null)} />

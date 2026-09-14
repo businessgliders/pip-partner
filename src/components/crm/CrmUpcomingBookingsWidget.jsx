@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { format, isSameDay } from "date-fns";
-import { CalendarDays, Video, ExternalLink } from "lucide-react";
-import { displayName } from "@/components/board/boardConfig";
-import { CRM, dotFor } from "./crmTheme";
+import { CalendarDays } from "lucide-react";
+import UpcomingMeetingRow from "./UpcomingMeetingRow";
+import { CRM } from "./crmTheme";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -89,77 +89,28 @@ export default function CrmUpcomingBookingsWidget({ bookings, ticketByEmail, onN
       ) : (
         <div className="space-y-4">
           {days.map((g, gi) => (
-            <div key={gi} className="flex gap-4">
-              {/* Calendar-page date block */}
-              <div
-                className="w-12 shrink-0 rounded-lg overflow-hidden text-center shadow-sm self-start"
-                style={{ border: "1px solid rgba(182,118,81,0.15)" }}
-              >
-                <div
-                  className="text-[9px] font-bold uppercase tracking-wider py-0.5"
-                  style={{ background: CRM.accent, color: "white" }}
+            <div key={gi}>
+              {/* Compact day marker — the title rows below get the full width */}
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  style={{ background: CRM.accent, color: "#fff" }}
                 >
-                  {format(g.date, "MMM")}
-                </div>
-                <div className="text-[18px] font-bold leading-tight py-0.5 bg-white" style={{ color: CRM.ink }}>
-                  {format(g.date, "d")}
-                </div>
-                <div className="text-[9px] font-semibold pb-0.5 bg-white" style={{ color: CRM.sub }}>
-                  {format(g.date, "EEE")}
-                </div>
+                  {format(g.date, "MMM d")}
+                </span>
+                <span className="text-[11px] font-semibold" style={{ color: CRM.sub }}>
+                  {format(g.date, "EEEE")}
+                </span>
+                <span className="flex-1 h-px" style={{ background: "rgba(182,118,81,0.12)" }} />
               </div>
-              {/* Schedule rows for the day */}
-              <div className="flex-1 min-w-0 space-y-1.5">
+              <div className="space-y-1.5">
                 {g.items.map((b, i) => (
-                  <button
+                  <UpcomingMeetingRow
                     key={i}
-                    type="button"
-                    onClick={() => onNavigate("bookings")}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-[#fdf8f4] transition-colors"
-                    style={{ border: "1px solid rgba(182,118,81,0.10)" }}
-                  >
-                    <span className="text-[12px] font-semibold w-16 shrink-0" style={{ color: CRM.brown }}>
-                      {format(new Date(b.start), "h:mma").toLowerCase()}
-                    </span>
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ background: b._ticket ? dotFor(b._ticket.status) : CRM.accent }}
-                    />
-                    <span className="flex-1 min-w-0 flex items-center gap-1.5 text-[12px] font-medium" style={{ color: CRM.ink }}>
-                      <Video className="w-3 h-3 shrink-0" style={{ color: CRM.accent }} />
-                      <span className="line-clamp-2 sm:line-clamp-1 break-words">
-                        {b._ticket ? displayName(b._ticket) : b.title || (b.emails || [])[0] || "Meeting"}
-                      </span>
-                    </span>
-                    <span className="ml-auto flex items-center gap-1.5 shrink-0">
-                      {src === "all" && (
-                        <span
-                          className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
-                          style={
-                            b._group === "franchise"
-                              ? { background: CRM.blush, color: "var(--tile-pink-fg)" }
-                              : { background: "var(--crm-page-bg)", color: CRM.sub }
-                          }
-                        >
-                          {b._group === "franchise" ? "Franchise" : "Hiring"}
-                        </span>
-                      )}
-                      {(b.uid || b.meetingUrl) && (
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          title="Open in Cal.com"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(b.uid ? `https://app.cal.com/booking/${b.uid}` : b.meetingUrl, "_blank", "noopener");
-                          }}
-                          className="p-1 rounded-md hover:bg-white transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3" style={{ color: CRM.brown }} />
-                        </span>
-                      )}
-                    </span>
-                  </button>
+                    booking={b}
+                    showGroup={src === "all"}
+                    onOpen={() => onNavigate("bookings")}
+                  />
                 ))}
               </div>
             </div>

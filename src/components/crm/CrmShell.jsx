@@ -3,6 +3,7 @@ import { Menu, X, Users } from "lucide-react";
 
 const SOURCE_LABELS = { franchise: "Franchising", instructor: "Instructor", frontadmin: "Front Desk" };
 import CrmSidebar from "./CrmSidebar";
+import CrmMobileTabBar from "./CrmMobileTabBar";
 import CrmUserMenu from "./CrmUserMenu";
 import CrmNotificationBell from "./CrmNotificationBell";
 import CrmThemeToggle from "./CrmThemeToggle";
@@ -10,7 +11,7 @@ import { CRM } from "./crmTheme";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 import useTheme from "@/hooks/useTheme";
 
-export default function CrmShell({ page, source, onNavigate, title, user, children }) {
+export default function CrmShell({ page, source, onNavigate, title, user, meetingsBadge = 0, children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   useLockBodyScroll(mobileNavOpen);
   useTheme(true); // applies light/dark/auto theme to the hub
@@ -86,12 +87,14 @@ export default function CrmShell({ page, source, onNavigate, title, user, childr
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 lg:px-8 py-6 pip-view-in">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 lg:px-8 py-6 pb-28 lg:pb-6 pip-view-in">
           {children}
         </main>
 
+        <CrmMobileTabBar page={page} onNavigate={navigate} meetingsBadge={meetingsBadge} />
+
         <footer
-          className="flex items-center justify-center lg:justify-end gap-3 px-5 lg:px-8 py-1.5 shrink-0 text-[10px]"
+          className="hidden lg:flex items-center justify-center lg:justify-end gap-3 px-5 lg:px-8 py-1.5 shrink-0 text-[10px]"
           style={{ color: CRM.sub, borderTop: "1px solid rgba(182,118,81,0.08)", paddingBottom: "calc(0.375rem + env(safe-area-inset-bottom, 0px))" }}
         >
           <a href="/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70">

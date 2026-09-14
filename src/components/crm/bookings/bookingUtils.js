@@ -61,6 +61,19 @@ export const STATUS_FILTERS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
+// Count per status filter — powers the badge counts in the UI.
+export function statusCounts(list) {
+  const counts = {};
+  STATUS_FILTERS.forEach(({ key }) => {
+    counts[key] = (list || []).filter((b) => matchesStatus(b, key)).length;
+  });
+  return counts;
+}
+
+// Bookings awaiting confirmation — drives the notification badges.
+export const unconfirmedCount = (list) =>
+  (list || []).filter((b) => matchesStatus(b, "unconfirmed")).length;
+
 export function matchesStatus(b, key) {
   switch (key) {
     case "upcoming": return !isCancelled(b) && !isPast(b);
