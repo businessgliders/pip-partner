@@ -27,8 +27,9 @@ function SafeHtml({ html }) {
  * The expanded content of a message — rendered INSIDE the message bubble so the
  * bubble morphs in place (no duplicated second card). Shows headers, the
  * reply-only body, and a tappable trimmed preview of any quoted history.
+ * The header block doubles as a secondary collapse target.
  */
-export default function EmailInlineBody({ message, subColor, inkColor }) {
+export default function EmailInlineBody({ message, subColor, inkColor, onCollapse }) {
   const [showQuoted, setShowQuoted] = useState(false);
 
   const raw =
@@ -48,25 +49,31 @@ export default function EmailInlineBody({ message, subColor, inkColor }) {
 
   return (
     <div className="pip-fade-in" onClick={(e) => e.stopPropagation()}>
-      <div className="text-[13px] font-semibold mb-2" style={{ color: inkColor || "var(--crm-ink)" }}>
-        {message.subject}
-      </div>
-      <div className="text-[11px] space-y-0.5 border-b pb-2 mb-3" style={{ color: sub, borderColor }}>
-        <div className="break-all">
-          <span className="opacity-70">From:</span>{" "}
-          {message.from_name ? `${message.from_name} ` : ""}
-          {message.from_email ? `<${message.from_email}>` : ""}
+      <div
+        className={onCollapse ? "cursor-pointer" : undefined}
+        onClick={onCollapse ? () => onCollapse() : undefined}
+        title={onCollapse ? "Collapse" : undefined}
+      >
+        <div className="text-[13px] font-semibold mb-2" style={{ color: inkColor || "var(--crm-ink)" }}>
+          {message.subject}
         </div>
-        {message.to_email && (
+        <div className="text-[11px] space-y-0.5 border-b pb-2 mb-3" style={{ color: sub, borderColor }}>
           <div className="break-all">
-            <span className="opacity-70">To:</span> {message.to_email}
+            <span className="opacity-70">From:</span>{" "}
+            {message.from_name ? `${message.from_name} ` : ""}
+            {message.from_email ? `<${message.from_email}>` : ""}
           </div>
-        )}
-        {message.sent_at && (
-          <div>
-            <span className="opacity-70">Date:</span> {format(new Date(message.sent_at), "PPpp")}
-          </div>
-        )}
+          {message.to_email && (
+            <div className="break-all">
+              <span className="opacity-70">To:</span> {message.to_email}
+            </div>
+          )}
+          {message.sent_at && (
+            <div>
+              <span className="opacity-70">Date:</span> {format(new Date(message.sent_at), "PPpp")}
+            </div>
+          )}
+        </div>
       </div>
 
       {message.send_error && (

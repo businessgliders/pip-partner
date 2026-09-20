@@ -95,7 +95,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
             </div>
             {expanded && (
               <div className="mt-2">
-                <EmailInlineBody message={message} />
+                <EmailInlineBody message={message} onCollapse={() => setExpanded(false)} />
               </div>
             )}
             <div className={`flex items-center gap-2 mt-1 text-xs ${palette.sub}`}>
@@ -196,6 +196,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               message={message}
               subColor={isPinkBubble ? "rgba(255,255,255,0.85)" : undefined}
               inkColor={isPinkBubble ? "var(--tile-rose-fg)" : undefined}
+              onCollapse={() => setExpanded(false)}
             />
           ) : (
            <div
