@@ -1,33 +1,12 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sparkles, AlertTriangle, Maximize2, Bot } from "lucide-react";
+import { Sparkles, AlertTriangle, ChevronDown, Bot } from "lucide-react";
 import UnreadMessageMarker from "./UnreadMessageMarker";
-import { decodeEntities } from "@/lib/textPreview";
-
-function stripHtml(html) {
-  const text = (html || "")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, "");
-  return decodeEntities(text).trim();
-}
-
-function stripQuotedReply(text) {
-  if (!text) return "";
-  // Strip "On <date> ... wrote:" and leading ">" lines
-  const cutMatch = text.match(/^On .+?wrote:/m);
-  let result = cutMatch ? text.slice(0, cutMatch.index) : text;
-  result = result
-    .split("\n")
-    .filter((line) => !line.trim().startsWith(">"))
-    .join("\n")
-    .trim();
-  return result;
-}
+import EmailInlineBody from "./EmailInlineBody";
+import { replyPreviewText } from "@/lib/emailReply";
 
 export default function EmailMessageItem({ message, isHighlighted, isUnread = false, onMarkRead, staffNameByEmail = {} }) {
-  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const isInbound = message.direction === "inbound";
   const isFailed = message.send_status === "failed";
@@ -61,7 +40,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
   // Outbound pink bubbles use light text for contrast (light + dark mode).
   const isPinkBubble = !isInbound && !isFailed && !isInternal;
 
-  const cleanText = stripQuotedReply(stripHtml(message.body_html || message.body_text || ""));
+  // Preview shows only the newly-written portion of the message, never the
+  // quoted thread history.
+  const cleanText = replyPreviewText(
+    message.body_html || (message.body_text ? message.body_text.replace(/\n/g, "<br>") : "")
+  );
   // Bubble is truncated to a single line, so surface the "tap to expand" icon
   // whenever the preview likely overflows that one line.
   const isLong = cleanText.length > 60;
@@ -103,7 +86,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
             className={`max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} cursor-pointer transition-all ${
               isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""
             }`}
-            onClick={() => setOpen(true)}
+            onClick={() => setExpanded((v) => !v)}
           >
             <div className={`flex items-center gap-1.5 text-xs ${palette.text} font-medium`}>
               <Icon className="w-3 h-3" />
@@ -113,9 +96,8 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
             </div>
           </div>
-
+          {expanded && <EmailInlineBody message={message} />}
         </div>
-        <MessageDialog open={open} onOpenChange={setOpen} message={message} />
       </>
     );
   }
@@ -150,7 +132,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               ? undefined
               : { background: "var(--crm-accent-soft)" }
           }
-          onClick={() => setOpen(true)}
+          onClick={() => setExpanded((v) => !v)}
         >
           {message.is_ai_summary && (
             <div className="text-[9px] text-slate-400 font-semibold tracking-wider uppercase mb-1 flex items-center gap-1">
@@ -221,16 +203,16 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           >
             <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>
             {isLong && !message.is_ai_summary && (
-              <Maximize2
-                className="w-3 h-3 text-gray-400"
+              <ChevronDown
+                className={`w-3 h-3 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}
                 style={isPinkBubble ? { color: "rgba(255,255,255,0.75)" } : undefined}
-                title="Tap to view full message"
+                title={expanded ? "Tap to collapse" : "Tap to view full message"}
               />
             )}
           </div>
         </div>
+        {expanded && <EmailInlineBody message={message} />}
       </div>
-      <MessageDialog open={open} onOpenChange={setOpen} message={message} />
     </>
   );
 
@@ -242,59 +224,4 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
     );
   }
   return bubble;
-}
-
-function MessageDialog({ open, onOpenChange, message }) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="text-left sm:text-left">
-          <DialogTitle className="text-base text-left">{message.subject}</DialogTitle>
-        </DialogHeader>
-        <div className="text-xs text-gray-500 space-y-1 border-b pb-3">
-          <div>
-            <strong>From:</strong> {message.from_name ? `${message.from_name} ` : ""}
-            &lt;{message.from_email}&gt;
-          </div>
-          <div>
-            <strong>To:</strong> {message.to_email}
-          </div>
-          <div>
-            <strong>Date:</strong>{" "}
-            {message.sent_at ? format(new Date(message.sent_at), "PPpp") : ""}
-          </div>
-        </div>
-        {message.send_error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
-            <strong>Error:</strong> {message.send_error}
-          </div>
-        )}
-        {/* Render the email HTML "as sent" — no prose reset, no table-fixed,
-            no width overrides. We only:
-              • isolate styles so the surrounding modal CSS doesn't leak in
-              • allow wide tables to scroll horizontally instead of being
-                squished/truncated
-              • force links to open in a new tab for safety
-        */}
-        <div className="overflow-x-auto">
-          <div
-            style={{ isolation: "isolate", all: "revert" }}
-            ref={(el) => {
-              if (!el) return;
-              el.querySelectorAll("a").forEach((a) => {
-                a.setAttribute("target", "_blank");
-                a.setAttribute("rel", "noopener noreferrer");
-              });
-            }}
-            dangerouslySetInnerHTML={{
-              __html:
-                message.full_body_html ||
-                message.body_html ||
-                `<pre style="white-space:pre-wrap;word-break:break-word;font-family:inherit;">${message.body_text || ""}</pre>`,
-            }}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 }
