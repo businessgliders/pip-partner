@@ -24,11 +24,11 @@ function SafeHtml({ html }) {
 }
 
 /**
- * The inline expanded view of a message — replaces the old popup dialog.
- * Shows headers, the reply-only body, and a tappable trimmed preview of any
- * quoted history.
+ * The expanded content of a message — rendered INSIDE the message bubble so the
+ * bubble morphs in place (no duplicated second card). Shows headers, the
+ * reply-only body, and a tappable trimmed preview of any quoted history.
  */
-export default function EmailInlineBody({ message }) {
+export default function EmailInlineBody({ message, subColor, inkColor }) {
   const [showQuoted, setShowQuoted] = useState(false);
 
   const raw =
@@ -43,15 +43,15 @@ export default function EmailInlineBody({ message }) {
     [raw, message.is_ai_summary]
   );
 
+  const sub = subColor || "var(--crm-sub)";
+  const borderColor = subColor ? "rgba(255,255,255,0.3)" : "rgba(182,118,81,0.15)";
+
   return (
-    <div
-      className="max-w-[92%] w-full mt-1 mb-3 rounded-2xl px-4 py-3 pip-fade-in"
-      style={{ background: "var(--crm-card-bg)", border: "1px solid rgba(182,118,81,0.15)" }}
-    >
-      <div className="text-[13px] font-semibold mb-2" style={{ color: "var(--crm-ink)" }}>
+    <div className="pip-fade-in" onClick={(e) => e.stopPropagation()}>
+      <div className="text-[13px] font-semibold mb-2" style={{ color: inkColor || "var(--crm-ink)" }}>
         {message.subject}
       </div>
-      <div className="text-[11px] space-y-0.5 border-b pb-2 mb-3" style={{ color: "var(--crm-sub)", borderColor: "rgba(182,118,81,0.15)" }}>
+      <div className="text-[11px] space-y-0.5 border-b pb-2 mb-3" style={{ color: sub, borderColor }}>
         <div className="break-all">
           <span className="opacity-70">From:</span>{" "}
           {message.from_name ? `${message.from_name} ` : ""}
@@ -78,7 +78,7 @@ export default function EmailInlineBody({ message }) {
       <SafeHtml html={replyHtml} />
 
       {quotedCount > 0 && (
-        <div className="mt-3 pt-2 border-t" style={{ borderColor: "rgba(182,118,81,0.15)" }}>
+        <div className="mt-3 pt-2 border-t" style={{ borderColor }}>
           <button
             type="button"
             onClick={(e) => {
@@ -86,7 +86,7 @@ export default function EmailInlineBody({ message }) {
               setShowQuoted((v) => !v);
             }}
             className="flex items-center gap-1 text-[11px] hover:underline"
-            style={{ color: "var(--crm-sub)" }}
+            style={{ color: sub }}
           >
             <ChevronDown className={`w-3 h-3 transition-transform ${showQuoted ? "rotate-180" : ""}`} />
             {showQuoted

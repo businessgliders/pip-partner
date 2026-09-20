@@ -83,20 +83,25 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
       <>
         <div className="flex flex-col items-end mb-3" id={`msg-${message.id}`}>
           <div
-            className={`max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} cursor-pointer transition-all ${
-              isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""
-            }`}
+            className={`rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} cursor-pointer transition-all duration-300 ${
+              expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%]"
+            } ${isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""}`}
             onClick={() => setExpanded((v) => !v)}
           >
             <div className={`flex items-center gap-1.5 text-xs ${palette.text} font-medium`}>
               <Icon className="w-3 h-3" />
               <span className="truncate">{label}</span>
             </div>
-            <div className={`text-xs ${palette.sub} mt-0.5`}>
-              {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
-            </div>
+            {expanded ? (
+              <div className="mt-2">
+                <EmailInlineBody message={message} />
+              </div>
+            ) : (
+              <div className={`text-xs ${palette.sub} mt-0.5`}>
+                {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
+              </div>
+            )}
           </div>
-          {expanded && <EmailInlineBody message={message} />}
         </div>
       </>
     );
@@ -116,7 +121,9 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           </div>
         )}
         <div
-          className={`relative max-w-[80%] rounded-2xl px-4 py-2.5 cursor-pointer transition-all ${
+          className={`relative rounded-2xl px-4 py-2.5 cursor-pointer transition-all duration-300 ${
+            expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%]"
+          } ${
             isInbound
               ? "rounded-bl-sm"
               : isFailed
@@ -150,7 +157,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           {/* Inbound bubbles show "From: email" only (no To row); outbound
               continues to display the recipient address. The intake AI
               summary bubble suppresses both. */}
-          {!message.is_ai_summary && (
+          {!message.is_ai_summary && !expanded && (
             isInbound ? (
               message.from_email && (
                 <div className="text-[10px] text-gray-500 mb-1.5 leading-tight pb-1.5 border-b border-gray-200/70">
@@ -183,6 +190,12 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
              className="lg:text-sm text-xs text-gray-800 break-words [&_p]:!m-0 [&_p:not(:last-child)]:!mb-1 mb-5"
              dangerouslySetInnerHTML={{ __html: message.body_html }}
            />
+          ) : expanded ? (
+            <EmailInlineBody
+              message={message}
+              subColor={isPinkBubble ? "rgba(255,255,255,0.85)" : undefined}
+              inkColor={isPinkBubble ? "var(--tile-rose-fg)" : undefined}
+            />
           ) : (
            <div
              className="lg:text-sm text-xs text-gray-800 truncate line-clamp-1"
@@ -201,8 +214,9 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
             className={`text-[10px] text-gray-500 mt-1 flex items-center gap-1 ${message.is_ai_summary ? "justify-end" : ""}`}
             style={isPinkBubble && !message.is_ai_summary ? { color: "rgba(255,255,255,0.75)" } : undefined}
           >
-            <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>
-            {isLong && !message.is_ai_summary && (
+            {!expanded && <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>}
+            {expanded && <span>Tap to collapse</span>}
+            {(isLong || expanded) && !message.is_ai_summary && (
               <ChevronDown
                 className={`w-3 h-3 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}
                 style={isPinkBubble ? { color: "rgba(255,255,255,0.75)" } : undefined}
@@ -211,7 +225,6 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
             )}
           </div>
         </div>
-        {expanded && <EmailInlineBody message={message} />}
       </div>
     </>
   );
