@@ -85,8 +85,9 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
         <div className="flex flex-col items-end mb-3" id={`msg-${message.id}`}>
           <div
             className={`rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} ${
-              expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%]"
+              expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%] cursor-pointer"
             } ${isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""}`}
+            onClick={expanded ? undefined : () => setExpanded(true)}
           >
             <div className={`flex items-center gap-1.5 text-xs ${palette.text} font-medium`}>
               <Icon className="w-3 h-3" />
@@ -122,7 +123,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
         )}
         <div
           className={`relative rounded-2xl px-4 py-2.5 ${
-            expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%]"
+            expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%] cursor-pointer"
           } ${
             isInbound
               ? "rounded-bl-sm"
@@ -139,6 +140,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               ? undefined
               : { background: "var(--crm-accent-soft)" }
           }
+          onClick={expanded || message.is_ai_summary ? undefined : () => setExpanded(true)}
         >
           {message.is_ai_summary && (
             <div className="text-[9px] text-slate-400 font-semibold tracking-wider uppercase mb-1 flex items-center gap-1">
