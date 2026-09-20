@@ -197,6 +197,13 @@
 .pip-fade-in {
   animation: pip-fade-in 220ms ease-out both;
 }
+/* Centered desktop drawer — the slide-in transform would fight the
+   translate-x centering, so fade in instead on large viewports. */
+@media (min-width: 1024px) {
+  .pip-slide-in-right.pip-center-lg {
+    animation: pip-fade-in 200ms ease-out both;
+  }
+}
 
 /* iOS-style app animations — used across the ApplicationBoard so overlays,
    bars, and view transitions feel like a native app rather than a web page. */

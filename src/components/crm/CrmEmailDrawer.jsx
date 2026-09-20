@@ -59,7 +59,7 @@ export default function CrmEmailDrawer({ ticket, ticketType, currentUser, onClos
     <div className="fixed inset-0 z-50 crm-root">
       <div className="absolute inset-0 bg-black/30 pip-fade-in" onClick={onClose} />
       <div
-        className="absolute right-0 top-0 bottom-0 w-full sm:max-w-2xl bg-white shadow-2xl flex flex-col pip-slide-in-right"
+        className="absolute right-0 top-0 bottom-0 w-full sm:max-w-2xl lg:max-w-none lg:w-[min(1180px,94vw)] lg:right-auto lg:left-1/2 lg:-translate-x-1/2 lg:top-6 lg:bottom-6 lg:rounded-2xl lg:overflow-hidden bg-white shadow-2xl flex flex-col pip-slide-in-right pip-center-lg"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <div

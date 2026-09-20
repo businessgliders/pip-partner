@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Sparkles, AlertTriangle, ChevronDown, Bot } from "lucide-react";
+import { Sparkles, AlertTriangle, Bot } from "lucide-react";
 import UnreadMessageMarker from "./UnreadMessageMarker";
+import ExpandToggleButton from "./ExpandToggleButton";
 import EmailInlineBody from "./EmailInlineBody";
 import { replyPreviewText } from "@/lib/emailReply";
 
@@ -83,24 +84,23 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
       <>
         <div className="flex flex-col items-end mb-3" id={`msg-${message.id}`}>
           <div
-            className={`rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} cursor-pointer transition-all duration-300 ${
+            className={`rounded-2xl rounded-br-sm px-4 py-2 ${palette.bg} border ${palette.border} ${
               expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%]"
             } ${isHighlighted ? "ring-2 ring-pink-400 pip-reply-flash" : ""}`}
-            onClick={() => setExpanded((v) => !v)}
           >
             <div className={`flex items-center gap-1.5 text-xs ${palette.text} font-medium`}>
               <Icon className="w-3 h-3" />
               <span className="truncate">{label}</span>
             </div>
-            {expanded ? (
+            {expanded && (
               <div className="mt-2">
                 <EmailInlineBody message={message} />
               </div>
-            ) : (
-              <div className={`text-xs ${palette.sub} mt-0.5`}>
-                {time ? format(new Date(time), "MMM d, h:mm a") : "Tap to view"}
-              </div>
             )}
+            <div className={`flex items-center gap-2 mt-1 text-xs ${palette.sub}`}>
+              {!expanded && <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>}
+              <ExpandToggleButton expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
+            </div>
           </div>
         </div>
       </>
@@ -121,7 +121,7 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
           </div>
         )}
         <div
-          className={`relative rounded-2xl px-4 py-2.5 cursor-pointer transition-all duration-300 ${
+          className={`relative rounded-2xl px-4 py-2.5 ${
             expanded ? "w-full max-w-[92%] py-3" : "max-w-[80%]"
           } ${
             isInbound
@@ -139,7 +139,6 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
               ? undefined
               : { background: "var(--crm-accent-soft)" }
           }
-          onClick={() => setExpanded((v) => !v)}
         >
           {message.is_ai_summary && (
             <div className="text-[9px] text-slate-400 font-semibold tracking-wider uppercase mb-1 flex items-center gap-1">
@@ -215,12 +214,11 @@ export default function EmailMessageItem({ message, isHighlighted, isUnread = fa
             style={isPinkBubble && !message.is_ai_summary ? { color: "rgba(255,255,255,0.75)" } : undefined}
           >
             {!expanded && <span>{time ? format(new Date(time), "MMM d, h:mm a") : ""}</span>}
-            {expanded && <span>Tap to collapse</span>}
-            {(isLong || expanded) && !message.is_ai_summary && (
-              <ChevronDown
-                className={`w-3 h-3 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}
-                style={isPinkBubble ? { color: "rgba(255,255,255,0.75)" } : undefined}
-                title={expanded ? "Tap to collapse" : "Tap to view full message"}
+            {!message.is_ai_summary && (
+              <ExpandToggleButton
+                expanded={expanded}
+                onToggle={() => setExpanded((v) => !v)}
+                tone={isPinkBubble ? "onColor" : "light"}
               />
             )}
           </div>
